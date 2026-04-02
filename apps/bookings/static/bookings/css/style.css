@@ -1,0 +1,229 @@
+/* Bookings App Styles */
+
+/* Booking Form */
+.booking-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+}
+
+.booking-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.booking-progress::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.progress-step {
+    position: relative;
+    z-index: 2;
+    background: #fff;
+    padding: 0 10px;
+    text-align: center;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    background: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: 600;
+    color: #666;
+}
+
+.progress-step.active .step-number {
+    background: #007bff;
+    color: #fff;
+}
+
+.progress-step.completed .step-number {
+    background: #28a745;
+    color: #fff;
+}
+
+/* Aircraft Selection */
+.aircraft-card {
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.aircraft-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.aircraft-card.selected {
+    border-color: #007bff;
+    background: #f8f9ff;
+}
+
+.aircraft-card .check-mark {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    background: #007bff;
+    color: #fff;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.aircraft-card.selected .check-mark {
+    display: flex;
+}
+
+/* Passenger Details */
+.passenger-formset {
+    margin-bottom: 30px;
+}
+
+.passenger-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.passenger-number {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: #007bff;
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.remove-passenger {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #dc3545;
+    cursor: pointer;
+}
+
+.add-passenger-btn {
+    border: 2px dashed #007bff;
+    background: transparent;
+    color: #007bff;
+    padding: 15px;
+    border-radius: 10px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-passenger-btn:hover {
+    background: #007bff;
+    color: #fff;
+}
+
+/* Price Breakdown */
+.price-breakdown {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.price-item.total {
+    font-size: 18px;
+    font-weight: 700;
+    border-bottom: none;
+    padding-top: 15px;
+}
+
+.price-item.discount {
+    color: #28a745;
+}
+
+/* Booking List */
+.booking-filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.booking-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.booking-table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.booking-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-confirmed { background: #d4edda; color: #155724; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-cancelled { background: #f8d7da; color: #721c24; }
+.status-completed { background: #cce5ff; color: #004085; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .booking-progress {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .booking-progress::before {
+        display: none;
+    }
+    
+    .booking-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

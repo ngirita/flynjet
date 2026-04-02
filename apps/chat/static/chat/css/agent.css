@@ -1,0 +1,457 @@
+/* Agent Dashboard Styles */
+
+.agent-container {
+    display: flex;
+    height: calc(100vh - 60px);
+    background: #f8f9fa;
+}
+
+.agent-sidebar {
+    width: 300px;
+    background: white;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.agent-sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.agent-sidebar-header h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.agent-status {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.status-toggle {
+    margin-left: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.status-toggle:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.status-toggle.online {
+    background: #28a745;
+}
+
+.queue-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.queue-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.queue-item:hover {
+    background: #e9ecef;
+}
+
+.queue-item.selected {
+    background: #e3f2fd;
+    border-left-color: #007bff;
+}
+
+.queue-item .user-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.queue-item .user-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.queue-item .wait-time {
+    font-size: 11px;
+    color: #dc3545;
+    background: #ffe6e8;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.queue-item .subject {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-item .message-preview {
+    font-size: 12px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+.agent-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.chat-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header-info h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chat-header-info p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-header-actions button {
+    padding: 8px 15px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.chat-header-actions button:hover {
+    background: #f8f9fa;
+}
+
+.chat-header-actions button.resolve {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.chat-header-actions button.resolve:hover {
+    background: #218838;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.message.received {
+    justify-content: flex-start;
+}
+
+.message.sent {
+    justify-content: flex-end;
+}
+
+.message-content {
+    max-width: 60%;
+    padding: 12px 15px;
+    border-radius: 15px;
+    position: relative;
+}
+
+.message.received .message-content {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.message.sent .message-content {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message-sender {
+    font-size: 11px;
+    margin-bottom: 3px;
+    color: #999;
+}
+
+.message-time {
+    font-size: 10px;
+    margin-top: 5px;
+    opacity: 0.7;
+    text-align: right;
+}
+
+.message-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #666;
+}
+
+.message.sent .message-avatar {
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+.quick-responses {
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+    background: white;
+}
+
+.quick-responses h6 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.response-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.response-tag {
+    padding: 5px 12px;
+    background: #e9ecef;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #495057;
+}
+
+.response-tag:hover {
+    background: #dee2e6;
+}
+
+.chat-input-area {
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+    background: white;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 25px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #007bff;
+}
+
+.input-group button {
+    padding: 0 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.input-group button:hover {
+    background: #0056b3;
+}
+
+.agent-info-panel {
+    width: 300px;
+    background: white;
+    border-left: 1px solid #dee2e6;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.customer-info h6,
+.conversation-info h6,
+.notes h6 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.info-label {
+    color: #666;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.booking-summary {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.booking-route {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.booking-route span {
+    font-weight: 600;
+    color: #007bff;
+}
+
+.booking-route i {
+    color: #adb5bd;
+}
+
+.booking-dates {
+    font-size: 12px;
+    color: #666;
+}
+
+.notes textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    resize: vertical;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.notes textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.save-notes {
+    width: 100%;
+    padding: 8px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.save-notes:hover {
+    background: #218838;
+}
+
+.transcript-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.transcript-actions button {
+    flex: 1;
+    padding: 8px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.transcript-actions button:hover {
+    background: #e9ecef;
+}
+
+@media (max-width: 1024px) {
+    .agent-sidebar {
+        width: 250px;
+    }
+    
+    .agent-info-panel {
+        width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .agent-container {
+        flex-direction: column;
+    }
+    
+    .agent-sidebar {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .agent-info-panel {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #dee2e6;
+    }
+}

@@ -1,0 +1,274 @@
+/* Document Print Styles */
+
+@media print {
+    /* Reset */
+    * {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        filter: none !important;
+        -ms-filter: none !important;
+    }
+    
+    /* Hide non-essential elements */
+    .no-print,
+    .header-nav,
+    .footer,
+    .sidebar,
+    .btn,
+    .actions,
+    .breadcrumb,
+    .pagination,
+    .alerts,
+    .notifications {
+        display: none !important;
+    }
+    
+    /* Page settings */
+    @page {
+        size: A4;
+        margin: 2cm;
+        
+        @top-center {
+            content: "FlynJet Document";
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        @bottom-center {
+            content: "Page " counter(page) " of " counter(pages);
+            font-size: 9pt;
+            color: #666;
+        }
+    }
+    
+    /* Typography */
+    body {
+        font: 11pt Georgia, "Times New Roman", Times, serif;
+        line-height: 1.5;
+    }
+    
+    h1 {
+        font-size: 24pt;
+        margin: 0.5cm 0;
+    }
+    
+    h2 {
+        font-size: 18pt;
+        margin: 0.4cm 0;
+    }
+    
+    h3 {
+        font-size: 14pt;
+        margin: 0.3cm 0;
+    }
+    
+    p {
+        orphans: 3;
+        widows: 3;
+    }
+    
+    /* Tables */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 0.5cm 0;
+    }
+    
+    th {
+        background: #f0f0f0 !important;
+        font-weight: bold;
+        border: 1px solid #000;
+        padding: 0.2cm;
+    }
+    
+    td {
+        border: 1px solid #000;
+        padding: 0.2cm;
+    }
+    
+    /* Links */
+    a {
+        color: #000 !important;
+        text-decoration: underline;
+    }
+    
+    a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        color: #666;
+    }
+    
+    a[href^="#"]::after,
+    a[href^="javascript"]::after {
+        content: "";
+    }
+    
+    /* Images */
+    img {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+    }
+    
+    /* QR Codes */
+    .qr-code {
+        display: block;
+        margin: 0.5cm 0;
+        page-break-inside: avoid;
+    }
+    
+    /* Signatures */
+    .signature-line {
+        border-top: 1px solid #000;
+        width: 200px;
+        margin: 0.2cm 0;
+    }
+    
+    .signature-date {
+        font-size: 9pt;
+        color: #666;
+        margin-top: 0.2cm;
+    }
+    
+    /* Watermarks */
+    .watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 80pt;
+        color: rgba(0,0,0,0.1) !important;
+        z-index: -1;
+        white-space: nowrap;
+    }
+    
+    /* Page breaks */
+    .page-break {
+        page-break-before: always;
+    }
+    
+    .page-break-after {
+        page-break-after: always;
+    }
+    
+    .avoid-break {
+        page-break-inside: avoid;
+    }
+    
+    /* Document specific */
+    .invoice-header {
+        text-align: center;
+        margin-bottom: 1cm;
+    }
+    
+    .company-details {
+        float: left;
+        width: 45%;
+        margin-bottom: 0.5cm;
+    }
+    
+    .client-details {
+        float: right;
+        width: 45%;
+        margin-bottom: 0.5cm;
+    }
+    
+    .invoice-details {
+        clear: both;
+        margin: 0.5cm 0;
+    }
+    
+    .totals-table {
+        float: right;
+        width: 40%;
+        margin: 0.5cm 0;
+    }
+    
+    .footer-note {
+        text-align: center;
+        font-size: 9pt;
+        color: #666;
+        margin-top: 1cm;
+        border-top: 1px solid #ccc;
+        padding-top: 0.3cm;
+    }
+    
+    /* Contract specific */
+    .contract-clause {
+        margin: 0.3cm 0;
+        text-align: justify;
+    }
+    
+    .clause-number {
+        font-weight: bold;
+        display: inline-block;
+        width: 0.8cm;
+    }
+    
+    .signature-area {
+        margin-top: 1cm;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .signature-box {
+        width: 45%;
+    }
+    
+    /* Ticket specific */
+    .boarding-pass {
+        border: 2px solid #000;
+        padding: 0.3cm;
+        margin: 0.5cm 0;
+    }
+    
+    .flight-route {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0.3cm 0;
+    }
+    
+    .airport-code {
+        font-size: 24pt;
+        font-weight: bold;
+    }
+    
+    .flight-time {
+        font-size: 14pt;
+    }
+    
+    /* Certificate specific */
+    .certificate {
+        border: 10px double #000;
+        padding: 0.5cm;
+        text-align: center;
+    }
+    
+    .certificate-seal {
+        font-size: 40pt;
+        margin: 0.3cm 0;
+        opacity: 0.2;
+    }
+    
+    /* Receipt specific */
+    .receipt {
+        max-width: 8cm;
+        margin: 0 auto;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .receipt-items {
+        border-top: 1px dashed #000;
+        border-bottom: 1px dashed #000;
+        margin: 0.3cm 0;
+        padding: 0.2cm 0;
+    }
+    
+    .receipt-total {
+        font-size: 14pt;
+        font-weight: bold;
+        text-align: right;
+    }
+}
