@@ -41,7 +41,7 @@ xhtml2pdf==0.2.12
 qrcode[pil]==7.4.2
 
 # Images & Media
-Pillow==10.1.0
+Pillow==10.4.0
 django-imagekit==5.0.0
 easy-thumbnails==2.8.5
 
