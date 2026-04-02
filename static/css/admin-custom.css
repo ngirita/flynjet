@@ -1,0 +1,299 @@
+/* FlynJet Admin Custom Styles */
+
+/* Header */
+#header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#branding h1 {
+    color: white;
+    font-weight: 600;
+}
+
+#branding h1 a {
+    color: white;
+}
+
+/* Module headers */
+.module h2, .module caption {
+    background: #667eea;
+    color: white;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button] {
+    background: #667eea;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: white;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #764ba2;
+}
+
+.button.default {
+    background: #28a745;
+}
+
+.button.default:hover {
+    background: #218838;
+}
+
+/* Dashboard */
+.dashboard .module {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.dashboard .module table {
+    border-radius: 8px;
+}
+
+/* Change list */
+#changelist {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+#changelist .actions {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+/* Change form */
+#content-main .module {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.aligned label {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Filter horizontal */
+.selector {
+    width: 100%;
+}
+
+.selector select {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* Calendar */
+.calendar {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.calendar table {
+    width: 100%;
+}
+
+.calendar td {
+    padding: 8px;
+    text-align: center;
+}
+
+.calendar .today {
+    background: #667eea;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Time picker */
+.timezonewarning {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* Pagination */
+.paginator {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+.paginator a {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin: 0 2px;
+    color: #667eea;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.paginator a:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.paginator .this-page {
+    background: #667eea;
+    color: white;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin: 0 2px;
+}
+
+/* Inline groups */
+.inline-group {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.inline-group h2 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 10px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Errors */
+.errorlist {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Success messages */
+.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Warning messages */
+.warning {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    #content {
+        padding: 10px;
+    }
+    
+    .module {
+        padding: 10px;
+    }
+    
+    .aligned label {
+        float: none;
+        display: block;
+        width: 100%;
+    }
+    
+    .aligned .vTextField {
+        width: 100%;
+    }
+}
+
+/* Login page */
+.login #container {
+    max-width: 400px;
+    margin: 50px auto;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.login #content {
+    padding: 30px;
+}
+
+.login .form-row {
+    padding: 10px 0;
+}
+
+.login .submit-row {
+    padding: 20px 0 0 0;
+}
+
+/* Dashboard widgets */
+.dashboard .kpi-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.dashboard .kpi-widget .kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+.dashboard .kpi-widget .kpi-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Chart containers */
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.chart-container h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Loading spinner */
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

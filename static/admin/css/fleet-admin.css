@@ -1,0 +1,177 @@
+/* static/admin/css/fleet-admin.css */
+
+/* ========== SELECT2 STYLES FOR ADMIN ========== */
+.select2-container {
+    width: 300px !important;
+}
+
+.select2-container--default .select2-selection--single {
+    height: 32px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px;
+    padding-left: 8px;
+    color: #333;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 30px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #666 transparent transparent transparent;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #666 transparent;
+}
+
+.select2-dropdown {
+    border-color: #ccc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.select2-results__option {
+    padding: 8px 12px;
+}
+
+.select2-results__option--highlighted {
+    background-color: #e3f2fd;
+    color: #333;
+}
+
+/* Airport result styling */
+.airport-result {
+    padding: 4px 0;
+}
+
+.airport-result strong {
+    font-size: 13px;
+    color: #333;
+    display: block;
+}
+
+.airport-result small {
+    font-size: 11px;
+    color: #666;
+}
+
+/* ========== AIRPORT FIELD STYLES ========== */
+.field-base_airport .select2-container,
+.field-current_location .select2-container {
+    width: 300px !important;
+}
+
+/* ========== IMAGE PREVIEW STYLES ========== */
+.inline-group .field-image_preview img {
+    max-height: 100px;
+    max-width: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+/* ========== IMAGE COUNT BADGE ========== */
+.field-images_count span {
+    display: inline-block;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* ========== STATUS INDICATORS ========== */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-available { background-color: #28a745; }
+.status-booked { background-color: #ffc107; }
+.status-maintenance { background-color: #dc3545; }
+.status-chartered { background-color: #17a2b8; }
+.status-grounded { background-color: #6c757d; }
+
+/* ========== FORM HELP TEXT ========== */
+.help {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* ========== COLLAPSIBLE SECTIONS ========== */
+.collapse {
+    margin-bottom: 15px;
+}
+
+.collapse h2 {
+    cursor: pointer;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 0;
+    font-size: 14px;
+}
+
+.collapse h2:hover {
+    background: #e9ecef;
+}
+
+/* ========== DARK MODE SUPPORT ========== */
+body.dark-mode .select2-container--default .select2-selection--single {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+body.dark-mode .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #e0e0e0;
+}
+
+body.dark-mode .select2-dropdown {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+body.dark-mode .select2-results__option {
+    color: #e0e0e0;
+}
+
+body.dark-mode .select2-results__option--highlighted {
+    background-color: #1e3a5f;
+    color: #e0e0e0;
+}
+
+body.dark-mode .airport-result strong {
+    color: #e0e0e0;
+}
+
+body.dark-mode .airport-result small {
+    color: #aaa;
+}
+
+body.dark-mode .collapse h2 {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+}
+
+body.dark-mode .collapse h2:hover {
+    background: #3d3d3d;
+}
+
+body.dark-mode .help {
+    color: #aaa;
+}
+
+body.dark-mode .inline-group .field-image_preview img {
+    border-color: #404040;
+}
