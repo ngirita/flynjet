@@ -145,25 +145,14 @@ WSGI_APPLICATION = 'flynjet.wsgi.application'
 ASGI_APPLICATION = 'flynjet.asgi.application'
 
 # ========== DATABASE - PRODUCTION READY ==========
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', 'flynjet_db'),
-        'USER': config('DB_USER', 'postgres'),
-        'PASSWORD': config('DB_PASSWORD', ''),
-        'HOST': config('DB_HOST', 'localhost'),
-        'PORT': config('DB_PORT', '5432'),
-        'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=0, cast=int),
-        'CONN_HEALTH_CHECKS': config('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'sslmode': 'disable',
-            'keepalives': 1,
-            'keepalives_idle': 30,
-            'keepalives_interval': 10,
-            'keepalives_count': 5,
-        }
-    }
+    'default': dj_database_url.config(
+        default='postgresql://flynjet_db_user:T7tSdJ0A41atTJuZa5hyUn2J4Gwh56Jf@dpg-d776hpma2pns7392sn40-a/flynjet_db',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 # ========== REDIS CACHE ==========
