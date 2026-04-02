@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'two_factor',
     'storages',
     'prometheus_client',
-    'defender',
+    #'defender',
     
     # Phase 1 Apps
     'apps.accounts',
@@ -111,7 +111,7 @@ MIDDLEWARE = [
     'apps.core.middleware.AuditMiddleware',
     'apps.core.middleware.TimezoneMiddleware',
     'apps.core.middleware.RateLimitMiddleware',
-    'defender.middleware.FailedLoginMiddleware',
+    #'defender.middleware.FailedLoginMiddleware',
 ]
 
 # Add debug toolbar middleware only in development
@@ -165,9 +165,9 @@ CACHES = {
 
 # Redis configuration for defender
 #DEFENDER_REDIS_URL = config('REDIS_URL', 'redis://localhost:6379/0')
-DEFENDER_LOCK_OUT = True
-DEFENDER_COOLOFF_TIME = 300
-DEFENDER_LOGIN_FAILURE_LIMIT = 5
+#DEFENDER_LOCK_OUT = True
+#DEFENDER_COOLOFF_TIME = 300
+#DEFENDER_LOGIN_FAILURE_LIMIT = 5
 
 # ========== SESSION SETTINGS ==========
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
