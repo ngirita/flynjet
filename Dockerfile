@@ -29,8 +29,9 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Run migrations
+# Run migrations and collect static files
 RUN python manage.py migrate --noinput
+RUN python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 10000
