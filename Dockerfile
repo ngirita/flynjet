@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies (including Cairo for WeasyPrint)
+# Install system dependencies (corrected for Debian Trixie)
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
     libpango1.0-dev \
     libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
     libffi-dev \
     shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
