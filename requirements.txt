@@ -21,6 +21,7 @@ qrcode==7.4.2
 django-two-factor-auth==1.15.5
 django-phonenumber-field==7.3.0
 django-formtools==2.5.1
+pyotp==2.9.0
 
 # Payments
 stripe==7.5.0
