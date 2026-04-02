@@ -180,14 +180,6 @@
     }
 }
 
-/* High DPI screens */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    /* Use high-res images */
-    /* .hero-section {
-        background-image: url('../images/hero-bg@2x.jpg');
-    } */
-}
-
 /* Print styles */
 @media print {
     /* Hide unnecessary elements */
