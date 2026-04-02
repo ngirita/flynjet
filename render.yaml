@@ -2,6 +2,7 @@ services:
   - type: web
     name: flynjet
     runtime: python
+    runtimeVersion: 3.11.9
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn flynjet.wsgi:application
     envVars:
