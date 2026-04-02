@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies (corrected for Debian Trixie)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
@@ -29,8 +29,8 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Run migrations (collectstatic removed)
+RUN python manage.py migrate --noinput
 
 # Expose port
 EXPOSE 10000
