@@ -8,10 +8,18 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies (minimal for Django)
+# Install system dependencies (including Cairo for WeasyPrint)
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
+    libcairo2 \
+    libcairo2-dev \
+    libpango-1.0-0 \
+    libpango1.0-dev \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
