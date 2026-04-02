@@ -76,7 +76,7 @@ INSTALLED_APPS = [
     'health_check',
     'health_check.contrib.celery',
     'health_check.contrib.psutil',
-    'health_check.contrib.redis',
+    #'health_check.contrib.redis',
     
     # Phase 2 Apps
     'apps.tracking',
@@ -158,34 +158,19 @@ DATABASES = {
 # ========== REDIS CACHE ==========
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': config('REDIS_URL', 'redis://localhost:6379/0'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
-            'CONNECTION_POOL_CLASS_KWARGS': {
-                'max_connections': 50,
-                'timeout': 20,
-            },
-            'MAX_CONNECTIONS': 1000,
-            'PICKLE_VERSION': -1,
-            'SOCKET_CONNECT_TIMEOUT': 5,
-            'SOCKET_TIMEOUT': 5,
-            'RETRY_ON_TIMEOUT': True,
-        },
-        'KEY_PREFIX': 'flynjet',
-        'TIMEOUT': 300,
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
     }
 }
 
 # Redis configuration for defender
-DEFENDER_REDIS_URL = config('REDIS_URL', 'redis://localhost:6379/0')
+#DEFENDER_REDIS_URL = config('REDIS_URL', 'redis://localhost:6379/0')
 DEFENDER_LOCK_OUT = True
 DEFENDER_COOLOFF_TIME = 300
 DEFENDER_LOGIN_FAILURE_LIMIT = 5
 
 # ========== SESSION SETTINGS ==========
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_CACHE_ALIAS = 'default'
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -288,8 +273,8 @@ EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
 # ========== REDIS FOR CELERY ==========
-CELERY_BROKER_URL = config('REDIS_URL', 'redis://localhost:6379/1')
-CELERY_RESULT_BACKEND = config('REDIS_URL', 'redis://localhost:6379/1')
+CELERY_BROKER_URL = None
+CELERY_RESULT_BACKEND = None
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -298,10 +283,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # ========== CHANNELS ==========
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [config('REDIS_URL', 'redis://localhost:6379/2')],
-        },
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 

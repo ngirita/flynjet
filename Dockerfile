@@ -29,8 +29,9 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Run migrations and collect static files
+# Run migrations, create cache table, and collect static files
 RUN python manage.py migrate --noinput
+RUN python manage.py createcachetable --noinput
 RUN python manage.py collectstatic --noinput
 
 # Expose port
