@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write a Review - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reviews/css/reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Share Your Experience</h2>
+                        <p class="text-muted">Help others by sharing your feedback</p>
+                    </div>
+                    
+                    <div class="booking-summary mb-4 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Flight:</strong> {{ booking.departure_airport }} → {{ booking.arrival_airport }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ booking.departure_datetime|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Aircraft:</strong> {{ booking.aircraft.model }}</p>
+                                <p class="mb-1"><strong>Booking Ref:</strong> {{ booking.booking_reference }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="reviewForm">
+                        {% csrf_token %}
+                        
+                        <!-- Overall Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Overall Rating *</label>
+                            <div class="rating-input" id="overall-rating">
+                                <input type="hidden" name="overall_rating" id="id_overall_rating" value="5">
+                                <span class="rating-star" data-value="5"><i class="fas fa-star"></i></span>
+                                <span class="rating-star" data-value="4"><i class="fas fa-star"></i></span>
+                                <span class="rating-star" data-value="3"><i class="fas fa-star"></i></span>
+                                <span class="rating-star" data-value="2"><i class="fas fa-star"></i></span>
+                                <span class="rating-star" data-value="1"><i class="fas fa-star"></i></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Review Title -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Review Title *</label>
+                            <input type="text" class="form-control" name="title" required 
+                                   placeholder="Summarize your experience">
+                        </div>
+                        
+                        <!-- Review Content -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Review *</label>
+                            <textarea class="form-control" name="content" rows="5" required
+                                      placeholder="Tell us about your experience..."></textarea>
+                            <div class="form-text">Minimum 20 characters</div>
+                        </div>
+                        
+                        <!-- Detailed Ratings -->
+                        <h5 class="mt-4 mb-3">Detailed Ratings (Optional)</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Punctuality</label>
+                                <div class="rating-input small" id="punctuality-rating">
+                                    <input type="hidden" name="punctuality_rating" id="id_punctuality_rating">
+                                    <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Comfort</label>
+                                <div class="rating-input small" id="comfort-rating">
+                                    <input type="hidden" name="comfort_rating" id="id_comfort_rating">
+                                    <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Service</label>
+                                <div class="rating-input small" id="service-rating">
+                                    <input type="hidden" name="service_rating" id="id_service_rating">
+                                    <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Value for Money</label>
+                                <div class="rating-input small" id="value-rating">
+                                    <input type="hidden" name="value_rating" id="id_value_rating">
+                                    <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cleanliness</label>
+                                <div class="rating-input small" id="cleanliness-rating">
+                                    <input type="hidden" name="cleanliness_rating" id="id_cleanliness_rating">
+                                    <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                    <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Photos (Optional)</label>
+                            <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                <p>Click to upload photos</p>
+                                <p class="text-muted small">JPEG, PNG up to 10MB each</p>
+                                <input type="file" id="photoInput" name="photos" multiple accept="image/*" 
+                                       style="display: none;" onchange="previewPhotos(this)">
+                            </div>
+                            <div id="photoPreview" class="photo-preview"></div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'reviews/js/rating.js' %}"></script>
+<script>
+    // Initialize rating system
+    const ratingSystem = new RatingSystem({
+        container: document.body
+    });
+    
+    // Photo preview
+    function previewPhotos(input) {
+        const preview = document.getElementById('photoPreview');
+        preview.innerHTML = '';
+        
+        for (let i = 0; i < input.files.length; i++) {
+            const file = input.files[i];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'preview-image';
+                div.style.backgroundImage = `url(${e.target.result})`;
+                div.style.backgroundSize = 'cover';
+                div.style.backgroundPosition = 'center';
+                
+                const remove = document.createElement('span');
+                remove.className = 'preview-remove';
+                remove.innerHTML = '&times;';
+                remove.onclick = function() {
+                    div.remove();
+                    // Note: This doesn't actually remove from FileList
+                };
+                
+                div.appendChild(remove);
+                preview.appendChild(div);
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+{% endblock %}

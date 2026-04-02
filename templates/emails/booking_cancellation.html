@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Booking Cancellation - {{ booking.booking_reference }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #c5a059;">Booking Cancellation</h1>
+        <p>Dear {{ user.get_full_name }},</p>
+        
+        <p>Your booking has been cancelled.</p>
+        
+        <h2>Booking Details:</h2>
+        <ul>
+            <li><strong>Booking Reference:</strong> {{ booking.booking_reference }}</li>
+            <li><strong>Aircraft:</strong> {{ aircraft.manufacturer.name }} {{ aircraft.model }}</li>
+            <li><strong>From:</strong> {{ booking.departure_airport }}</li>
+            <li><strong>To:</strong> {{ booking.arrival_airport }}</li>
+            <li><strong>Departure:</strong> {{ booking.departure_datetime|date:"F j, Y H:i" }}</li>
+        </ul>
+        
+        <p>If you have any questions, please contact our support team.</p>
+        
+        <p>Best regards,<br>FlynJet Team</p>
+    </div>
+</body>
+</html>

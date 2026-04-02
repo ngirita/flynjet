@@ -1,0 +1,35 @@
+<!-- fleet/templates/fleet/cargo_thank_you.html -->
+{% extends 'base.html' %}
+
+{% block title %}Cargo Enquiry Submitted - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <i class="fas fa-box-open fa-4x text-primary mb-4"></i>
+                    <h2 class="mb-3">Cargo Enquiry Submitted!</h2>
+                    <p class="lead">Thank you for choosing FlynJet for your cargo transportation needs.</p>
+                    <p>Our cargo specialists will review your request and contact you within 24 hours with a personalized quote.</p>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        For urgent cargo transport needs, please call us directly at +254785651832.
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'fleet:list' %}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Browse More Aircraft
+                        </a>
+                        <a href="{% url 'core:home' %}" class="btn btn-outline-secondary ms-3">
+                            <i class="fas fa-home me-2"></i>Return Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Corporate Invoice - {{ document.document_number }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+            background: #fff;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #007bff;
+        }
+        
+        .logo h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 36px;
+        }
+        
+        .logo p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .invoice-title {
+            text-align: right;
+        }
+        
+        .invoice-title h2 {
+            margin: 0;
+            color: #666;
+            font-size: 28px;
+            text-transform: uppercase;
+        }
+        
+        .invoice-title p {
+            margin: 5px 0 0;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .company-details, .client-details {
+            width: 45%;
+            margin-bottom: 30px;
+        }
+        
+        .company-details {
+            float: left;
+        }
+        
+        .client-details {
+            float: right;
+        }
+        
+        .details-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .details-box h3 {
+            margin: 0 0 15px;
+            color: #007bff;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        
+        .details-box p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .clear {
+            clear: both;
+        }
+        
+        .invoice-meta {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f1f3f5;
+            border-radius: 5px;
+        }
+        
+        .invoice-meta table {
+            width: 100%;
+        }
+        
+        .invoice-meta td {
+            padding: 8px;
+            font-size: 14px;
+        }
+        
+        .invoice-meta td:first-child {
+            font-weight: bold;
+            color: #007bff;
+            width: 150px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        
+        .items-table th {
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        
+        .items-table tfoot td {
+            border-bottom: none;
+            padding-top: 15px;
+        }
+        
+        .totals {
+            width: 350px;
+            margin-left: auto;
+            margin-top: 20px;
+        }
+        
+        .totals table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .totals td {
+            padding: 8px;
+            font-size: 14px;
+        }
+        
+        .totals td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .totals .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            border-top: 2px solid #007bff;
+        }
+        
+        .payment-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #d4edda;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .payment-info h3 {
+            margin: 0 0 15px;
+            color: #28a745;
+            font-size: 16px;
+        }
+        
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .payment-item {
+            font-size: 14px;
+        }
+        
+        .payment-item strong {
+            color: #155724;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .payment-item {
+            color: #155724;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .qr-section {
+            text-align: right;
+            margin-top: 20px;
+        }
+        
+        .qr-section img {
+            width: 100px;
+            height: 100px;
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <h1>FlynJet</h1>
+            <p>Corporate Aviation Solutions</p>
+        </div>
+        <div class="invoice-title">
+            <h2>Tax Invoice</h2>
+            <p>Original for Recipient</p>
+        </div>
+    </div>
+    
+    <div class="company-details">
+        <div class="details-box">
+            <h3>FROM</h3>
+            <p><strong>FlynJet Air and Logistics.</strong></p>
+            <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya</p>
+            <p>P.O. Box 19087-00501</p>
+            <p>Kenya</p>
+            <p>Tax ID: 12-3456789</p>
+            <p>+254785651832</p>
+            <p>Whatsapp: +447393700477</p>
+            <p>info@flynjet.com</p>
+        </div>
+    </div>
+    
+    <div class="client-details">
+        <div class="details-box">
+            <h3>TO</h3>
+            <p><strong>{{ user.company_name|default:user.first_name|add:" "|add:user.last_name }}</strong></p>
+            {% if user.company_registration_number %}
+            <p>Registration: {{ user.company_registration_number }}</p>
+            {% endif %}
+            {% if user.company_vat_number %}
+            <p>VAT: {{ user.company_vat_number }}</p>
+            {% endif %}
+            <p>{{ user.address_line1|default:'' }}</p>
+            {% if user.address_line2 %}
+            <p>{{ user.address_line2 }}</p>
+            {% endif %}
+            <p>{{ user.city|default:'' }}, {{ user.state|default:'' }} {{ user.postal_code|default:'' }}</p>
+            <p>{{ user.country|default:'' }}</p>
+            <p>{{ user.email }}</p>
+            {% if user.phone_number %}
+            <p>{{ user.phone_number }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="clear"></div>
+    
+    <div class="invoice-meta">
+         <table>
+             <tr>
+                 <td>Invoice Number:</td>
+                 <td><strong>{{ document.document_number }}</strong></td>
+                 <td>Invoice Date:</td>
+                 <td>{{ document.created_at|date:"F j, Y" }}</td>
+             </tr>
+             <tr>
+                 <td>Booking Reference:</td>
+                 <td>{{ booking.booking_reference|default:"N/A" }}</td>
+                 <td>Due Date:</td>
+                 <td>{{ document.due_date|date:"F j, Y" }}</td>
+             </tr>
+             <tr>
+                 <td>Payment Terms:</td>
+                 <td>Net 30</td>
+                 <td>Currency:</td>
+                 <td>USD</td>
+             </tr>
+         </table>
+    </div>
+    
+    <h3 style="color: #007bff; margin: 20px 0;">Flight Details</h3>
+    <table class="items-table">
+        <thead>
+             <tr>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Route</th>
+                <th>Aircraft</th>
+                <th>Amount</th>
+             </tr>
+        </thead>
+        <tbody>
+            {% if booking %}
+             <tr>
+                 <td>Private Jet Charter</td>
+                 <td>{{ booking.departure_datetime|date:"M d, Y" }}</td>
+                 <td>{{ booking.departure_airport }} → {{ booking.arrival_airport }}</td>
+                 <td>{{ booking.aircraft.model }}</td>
+                 <td>${{ booking.total_amount_usd|floatformat:2 }}</td>
+             </tr>
+            {% endif %}
+            {% for item in document.items %}
+             <tr>
+                 <td>{{ item.description }}</td>
+                <td colspan="3"></td>
+                 <td>${{ item.line_total_usd|floatformat:2 }}</td>
+             </tr>
+            {% endfor %}
+        </tbody>
+     </table>
+    
+    <div class="totals">
+        <table>
+             <tr>
+                 <td>Subtotal:</td>
+                 <td>${{ document.subtotal_usd|floatformat:2 }}</td>
+             </tr>
+             <tr>
+                 <td>Tax ({{ document.tax_rate }}%):</td>
+                 <td>${{ document.tax_amount_usd|floatformat:2 }}</td>
+             </tr>
+            {% if document.discount_amount_usd > 0 %}
+             <tr>
+                 <td>Discount:</td>
+                 <td>-${{ document.discount_amount_usd|floatformat:2 }}</td>
+             </tr>
+            {% endif %}
+            <tr class="total-row">
+                 <td>TOTAL:</td>
+                 <td>${{ document.total_usd|floatformat:2 }}</td>
+             </tr>
+        </table>
+    </div>
+    
+    <div class="payment-info">
+        <h3>✓ Payment Information</h3>
+        <div class="payment-grid">
+            <div class="payment-item">
+                <strong>Payment Method</strong>
+                {{ document.content_data.payment_method|default:"Not paid yet" }}
+            </div>
+            <div class="payment-item">
+                <strong>Transaction ID</strong>
+                {{ document.content_data.payment_transaction_id|default:"N/A" }}
+            </div>
+            <div class="payment-item">
+                <strong>Payment Status</strong>
+                {{ document.content_data.status|default:"pending"|title }}
+            </div>
+            {% if document.content_data.payment_date %}
+            <div class="payment-item">
+                <strong>Payment Date</strong>
+                {{ document.content_data.payment_date|date:"F j, Y H:i" }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if document.notes %}
+    <div style="margin-top: 30px;">
+        <h3 style="color: #007bff;">Notes</h3>
+        <p style="color: #666;">{{ document.notes }}</p>
+    </div>
+    {% endif %}
+    
+    {% if document.qr_code %}
+    <div class="qr-section">
+        <img src="{{ document.qr_code.url }}" alt="QR Code">
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>This invoice is electronically generated and valid without signature.</p>
+        <p>For any queries, please contact info@flynjet.com</p>
+        <p>&copy; {% now "Y" %} FlynJet Air and Logistics. All rights reserved.</p>
+    </div>
+</body>
+</html>

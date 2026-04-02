@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer Insights - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'analytics/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2">Customer Insights</h1>
+            <p class="text-muted">Deep dive into customer behavior and segmentation</p>
+        </div>
+    </div>
+    
+    <!-- Customer Segments -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Customer Segmentation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <canvas id="segmentationChart" height="300"></canvas>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="segment-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Customers</span>
+                                    <span class="stat-value">{{ report.summary.total_users }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">New Customers</span>
+                                    <span class="stat-value">{{ report.summary.new_users }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Customers</span>
+                                    <span class="stat-value">{{ report.summary.active_users }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Retention Rate</span>
+                                    <span class="stat-value">{{ report.summary.retention_rate|floatformat:1 }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Customers -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Customers by Lifetime Value</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Bookings</th>
+                                    <th>Total Spent</th>
+                                    <th>Avg. Booking</th>
+                                    <th>Last Booking</th>
+                                    <th>Segment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in report.top_customers %}
+                                <tr>
+                                    <td>{{ customer.user.email }}</td>
+                                    <td>{{ customer.booking_count }}</td>
+                                    <td>${{ customer.total_spent|floatformat:2 }}</td>
+                                    <td>${{ customer.avg_booking|floatformat:2 }}</td>
+                                    <td>{{ customer.last_booking|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if customer.total_spent > 50000 %}
+                                        <span class="badge bg-primary">VIP</span>
+                                        {% elif customer.total_spent > 10000 %}
+                                        <span class="badge bg-success">High Value</span>
+                                        {% elif customer.booking_count > 5 %}
+                                        <span class="badge bg-info">Frequent</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Regular</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customer Journey -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Acquisition Channels</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="channelsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Customer Lifetime Value by Cohort</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="cohortChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Segmentation chart
+    new Chart(document.getElementById('segmentationChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ report.by_type|map(attribute='user_type')|list|safe }},
+            datasets: [{
+                data: {{ report.by_type|map(attribute='count')|list|safe }},
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Channels chart
+    new Chart(document.getElementById('channelsChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Direct', 'Search', 'Social', 'Referral', 'Email'],
+            datasets: [{
+                label: 'New Customers',
+                data: [45, 32, 18, 12, 8],
+                backgroundColor: '#007bff'
+            }]
+        }
+    });
+    
+    // Cohort chart
+    new Chart(document.getElementById('cohortChart'), {
+        type: 'line',
+        data: {
+            labels: ['Month 1', 'Month 3', 'Month 6', 'Month 12', 'Month 24'],
+            datasets: [{
+                label: '2023 Cohort',
+                data: [1000, 850, 720, 580, 420],
+                borderColor: '#28a745'
+            }, {
+                label: '2022 Cohort',
+                data: [950, 780, 620, 450, 310],
+                borderColor: '#007bff'
+            }]
+        }
+    });
+</script>
+{% endblock %}

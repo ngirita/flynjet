@@ -1,0 +1,99 @@
+{% load analytics_tags %}
+
+<div class="kpi-grid">
+    {% for kpi in kpis %}
+    <div class="kpi-card" data-kpi="{{ kpi.id }}">
+        <div class="kpi-icon" style="background: {{ kpi.color|default:'#007bff' }}">
+            <i class="fas fa-{{ kpi.icon|default:'chart-line' }}"></i>
+        </div>
+        <div class="kpi-content">
+            <div class="kpi-label">{{ kpi.label }}</div>
+            <div class="kpi-value" id="kpi-{{ kpi.id }}-value">
+                {{ kpi.value|format_kpi:kpi.format }}
+            </div>
+            {% if kpi.change %}
+            <div class="kpi-change {% if kpi.change >= 0 %}positive{% else %}negative{% endif %}">
+                <i class="fas fa-arrow-{% if kpi.change >= 0 %}up{% else %}down{% endif %}"></i>
+                {{ kpi.change|floatformat:1 }}%
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .kpi-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .kpi-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .kpi-icon i {
+        font-size: 30px;
+        color: white;
+    }
+    
+    .kpi-content {
+        flex: 1;
+    }
+    
+    .kpi-label {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .kpi-change {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .kpi-change.positive {
+        color: #28a745;
+    }
+    
+    .kpi-change.negative {
+        color: #dc3545;
+    }
+    
+    .kpi-change i {
+        margin-right: 3px;
+    }
+</style>
+
+{% load analytics_tags %}

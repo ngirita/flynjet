@@ -1,0 +1,39 @@
+<!-- templates/admin/tracking/delay_form.html -->
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Set Delay for {{ tracks|length }} Flight(s)</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="module">
+            <h2>Flights</h2>
+            {% for track in tracks %}
+            <p>{{ track.flight_number }} ({{ track.departure_airport }} → {{ track.arrival_airport }})</p>
+            {% endfor %}
+        </div>
+        
+        <div class="module">
+            <h2>Delay Information</h2>
+            
+            <div class="form-row">
+                <label for="delay_minutes">Delay Minutes:</label>
+                <input type="number" name="delay_minutes" id="delay_minutes" min="0" max="1440" required>
+            </div>
+            
+            <div class="form-row">
+                <label for="delay_reason">Reason for Delay:</label>
+                <textarea name="delay_reason" id="delay_reason" rows="3" cols="50"></textarea>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Apply Delay" class="default">
+            <a href="{% url 'admin:tracking_flighttrack_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

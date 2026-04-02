@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Complete Your Booking - FlynJet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .content {
+            padding: 40px 20px;
+            background: #f8f9fa;
+        }
+        .booking-details {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .countdown {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 20px 0;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #333;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Don't Miss Out!</h1>
+            <p>Your booking is waiting</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.get_full_name|default:user.email }},</h2>
+            
+            <p>You started booking a flight but didn't complete it. Your selected aircraft is still available, but it might not last long!</p>
+            
+            <div class="booking-details">
+                <h3>Your Selected Flight:</h3>
+                <p><strong>Route:</strong> {{ booking.departure_airport }} → {{ booking.arrival_airport }}</p>
+                <p><strong>Date:</strong> {{ booking.departure_datetime|date:"F j, Y H:i" }}</p>
+                <p><strong>Aircraft:</strong> {{ booking.aircraft.model }}</p>
+                <p><strong>Total:</strong> ${{ booking.total_amount_usd }}</p>
+            </div>
+            
+            <div class="countdown">
+                ⏰ Your booking will expire in 24 hours
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}{% url 'bookings:detail' booking.id %}" class="button">
+                    Complete Your Booking Now
+                </a>
+            </div>
+            
+            <p>Need help? Our support team is available 24/7.</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {% now "Y" %} FlynJet. All rights reserved.</p>
+            <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501</p>
+        </div>
+    </div>
+</body>
+</html>

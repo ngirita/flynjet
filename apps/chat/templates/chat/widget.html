@@ -1,0 +1,333 @@
+<div id="flynjet-chat-widget" class="chat-widget">
+    <div class="chat-button" onclick="toggleChat()">
+        <i class="fas fa-comment"></i>
+    </div>
+    
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <h5>FlynJet Support</h5>
+            <button class="close-chat" onclick="toggleChat()">&times;</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be inserted here -->
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="suggestions" id="suggestions"></div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="chatInput" 
+                       placeholder="Type your message..." 
+                       onkeypress="handleKeyPress(event)">
+                <button class="btn btn-primary" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .chat-button {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+    
+    .chat-button:hover {
+        transform: scale(1.1);
+    }
+    
+    .chat-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 350px;
+        height: 500px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+        display: none;
+        flex-direction: column;
+    }
+    
+    .chat-window.active {
+        display: flex;
+    }
+    
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chat-header h5 {
+        margin: 0;
+        font-size: 16px;
+    }
+    
+    .close-chat {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+    }
+    
+    .message.sent {
+        justify-content: flex-end;
+    }
+    
+    .message-content {
+        max-width: 70%;
+        padding: 10px;
+        border-radius: 10px;
+        position: relative;
+    }
+    
+    .message.sent .message-content {
+        background: #007bff;
+        color: white;
+    }
+    
+    .message.received .message-content {
+        background: #f1f3f5;
+        color: #333;
+    }
+    
+    .message-time {
+        font-size: 10px;
+        margin-top: 5px;
+        color: #999;
+    }
+    
+    .chat-input-area {
+        padding: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .suggestions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .suggestion-btn {
+        background: #f1f3f5;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .suggestion-btn:hover {
+        background: #e9ecef;
+    }
+    
+    .typing-indicator {
+        padding: 10px;
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background: #999;
+        border-radius: 50%;
+        animation: typing 1s infinite;
+    }
+    
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+</style>
+
+<script>
+    let ws = null;
+    let conversationId = '{{ conversation.conversation_id|default:"" }}';
+    
+    function toggleChat() {
+        const window = document.getElementById('chatWindow');
+        window.classList.toggle('active');
+        
+        if (window.classList.contains('active') && !ws && conversationId) {
+            connectWebSocket();
+        }
+    }
+    
+    function connectWebSocket() {
+        ws = new WebSocket('{{ ws_url|default:"" }}');
+        
+        ws.onopen = function() {
+            console.log('Connected to chat');
+            loadHistory();
+        };
+        
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'history') {
+                displayHistory(data.messages);
+            } else if (data.type === 'message') {
+                displayMessage(data.data, 'received');
+                hideTyping();
+            } else if (data.type === 'typing') {
+                if (data.is_typing) {
+                    showTyping();
+                } else {
+                    hideTyping();
+                }
+            } else if (data.type === 'suggestions') {
+                displaySuggestions(data.suggestions);
+            }
+        };
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        
+        if (message) {
+            displayMessage({
+                message: message,
+                timestamp: new Date().toISOString()
+            }, 'sent');
+            
+            ws.send(JSON.stringify({
+                type: 'message',
+                message: message
+            }));
+            
+            input.value = '';
+            
+            // Send typing indicator
+            ws.send(JSON.stringify({
+                type: 'typing',
+                is_typing: false
+            }));
+        }
+    }
+    
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        } else {
+            // Send typing indicator
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'typing',
+                    is_typing: true
+                }));
+                
+                // Clear typing indicator after 2 seconds
+                clearTimeout(window.typingTimeout);
+                window.typingTimeout = setTimeout(() => {
+                    ws.send(JSON.stringify({
+                        type: 'typing',
+                        is_typing: false
+                    }));
+                }, 2000);
+            }
+        }
+    }
+    
+    function displayMessage(data, type) {
+        const messages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        const time = new Date(data.timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                ${data.message}
+                <div class="message-time">${time}</div>
+            </div>
+        `;
+        
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    
+    function displayHistory(messages) {
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML = '';
+        
+        messages.forEach(msg => {
+            displayMessage(msg, msg.is_ai ? 'received' : (msg.is_agent ? 'received' : 'sent'));
+        });
+    }
+    
+    function showTyping() {
+        document.getElementById('typingIndicator').style.display = 'flex';
+    }
+    
+    function hideTyping() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+    
+    function displaySuggestions(suggestions) {
+        const container = document.getElementById('suggestions');
+        container.innerHTML = '';
+        
+        suggestions.forEach(suggestion => {
+            const btn = document.createElement('button');
+            btn.className = 'suggestion-btn';
+            btn.textContent = suggestion;
+            btn.onclick = () => {
+                document.getElementById('chatInput').value = suggestion;
+                sendMessage();
+            };
+            container.appendChild(btn);
+        });
+    }
+    
+    function loadHistory() {
+        // History is sent automatically on connection
+    }
+</script>

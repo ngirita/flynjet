@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #28a745; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Booking Status Update</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Your booking status has changed</h2>
+            
+            <p>Booking Reference: <strong>{{ booking.booking_reference }}</strong></p>
+            <p>Previous Status: <strong>{{ old_status }}</strong></p>
+            <p>New Status: <strong>{{ booking.get_status_display }}</strong></p>
+            
+            <p>Flight: {{ booking.departure_airport }} → {{ booking.arrival_airport }}</p>
+            <p>Date: {{ booking.departure_datetime|date:"F j, Y, g:i a" }}</p>
+            
+            <p>You can view your booking details by logging into your account.</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {% now "Y" %} FlynJet. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

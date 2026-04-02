@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Charter Agreement - {{ document.document_number }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px double #007bff;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+            text-transform: uppercase;
+        }
+        
+        .header h2 {
+            margin: 5px 0 0;
+            font-size: 20px;
+            font-weight: normal;
+        }
+        
+        .contract-number {
+            text-align: right;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .parties {
+            margin-bottom: 30px;
+        }
+        
+        .party-box {
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .party-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .recitals {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .recitals p {
+            margin: 10px 0;
+        }
+        
+        .clause {
+            margin-bottom: 25px;
+        }
+        
+        .clause-number {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .clause-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .clause-content {
+            margin-left: 20px;
+        }
+        
+        .subclause {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .subclause-number {
+            font-weight: bold;
+            display: inline-block;
+            width: 30px;
+        }
+        
+        .schedule {
+            margin-top: 40px;
+            margin-bottom: 30px;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .schedule-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .flight-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .flight-details th {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .flight-details td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            width: 45%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            margin: 20px 0 5px;
+            padding-top: 5px;
+        }
+        
+        .signature-label {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .witness {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="contract-number">
+        <strong>Agreement Number:</strong> {{ document.document_number }}<br>
+        <strong>Date:</strong> {{ document.created_at|date:"F j, Y" }}
+    </div>
+    
+    <div class="header">
+        <h1>AIRCRAFT CHARTER AGREEMENT</h1>
+        <h2>FlynJet Air and Logistics. - Private Jet Charter</h2>
+    </div>
+    
+    <div class="parties">
+        <div class="party-box">
+            <div class="party-title">THE OPERATOR</div>
+            <p><strong>FlynJet Air and Logistics.</strong><br>
+            Jomo Kenyatta International Airport. Airport Nort Road, Embakasi<br>
+            Nairobi, Kenya P.O. Box 19087-00501<br>
+            United States</p>
+        </div>
+        
+        <div class="party-box">
+            <div class="party-title">THE CHARTERER</div>
+            <p><strong>{{ document.user.get_full_name|default:document.user.email }}</strong><br>
+            {% if document.user.company_name %}{{ document.user.company_name }}<br>{% endif %}
+            {{ document.user.address_line1|default:'' }}<br>
+            {% if document.user.address_line2 %}{{ document.user.address_line2 }}<br>{% endif %}
+            {{ document.user.city|default:'' }} {{ document.user.state|default:'' }} {{ document.user.postal_code|default:'' }}<br>
+            {{ document.user.country|default:'' }}<br>
+            Email: {{ document.user.email }}<br>
+            Phone: {{ document.user.phone_number|default:'Not provided' }}</p>
+        </div>
+    </div>
+    
+    <div class="recitals">
+        <p><strong>WHEREAS</strong> the Operator is engaged in the business of chartering private aircraft;</p>
+        <p><strong>WHEREAS</strong> the Charterer desires to charter an aircraft from the Operator for the purposes set forth herein;</p>
+        <p><strong>NOW, THEREFORE</strong> in consideration of the mutual covenants contained herein, the parties agree as follows:</p>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">1.</div>
+        <div class="clause-title">FLIGHT DETAILS</div>
+        <div class="clause-content">
+            <p>The Operator agrees to provide and the Charterer agrees to charter the aircraft for the following flight(s):</p>
+            
+            <table class="flight-details">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Date</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Aircraft</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ document.booking.booking_reference }}</td>
+                        <td>{{ document.booking.departure_datetime|date:"M d, Y" }}</td>
+                        <td>{{ document.booking.departure_airport }} at {{ document.booking.departure_datetime|date:"H:i" }}</td>
+                        <td>{{ document.booking.arrival_airport }} at {{ document.booking.arrival_datetime|date:"H:i" }}</td>
+                        <td>{{ document.booking.aircraft.model }} ({{ document.booking.aircraft.registration_number }})</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">2.</div>
+        <div class="clause-title">PASSENGERS AND CREW</div>
+        <div class="clause-content">
+            <p>2.1 The aircraft shall carry a maximum of {{ document.booking.passenger_count }} passengers.</p>
+            <p>2.2 The Operator shall provide a fully qualified flight crew consisting of Captain and First Officer.</p>
+            <p>2.3 The Charterer shall provide a complete passenger manifest prior to departure.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">3.</div>
+        <div class="clause-title">CHARGES AND PAYMENT</div>
+        <div class="clause-content">
+            <p>3.1 The total charter price is <strong>${{ document.booking.total_amount_usd|floatformat:2 }}</strong> USD, calculated as follows:</p>
+            <p style="margin-left: 20px;">
+                - Base Price: ${{ document.booking.base_price_usd|floatformat:2 }}<br>
+                - Fuel Surcharge: ${{ document.booking.fuel_surcharge_usd|floatformat:2 }}<br>
+                - Handling Fees: ${{ document.booking.handling_fee_usd|floatformat:2 }}<br>
+                - Taxes: ${{ document.booking.tax_amount_usd|floatformat:2 }}
+            </p>
+            <p>3.2 Payment terms: 100% payable prior to departure.</p>
+            <p>3.3 The Charterer agrees to pay any additional charges incurred during the flight, including but not limited to de-icing, additional ground handling, and catering upgrades.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">4.</div>
+        <div class="clause-title">CANCELLATION</div>
+        <div class="clause-content">
+            <p>4.1 Cancellation by Charterer:</p>
+            <p style="margin-left: 20px;">
+                - More than 48 hours before departure: Full refund less $500 processing fee<br>
+                - 24-48 hours before departure: 50% refund<br>
+                - Less than 24 hours before departure: No refund
+            </p>
+            <p>4.2 Cancellation by Operator: In the event the Operator cancels the flight for any reason other than force majeure, the Charterer shall receive a full refund plus a 25% credit towards future charter.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">5.</div>
+        <div class="clause-title">AIRCRAFT SUBSTITUTION</div>
+        <div class="clause-content">
+            <p>The Operator reserves the right to substitute the aircraft with another of similar or greater size and capacity due to maintenance or operational requirements. The Charterer shall be notified immediately of any such substitution.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">6.</div>
+        <div class="clause-title">LIABILITY AND INSURANCE</div>
+        <div class="clause-content">
+            <p>6.1 The Operator maintains aircraft liability insurance with limits of $100,000,000 per occurrence.</p>
+            <p>6.2 The Charterer acknowledges that the Operator's liability is limited to the terms of the insurance policy.</p>
+            <p>6.3 The Charterer is responsible for any damage to the aircraft caused by the Charterer's passengers or guests beyond normal wear and tear.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">7.</div>
+        <div class="clause-title">INDEMNIFICATION</div>
+        <div class="clause-content">
+            <p>The Charterer agrees to indemnify and hold harmless the Operator from any claims, damages, or expenses arising from the Charterer's breach of this agreement or from the conduct of the Charterer's passengers.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">8.</div>
+        <div class="clause-title">GOVERNING LAW</div>
+        <div class="clause-content">
+            <p>This Agreement shall be governed by and construed in accordance with the laws of the State of Florida, without regard to its conflict of laws principles.</p>
+        </div>
+    </div>
+    
+    <div class="clause">
+        <div class="clause-number">9.</div>
+        <div class="clause-title">ENTIRE AGREEMENT</div>
+        <div class="clause-content">
+            <p>This Agreement constitutes the entire agreement between the parties and supersedes all prior agreements and understandings, whether written or oral.</p>
+        </div>
+    </div>
+    
+    <div class="schedule">
+        <div class="schedule-title">SCHEDULE A - PASSENGER MANIFEST</div>
+        <table class="flight-details">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Passport Number</th>
+                    <th>Nationality</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for passenger in document.booking.passenger_details.all %}
+                <tr>
+                    <td>{{ passenger.first_name }} {{ passenger.last_name }}</td>
+                    <td>{{ passenger.passport_number }}</td>
+                    <td>{{ passenger.nationality }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td>{{ document.user.get_full_name }}</td>
+                    <td>{{ document.user.id_document_number|default:"TBD" }}</td>
+                    <td>{{ document.user.nationality|default:"TBD" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <p><strong>FOR THE OPERATOR</strong></p>
+            <div class="signature-line"></div>
+            <div class="signature-label">Authorized Signature</div>
+            <p style="margin-top: 10px;">Name: ______________________</p>
+            <p>Title: _______________________</p>
+            <p>Date: ________________________</p>
+        </div>
+        
+        <div class="signature-box">
+            <p><strong>FOR THE CHARTERER</strong></p>
+            <div class="signature-line"></div>
+            <div class="signature-label">Authorized Signature</div>
+            <p style="margin-top: 10px;">Name: {{ document.user.get_full_name }}</p>
+            <p>Title: _______________________</p>
+            <p>Date: ________________________</p>
+        </div>
+    </div>
+    
+    {% if document.qr_code %}
+    <div style="text-align: right; margin-top: 30px;">
+        <img src="{{ document.qr_code.url }}" width="100" height="100" alt="QR Code">
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>This contract is electronically generated and valid when signed by both parties.</p>
+        <p>FlynJet Air and Logistics. • Jomo Kenyatta International Airport. Airport North Road, Embakasi Nairobi, Kenya • +25478565183 • whatsapp +447393700477 </p>
+    </div>
+</body>
+</html>

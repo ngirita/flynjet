@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review: {{ review.title }} - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{% url 'reviews:list' %}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to all reviews
+                </a>
+            </div>
+
+            <!-- Review Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex gap-3">
+                            <div class="reviewer-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 60px; height: 60px; font-size: 24px; font-weight: 600;">
+                                {{ review.display_name|first|upper }}
+                            </div>
+                            <div>
+                                <h3 class="mb-1">{{ review.display_name }}</h3>
+                                <div class="text-muted mb-2">
+                                    <i class="far fa-calendar-alt me-1"></i>{{ review.created_at|date:"F d, Y" }}
+                                    {% if review.is_verified %}
+                                    <span class="badge bg-success ms-2" title="Verified Booking">
+                                        <i class="fas fa-check-circle me-1"></i>Verified
+                                    </span>
+                                    {% endif %}
+                                    {% if review.status == 'pending' %}
+                                    <span class="badge bg-warning ms-2">
+                                        <i class="fas fa-clock me-1"></i>Pending Moderation
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <div class="display-6 fw-bold text-warning mb-1">{{ review.overall_rating }}/5</div>
+                            <div class="stars">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.overall_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flight Details -->
+                    {% if review.booking %}
+                    <div class="flight-info bg-light p-3 rounded mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-5 text-center text-md-start">
+                                <div class="fw-bold">{{ review.booking.departure_airport_obj.city|default:review.booking.departure_airport }}</div>
+                                <small class="text-muted">{{ review.booking.departure_airport }}</small>
+                                <div class="small">{{ review.booking.departure_datetime|date:"M d, Y H:i" }}</div>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <i class="fas fa-plane fa-2x text-primary"></i>
+                                <div class="small text-muted">→</div>
+                            </div>
+                            <div class="col-md-5 text-center text-md-end">
+                                <div class="fw-bold">{{ review.booking.arrival_airport_obj.city|default:review.booking.arrival_airport }}</div>
+                                <small class="text-muted">{{ review.booking.arrival_airport }}</small>
+                                <div class="small">{{ review.booking.arrival_datetime|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                        {% if review.booking.aircraft %}
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-plane"></i> {{ review.booking.aircraft.manufacturer.name }} {{ review.booking.aircraft.model }}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Review Content -->
+                    <div class="review-content mb-4">
+                        <h4 class="mb-3">{{ review.title }}</h4>
+                        <div class="review-text" style="font-size: 1.1rem; line-height: 1.6;">
+                            {{ review.content|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- Detailed Ratings -->
+                    {% if review.punctuality_rating or review.comfort_rating or review.service_rating %}
+                    <div class="detailed-ratings mb-4">
+                        <h5 class="mb-3">Detailed Ratings</h5>
+                        <div class="row g-3">
+                            {% if review.punctuality_rating %}
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-clock me-2"></i>Punctuality</span>
+                                    <div>
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.punctuality_rating %}
+                                                <i class="fas fa-star text-warning fa-sm"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning fa-sm"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-2">{{ review.punctuality_rating }}/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if review.comfort_rating %}
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-couch me-2"></i>Comfort</span>
+                                    <div>
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.comfort_rating %}
+                                                <i class="fas fa-star text-warning fa-sm"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning fa-sm"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-2">{{ review.comfort_rating }}/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if review.service_rating %}
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-concierge-bell me-2"></i>Service</span>
+                                    <div>
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.service_rating %}
+                                                <i class="fas fa-star text-warning fa-sm"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning fa-sm"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-2">{{ review.service_rating }}/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if review.value_rating %}
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-dollar-sign me-2"></i>Value</span>
+                                    <div>
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.value_rating %}
+                                                <i class="fas fa-star text-warning fa-sm"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning fa-sm"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-2">{{ review.value_rating }}/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if review.cleanliness_rating %}
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-broom me-2"></i>Cleanliness</span>
+                                    <div>
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.cleanliness_rating %}
+                                                <i class="fas fa-star text-warning fa-sm"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning fa-sm"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-2">{{ review.cleanliness_rating }}/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Photos -->
+                    {% with photos=review.review_photos.all %}
+                    {% if photos %}
+                    <div class="review-photos mb-4">
+                        <h5 class="mb-3">Photos</h5>
+                        <div class="row g-3">
+                            {% for photo in photos %}
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <img src="{{ photo.image.url }}" 
+                                     alt="{{ photo.caption|default:'Review photo' }}" 
+                                     class="img-fluid rounded cursor-pointer"
+                                     style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
+                                     onclick="openImageModal('{{ photo.image.url }}')">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Management Response -->
+                    {% if review.response %}
+                    <div class="management-response bg-light p-3 rounded mb-4">
+                        <div class="d-flex gap-3">
+                            <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">FlynJet Management Response</div>
+                                <div class="small text-muted mb-2">{{ review.responded_at|date:"F d, Y" }}</div>
+                                <div>{{ review.response|linebreaks }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Helpful Votes -->
+                    <div class="vote-section d-flex justify-content-between align-items-center pt-3 border-top">
+                        <div class="vote-buttons d-flex gap-2">
+                            <button class="btn btn-outline-success btn-sm" onclick="vote('{{ review.id }}', 'helpful')">
+                                <i class="far fa-thumbs-up me-1"></i>
+                                Helpful (<span id="helpful-count">{{ review.helpful_votes }}</span>)
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="vote('{{ review.id }}', 'not_helpful')">
+                                <i class="far fa-thumbs-down me-1"></i>
+                                Not Helpful (<span id="not-helpful-count">{{ review.not_helpful_votes }}</span>)
+                            </button>
+                        </div>
+                        <button class="btn btn-link text-danger btn-sm" onclick="report('{{ review.id }}')">
+                            <i class="fas fa-flag me-1"></i>Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Reviews -->
+            {% if related_reviews %}
+            <div class="related-reviews">
+                <h4 class="mb-4">More Reviews</h4>
+                <div class="row g-4">
+                    {% for related in related_reviews %}
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="fw-bold">{{ related.display_name }}</div>
+                                        <div class="small text-muted">{{ related.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                    <div class="stars small">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= related.overall_rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <h6 class="card-title">{{ related.title }}</h6>
+                                <p class="card-text small">{{ related.content|truncatewords:20 }}</p>
+                                <a href="{% url 'reviews:detail' related.id %}" class="btn btn-sm btn-outline-primary">
+                                    Read More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-body p-0">
+                <img id="modalImage" src="" alt="" class="img-fluid w-100">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .reviewer-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .stars {
+        letter-spacing: 2px;
+    }
+    
+    .flight-info {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .management-response {
+        border-left: 4px solid #28a745;
+    }
+    
+    .vote-buttons .btn {
+        transition: all 0.2s;
+    }
+    
+    .vote-buttons .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Dark mode support */
+    body.dark-mode .flight-info {
+        background: linear-gradient(135deg, #2d2d3d 0%, #1e1e2e 100%);
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .management-response {
+        background: #2d2d3d !important;
+    }
+    
+    body.dark-mode .card {
+        background: #1e1e2e;
+        border-color: #2d2d3d;
+    }
+    
+    body.dark-mode .card-body {
+        color: #e0e0e0;
+    }
+</style>
+
+<script>
+    function vote(reviewId, type) {
+        fetch(`/reviews/${reviewId}/vote/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'vote_type=' + type
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('helpful-count').textContent = data.helpful;
+            document.getElementById('not-helpful-count').textContent = data.not_helpful;
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    function report(reviewId) {
+        if (confirm('Are you sure you want to report this review?')) {
+            fetch(`/reviews/${reviewId}/report/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(() => {
+                alert('Review reported. Thank you for helping keep our community safe.');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+    
+    function openImageModal(imageUrl) {
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        document.getElementById('modalImage').src = imageUrl;
+        modal.show();
+    }
+</script>
+{% endblock %}

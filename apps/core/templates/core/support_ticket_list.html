@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Support Tickets - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold mb-4">Support Tickets</h1>
+            <a href="{% url 'core:support_ticket_create' %}" class="btn btn-primary mb-4">Create New Ticket</a>
+            
+            {% if tickets %}
+            <div class="list-group">
+                {% for ticket in tickets %}
+                <a href="{% url 'core:support_ticket_detail' ticket.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between">
+                        <h5>{{ ticket.subject }}</h5>
+                        <span class="badge bg-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                    </div>
+                    <small class="text-muted">Created: {{ ticket.created_at|date:"M d, Y" }}</small>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No support tickets found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat History - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold">Chat History</h1>
+            <p class="text-muted">Your previous conversations with FlynJet support</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Subject</th>
+                                    <th>Agent</th>
+                                    <th>Messages</th>
+                                    <th>Status</th>
+                                    <th>Rating</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conversation in conversations %}
+                                <tr>
+                                    <td>{{ conversation.started_at|date:"M d, Y H:i" }}</td>
+                                    <td>{{ conversation.subject }}</td>
+                                    <td>
+                                        {% if conversation.agent %}
+                                            {{ conversation.agent.get_full_name|default:conversation.agent.email }}
+                                        {% else %}
+                                            <span class="text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ conversation.messages.count }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if conversation.status == 'resolved' %}success{% elif conversation.status == 'active' %}primary{% else %}secondary{% endif %}">
+                                            {{ conversation.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if conversation.satisfaction_rating %}
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= conversation.satisfaction_rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">Not rated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'chat:conversation' conversation.conversation_id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">No chat history available</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

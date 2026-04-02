@@ -1,0 +1,42 @@
+FlynJet - Cryptocurrency Payment Instructions
+==============================================
+
+Dear {{ user.get_full_name|default:user.email }},
+
+Thank you for choosing FlynJet. Please complete your payment by sending the exact amount to one of the following cryptocurrency addresses:
+
+Booking Reference: {{ booking.booking_reference }}
+Amount: ${{ payment.amount_usd|floatformat:2 }} USD
+Payment Reference: {{ payment.transaction_id }}
+
+{% if crypto_wallets %}
+CRYPTOCURRENCY ADDRESSES
+------------------------
+
+{% for wallet in crypto_wallets %}
+{{ wallet.get_crypto_type_display|upper }} ({{ wallet.get_network_display }}):
+{{ wallet.wallet_address }}
+{% if wallet.min_deposit > 0 %}Minimum: {{ wallet.min_deposit }} {{ wallet.crypto_type|upper }}{% endif %}
+{% if wallet.notes %}Note: {{ wallet.notes }}{% endif %}
+{% if wallet.link_url %}Link: {{ wallet.link_url }}{% endif %}
+
+{% endfor %}
+{% else %}
+NOTE: Crypto payment details will be provided upon request. Please contact support.
+{% endif %}
+
+IMPORTANT:
+- Send the exact amount shown above
+- Include your payment reference: {{ payment.transaction_id }} in the transaction memo (if supported)
+- Payment will be confirmed after blockchain confirmations
+- You will receive a confirmation email once payment is verified
+
+If you have any questions, please contact us at info@flynjet.com
+
+Thank you for choosing FlynJet!
+
+---
+FlynJet Air and Logistics.
+Jomo Kenyatta International Airport, Airport North Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501
+www.flynjet.com

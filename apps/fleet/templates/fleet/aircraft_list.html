@@ -1,0 +1,826 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Fleet - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Fix Select2 styling in modal */
+    .modal .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.375rem !important;
+    }
+    
+    .modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px !important;
+        padding-left: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        padding-right: 20px !important;
+    }
+    
+    .modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    
+    /* Fix dropdown positioning and width */
+    .select2-container--open {
+        z-index: 1051 !important;
+    }
+    
+    .modal .select2-dropdown {
+        z-index: 1052 !important;
+        min-width: 300px !important;
+        width: auto !important;
+        max-width: 90vw !important;
+    }
+    
+    /* Keep modal scrollable - proper height with scrolling */
+    .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    /* Ensure select2 container doesn't break layout */
+    .modal .select2-container {
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .airport-result {
+        padding: 5px;
+        max-width: 100%;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+    
+    .airport-result strong {
+        display: block;
+        font-size: 13px;
+    }
+    
+    .airport-result small {
+        font-size: 10px;
+        display: block;
+        white-space: normal;
+        word-wrap: break-word;
+        color: #666;
+    }
+    
+    body.dark-mode .airport-result small {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    .btn-group .btn {
+        border-radius: 30px;
+        margin: 0 5px;
+        padding: 8px 20px;
+    }
+    .badge.bg-light {
+        background-color: #f0f0f0 !important;
+        font-weight: normal;
+    }
+    body.dark-mode .badge.bg-light {
+        background-color: #2d2d2d !important;
+        color: #e0e0e0;
+    }
+    body.dark-mode .bg-light {
+        background-color: #1a1a1a !important;
+    }
+
+    /* Carousel controls styling */
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        padding: 20px;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 10%;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .card:hover .carousel-control-prev,
+    .card:hover .carousel-control-next {
+        opacity: 1;
+    }
+
+    /* Thumbnail styling */
+    .gallery-thumbnail {
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+
+    .gallery-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: #c5a059;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold mb-3">Our Premium Fleet</h1>
+            <p class="lead text-muted">Select your aircraft and enquire for a personalized quote</p>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group flex-wrap justify-content-center gap-2 mb-3" role="group">
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}" 
+                   class="btn {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    All Aircraft
+                </a>
+                {% for cat in categories %}
+                <a href="?category={{ cat.slug }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="btn {% if selected_category == cat.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    {{ cat.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for aircraft in aircraft %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <!-- IMAGE SECTION WITH CAROUSEL -->
+                {% with aircraft.images.all as aircraft_images %}
+                    {% if aircraft_images %}
+                        <div id="carousel-{{ aircraft.id }}" class="carousel slide">
+                            <div class="carousel-inner">
+                                {% for image in aircraft_images %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        {% if image.image %}
+                                            <img src="{{ image.image.url }}" 
+                                                class="d-block w-100" 
+                                                alt="{{ aircraft.model }} - {{ image.caption|default:'Photo' }}"
+                                                style="height: 220px; object-fit: cover; cursor: pointer;"
+                                                onclick="openImageModal('{{ image.image.url }}', '{{ aircraft.model }} - {{ image.caption|default:'Photo' }}')">
+                                        {% else %}
+                                            <div class="bg-light text-center py-5" style="height: 220px;">
+                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                                <p class="small text-muted mt-2">No image</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if aircraft_images|length > 1 %}
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ aircraft.id }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ aircraft.id }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Thumbnail navigation -->
+                        {% if aircraft_images|length > 1 %}
+                        <div class="d-flex justify-content-center gap-1 mt-2 mb-2">
+                            {% for image in aircraft_images|slice:":4" %}
+                                {% if image.thumbnail and image.thumbnail.url %}
+                                    <img src="{{ image.thumbnail.url }}" 
+                                         class="rounded" 
+                                         style="width: 40px; height: 30px; object-fit: cover; cursor: pointer; opacity: 0.6;"
+                                         onmouseover="this.style.opacity='1'"
+                                         onmouseout="this.style.opacity='0.6'"
+                                         onclick="goToSlide({{ aircraft.id }}, {{ forloop.counter0 }})">
+                                {% elif image.image and image.image.url %}
+                                    <img src="{{ image.image.url }}" 
+                                         class="rounded" 
+                                         style="width: 40px; height: 30px; object-fit: cover; cursor: pointer; opacity: 0.6;"
+                                         onmouseover="this.style.opacity='1'"
+                                         onmouseout="this.style.opacity='0.6'"
+                                         onclick="goToSlide({{ aircraft.id }}, {{ forloop.counter0 }})">
+                                {% else %}
+                                    <div class="rounded bg-secondary" style="width: 40px; height: 30px;"></div>
+                                {% endif %}
+                            {% endfor %}
+                            {% if aircraft_images|length > 4 %}
+                                <span class="badge bg-secondary mt-1">+{{ aircraft_images|length|add:"-4" }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% elif aircraft.thumbnail %}
+                        <img src="{{ aircraft.thumbnail.url }}" 
+                             class="card-img-top" 
+                             alt="{{ aircraft.model }}" 
+                             style="height: 220px; object-fit: cover; cursor: pointer;"
+                             onclick="openImageModal('{{ aircraft.thumbnail.url }}', '{{ aircraft.model }}')">
+                    {% else %}
+                        <div class="card-img-top bg-light text-center py-5">
+                            <i class="fas fa-plane fa-3x text-secondary"></i>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ aircraft.manufacturer.name }} {{ aircraft.model }}</h5>
+                        <span class="badge bg-{% if aircraft.status == 'available' %}success{% else %}warning{% endif %}">
+                            {{ aircraft.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text text-muted small mb-3">
+                        <i class="fas fa-users me-1"></i> {{ aircraft.passenger_capacity }} passengers |
+                        <i class="fas fa-tachometer-alt me-1"></i> {{ aircraft.max_range_nm }} nm range
+                    </p>
+                    
+                    <!-- Key Features -->
+                    <div class="mb-3">
+                        <div class="d-flex flex-wrap gap-1">
+                            {% if aircraft.wifi_available %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-wifi"></i> WiFi</span>
+                            {% endif %}
+                            {% if aircraft.galley %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-utensils"></i> Galley</span>
+                            {% endif %}
+                            {% if aircraft.lavatory %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-toilet"></i> Lavatory</span>
+                            {% endif %}
+                            {% if aircraft.entertainment_system %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-tv"></i> Entertainment</span>
+                            {% endif %}
+                            {% if aircraft.shower %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-shower"></i> Shower</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Cabin Dimensions -->
+                    <div class="small text-muted mb-3">
+                        <i class="fas fa-ruler-combined me-1"></i> Cabin: {{ aircraft.cabin_length_m }}m L x {{ aircraft.cabin_width_m }}m W x {{ aircraft.cabin_height_m }}m H
+                    </div>
+                    
+                    <button type="button" 
+                            class="btn btn-primary w-100 enquire-btn" 
+                            data-aircraft-id="{{ aircraft.id }}"
+                            data-aircraft-name="{{ aircraft.manufacturer.name }} {{ aircraft.model }}"
+                            data-passenger-capacity="{{ aircraft.passenger_capacity }}">
+                        <i class="fas fa-envelope me-2"></i>Enquire Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-plane-slash fa-4x text-muted mb-3"></i>
+            <h4>No aircraft found</h4>
+            <p class="text-muted">Please try different search criteria or contact us directly.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Enquiry Modal - WITH CARGO SUPPORT -->
+<div class="modal fade" id="enquiryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-envelope me-2"></i>Aircraft Enquiry
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="enquiryForm" method="post" action="{% url 'fleet:submit_enquiry' %}">
+                {% csrf_token %}
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Fill in your details and we'll get back to you with a personalized quote within 24 hours.
+                    </div>
+                    
+                    <input type="hidden" name="aircraft_id" id="enquiry_aircraft_id">
+                    <input type="hidden" name="is_cargo_enquiry" id="is_cargo_enquiry" value="false">
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="bg-light p-3 rounded">
+                                <strong><i class="fas fa-plane me-2"></i>Aircraft:</strong>
+                                <span id="selected_aircraft_name"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3"><i class="fas fa-user me-2"></i>Contact Details</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" name="last_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone *</label>
+                            <input type="tel" name="phone" class="form-control" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Country</label>
+                            <input type="text" name="country" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>Flight Details</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Departure Airport</label>
+                            <select class="form-control airport-autocomplete" 
+                                    id="modal_departure_airport"
+                                    style="width: 100%;">
+                                <option value=""></option>
+                            </select>
+                            <input type="hidden" name="departure_airport" id="modal_departure_airport_iata">
+                            <small class="text-muted">Start typing city or airport name (min 2 letters)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Arrival Airport</label>
+                            <select class="form-control airport-autocomplete" 
+                                    id="modal_arrival_airport"
+                                    style="width: 100%;">
+                                <option value=""></option>
+                            </select>
+                            <input type="hidden" name="arrival_airport" id="modal_arrival_airport_iata">
+                            <small class="text-muted">Start typing city or airport name (min 2 letters)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preferred Departure Date</label>
+                            <input type="date" name="preferred_departure_date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preferred Return Date (if round trip)</label>
+                            <input type="date" name="preferred_return_date" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="flexible_dates" class="form-check-input" id="flexible_dates">
+                                <label class="form-check-label" for="flexible_dates">
+                                    I'm flexible with dates
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Passenger Section -->
+                    <div id="passenger-details-section">
+                        <h6 class="mb-3"><i class="fas fa-users me-2"></i>Passenger & Luggage Details</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Number of Passengers *</label>
+                                <input type="number" name="passenger_count" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Number of Luggage Pieces</label>
+                                <input type="number" name="luggage_count" class="form-control" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total Luggage Weight (kg)</label>
+                                <input type="number" name="luggage_weight_kg" class="form-control" step="0.01" value="0">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Special Luggage (Golf, Skis, etc.)</label>
+                                <textarea name="special_luggage" class="form-control" rows="2" placeholder="Please describe any special luggage items"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cargo Section -->
+                    <div id="cargo-details-section" style="display: none;">
+                        <h6 class="mb-3"><i class="fas fa-box me-2"></i>Cargo Details</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Cargo Weight (kg) *</label>
+                                <input type="number" name="cargo_weight_kg" class="form-control" step="0.01" placeholder="Total cargo weight in kg">
+                                <small class="text-muted">Enter the total weight of your cargo</small>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Cargo Description</label>
+                                <textarea name="special_luggage" class="form-control" rows="3" placeholder="Describe the cargo (dimensions, type, special handling requirements)"></textarea>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Special Requirements</label>
+                                <textarea name="special_requests" class="form-control" rows="3" placeholder="Temperature control, hazardous materials, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3"><i class="fas fa-star me-2"></i>Amenities & Requirements</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label mb-2">Select Amenities You Need</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="wifi" class="form-check-input">
+                                        <label class="form-check-label">WiFi</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="catering" class="form-check-input">
+                                        <label class="form-check-label">Catering</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="entertainment" class="form-check-input">
+                                        <label class="form-check-label">Entertainment</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="conference" class="form-check-input">
+                                        <label class="form-check-label">Conference Table</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="bedroom" class="form-check-input">
+                                        <label class="form-check-label">Bedroom</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="shower" class="form-check-input">
+                                        <label class="form-check-label">Shower</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="amenities" value="pet" class="form-check-input">
+                                        <label class="form-check-label">Pet Friendly</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Catering Requirements</label>
+                            <textarea name="catering_requirements" class="form-control" rows="2" placeholder="Dietary restrictions, meal preferences, etc."></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Special Requests</label>
+                            <textarea name="special_requests" class="form-control" rows="3" placeholder="Any special requests or additional information we should know?"></textarea>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3"><i class="fas fa-concierge-bell me-2"></i>Additional Services</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="ground_transportation" value="true" class="form-check-input">
+                                <label class="form-check-label">Ground Transportation</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="hotel_accommodation" value="true" class="form-check-input">
+                                <label class="form-check-label">Hotel Accommodation</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="pet_travel" value="true" class="form-check-input">
+                                <label class="form-check-label">Pet Travel</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Enquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal for Full Size View -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <img id="modalImage" src="" alt="" class="img-fluid rounded" style="max-height: 90vh; width: 100%; object-fit: contain;">
+                <div id="modalCaption" class="text-center text-white mt-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openImageModal(imageUrl, caption) {
+    const modalElement = document.getElementById('imageModal');
+    if (!modalElement) return;
+    
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    
+    if (modalImage) {
+        modalImage.src = imageUrl;
+        modalImage.alt = caption || '';
+    }
+    if (modalCaption) {
+        modalCaption.innerHTML = caption || '';
+    }
+    
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+// Helper function to navigate to a specific slide
+function goToSlide(carouselId, slideIndex) {
+    const carouselElement = document.getElementById(`carousel-${carouselId}`);
+    if (carouselElement) {
+        const carousel = bootstrap.Carousel.getInstance(carouselElement);
+        if (carousel) {
+            carousel.to(slideIndex);
+        }
+    }
+}
+
+// Initialize modal Select2 manually with proper positioning and width control
+function initModalAutocomplete() {
+    // Destroy any existing instances first
+    if ($('#modal_departure_airport').hasClass('select2-hidden-accessible')) {
+        $('#modal_departure_airport').select2('destroy');
+    }
+    if ($('#modal_arrival_airport').hasClass('select2-hidden-accessible')) {
+        $('#modal_arrival_airport').select2('destroy');
+    }
+    
+    // Initialize departure airport with width control
+    $('#modal_departure_airport').select2({
+        dropdownParent: $('#enquiryModal'),
+        width: '100%',
+        dropdownAutoWidth: false,
+        ajax: {
+            url: '/airports/autocomplete/',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data.results };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
+        placeholder: 'Search by city or airport name...',
+        allowClear: true,
+        templateResult: formatAirport,
+        templateSelection: formatAirportSelection
+    });
+    
+    // Initialize arrival airport with width control
+    $('#modal_arrival_airport').select2({
+        dropdownParent: $('#enquiryModal'),
+        width: '100%',
+        dropdownAutoWidth: false,
+        ajax: {
+            url: '/airports/autocomplete/',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data.results };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
+        placeholder: 'Search by city or airport name...',
+        allowClear: true,
+        templateResult: formatAirport,
+        templateSelection: formatAirportSelection
+    });
+    
+    // Handle selection for departure
+    $('#modal_departure_airport').off('change').on('change', function() {
+        var selected = $(this).select2('data')[0];
+        if (selected && selected.iata) {
+            $('#modal_departure_airport_iata').val(selected.iata);
+            console.log('Departure selected:', selected.city, selected.iata);
+        } else {
+            $('#modal_departure_airport_iata').val('');
+        }
+    });
+    
+    // Handle selection for arrival
+    $('#modal_arrival_airport').off('change').on('change', function() {
+        var selected = $(this).select2('data')[0];
+        if (selected && selected.iata) {
+            $('#modal_arrival_airport_iata').val(selected.iata);
+            console.log('Arrival selected:', selected.city, selected.iata);
+        } else {
+            $('#modal_arrival_airport_iata').val('');
+        }
+    });
+}
+
+function formatAirport(airport) {
+    if (airport.loading) return airport.text;
+    if (!airport.id) return airport.text;
+    
+    return $(
+        '<div class="airport-result">' +
+            '<strong>' + (airport.city || '') + '</strong>' +
+            '<small>' + (airport.name || '') + ' (' + (airport.iata || '') + ')' + 
+            (airport.country ? ' - ' + airport.country : '') + '</small>' +
+        '</div>'
+    );
+}
+
+function formatAirportSelection(airport) {
+    if (!airport.id) return airport.text;
+    if (airport.city && airport.iata) {
+        return airport.city + ' (' + airport.iata + ')';
+    }
+    return airport.text;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all carousels with interval = false to prevent automatic sliding
+    const carousels = document.querySelectorAll('.carousel');
+    carousels.forEach(function(carousel) {
+        new bootstrap.Carousel(carousel, {
+            interval: false,
+            wrap: true
+        });
+    });
+    
+    const enquireBtns = document.querySelectorAll('.enquire-btn');
+    const modalElement = document.getElementById('enquiryModal');
+    
+    enquireBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const aircraftId = this.dataset.aircraftId;
+            const aircraftName = this.dataset.aircraftName;
+            const passengerCapacity = parseInt(this.dataset.passengerCapacity);
+            const isCargoAircraft = passengerCapacity === 0;
+            
+            document.getElementById('enquiry_aircraft_id').value = aircraftId;
+            document.getElementById('selected_aircraft_name').innerHTML = 
+                this.dataset.aircraftName + ' <span class="text-muted">(up to ' + passengerCapacity + ' passengers)</span>';
+            
+            // Store cargo status on the modal
+            modalElement.setAttribute('data-is-cargo', isCargoAircraft);
+            
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        });
+    });
+    
+    // Handle cargo vs passenger form when modal is shown
+    modalElement.addEventListener('shown.bs.modal', function() {
+        const isCargo = this.getAttribute('data-is-cargo') === 'true';
+        const passengerSection = document.getElementById('passenger-details-section');
+        const cargoSection = document.getElementById('cargo-details-section');
+        const passengerCountInput = document.querySelector('input[name="passenger_count"]');
+        const cargoWeightInput = document.querySelector('input[name="cargo_weight_kg"]');
+        const cargoFlag = document.getElementById('is_cargo_enquiry');
+        
+        if (isCargo) {
+            // Hide passenger section, show cargo section
+            if (passengerSection) passengerSection.style.display = 'none';
+            if (cargoSection) cargoSection.style.display = 'block';
+            
+            // Update passenger count field for cargo
+            if (passengerCountInput) {
+                passengerCountInput.value = 0;
+                passengerCountInput.min = 0;
+                passengerCountInput.removeAttribute('required');
+            }
+            
+            // Make cargo weight required
+            if (cargoWeightInput) {
+                cargoWeightInput.setAttribute('required', 'required');
+            }
+            
+            // Update hidden cargo flag
+            if (cargoFlag) cargoFlag.value = 'true';
+            
+        } else {
+            // Show passenger section, hide cargo section
+            if (passengerSection) passengerSection.style.display = 'block';
+            if (cargoSection) cargoSection.style.display = 'none';
+            
+            // Update passenger count field for passenger
+            if (passengerCountInput) {
+                passengerCountInput.value = 1;
+                passengerCountInput.min = 1;
+                passengerCountInput.setAttribute('required', 'required');
+            }
+            
+            // Remove required from cargo weight
+            if (cargoWeightInput) {
+                cargoWeightInput.removeAttribute('required');
+                cargoWeightInput.value = '';
+            }
+            
+            // Update hidden cargo flag
+            if (cargoFlag) cargoFlag.value = 'false';
+        }
+    });
+    
+    // Initialize Select2 when modal is shown
+    modalElement.addEventListener('shown.bs.modal', function() {
+        console.log('Modal shown - initializing autocomplete');
+        setTimeout(function() {
+            initModalAutocomplete();
+        }, 150);
+    });
+    
+    // Clean up when modal is hidden
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        $('#modal_departure_airport, #modal_arrival_airport').each(function() {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+        });
+        $('#modal_departure_airport, #modal_arrival_airport').val('');
+        $('#modal_departure_airport_iata, #modal_arrival_airport_iata').val('');
+        
+        // Reset cargo flag
+        const cargoFlag = document.getElementById('is_cargo_enquiry');
+        if (cargoFlag) cargoFlag.value = 'false';
+    });
+    
+    // Auto-fill user details if logged in
+    {% if user.is_authenticated %}
+    if (document.querySelector('input[name="first_name"]') && !document.querySelector('input[name="first_name"]').value) {
+        document.querySelector('input[name="first_name"]').value = '{{ user.first_name }}';
+        document.querySelector('input[name="last_name"]').value = '{{ user.last_name }}';
+        document.querySelector('input[name="email"]').value = '{{ user.email }}';
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

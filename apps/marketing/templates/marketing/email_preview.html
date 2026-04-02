@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Email Preview - {{ campaign.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'marketing:campaigns' %}">Campaigns</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'marketing:campaign_detail' campaign.id %}">{{ campaign.name }}</a></li>
+                    <li class="breadcrumb-item active">Email Preview</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Campaign Info</h5>
+                    <p><strong>Name:</strong> {{ campaign.name }}</p>
+                    <p><strong>Subject:</strong> {{ campaign.subject }}</p>
+                    <p><strong>Template:</strong> {{ campaign.template }}</p>
+                    <p><strong>Recipients:</strong> {{ campaign.segment_size }}</p>
+                    
+                    <hr>
+                    
+                    <h6>Test Send</h6>
+                    <form id="testSendForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="email" class="form-control" name="test_email" 
+                                   placeholder="Enter email address">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            Send Test
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <strong>From:</strong> FlynJet <{{ settings.DEFAULT_FROM_EMAIL }}>
+                        </div>
+                        <div class="col text-end">
+                            <strong>To:</strong> test@example.com
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <iframe srcdoc="{{ email_html|escape }}" style="width: 100%; height: 600px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('testSendForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = this.test_email.value;
+        if (!email) {
+            alert('Please enter an email address');
+            return;
+        }
+        
+        fetch(`/api/v1/marketing/campaigns/{{ campaign.id }}/test/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sent') {
+                alert(`Test email sent to ${email}`);
+            }
+        });
+    });
+</script>
+{% endblock %}

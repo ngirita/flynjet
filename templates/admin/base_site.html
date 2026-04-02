@@ -1,0 +1,420 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | FlynJet Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Notification styles */
+    .notification-container {
+        position: relative;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .notification-bell {
+        cursor: pointer;
+        color: white;
+        font-size: 18px;
+        padding: 5px;
+        position: relative;
+    }
+    
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 5px;
+        font-size: 10px;
+        font-weight: bold;
+        min-width: 16px;
+        text-align: center;
+        display: none;
+    }
+    
+    .notification-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 380px;
+        max-height: 450px;
+        overflow-y: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: none;
+        z-index: 1000;
+        margin-top: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .notification-container:hover .notification-dropdown {
+        display: block;
+    }
+    
+    .notification-item {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        position: relative;
+    }
+    
+    .notification-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .notification-item.unread {
+        background: #fff9e6;
+        border-left: 3px solid #ffc107;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #333;
+        padding-right: 70px;
+    }
+    
+    .notification-message {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+    
+    .notification-time {
+        font-size: 10px;
+        color: #999;
+        margin-top: 4px;
+    }
+    
+    .notification-empty {
+        padding: 30px 20px;
+        text-align: center;
+        color: #999;
+        font-size: 13px;
+    }
+    
+    .mark-read-btn {
+        float: right;
+        font-size: 10px;
+        background: none;
+        border: none;
+        color: #007bff;
+        cursor: pointer;
+        padding: 2px 6px;
+        margin-top: -2px;
+        border-radius: 3px;
+        transition: all 0.2s ease;
+    }
+    
+    .mark-read-btn:hover {
+        background: #e7f3ff;
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    
+    .notification-header {
+        padding: 10px 12px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 600;
+        font-size: 13px;
+        color: #333;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+    
+    .mark-all-link {
+        float: right;
+        font-size: 11px;
+        font-weight: normal;
+        color: #007bff;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .mark-all-link:hover {
+        text-decoration: underline;
+    }
+    
+    .quick-action-link {
+        color: white;
+        text-decoration: none;
+        padding: 6px 12px;
+        background: #28a745;
+        border-radius: 4px;
+        font-size: 13px;
+        margin-left: 10px;
+        transition: background 0.2s ease;
+    }
+    
+    .quick-action-link:hover {
+        background: #218838;
+        color: white;
+    }
+    
+    /* Scrollbar styling */
+    .notification-dropdown::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .notification-dropdown::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .notification-dropdown::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .notification-dropdown::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script>
+    window.$ = window.jQuery = django.jQuery;
+</script>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'images/logo-white.png' %}" alt="FlynJet" height="40">
+        <span style="margin-left: 10px;">FlynJet Administration</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float: right; margin-right: 20px; margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+    
+    <!-- Notifications Bell -->
+    <div class="notification-container">
+        <div class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notification-count">0</span>
+        </div>
+        <div class="notification-dropdown">
+            <div class="notification-header">
+                Notifications
+                <a href="#" onclick="markAllNotificationsRead(); return false;" class="mark-all-link">Mark all read</a>
+            </div>
+            <div id="notification-list">
+                <div class="notification-empty">Loading notifications...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Contract Action -->
+    <a href="/admin/bookings/contract/add/" class="quick-action-link">
+        <i class="fas fa-file-contract"></i> New Contract
+    </a>
+    
+    <!-- View Enquiries Link -->
+    <a href="/admin/fleet/enquiry/?status__exact=new" class="quick-action-link" style="background: #c5a059;">
+        <i class="fas fa-envelope"></i> New Enquiries
+    </a>
+    
+    <!-- Support Dashboard -->
+    <a href="{% url 'chat:agent_dashboard' %}" class="btn btn-sm btn-success" style="background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none;">
+        <i class="fas fa-headset"></i> Support Dashboard
+    </a>
+    
+    <!-- View Site -->
+    <a href="{% url 'core:home' %}" target="_blank" class="btn btn-sm btn-primary" style="background: #007bff; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none;">
+        <i class="fas fa-external-link-alt"></i> View Site
+    </a>
+</div>
+
+<script>
+// CSRF Token Helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Time ago formatter
+function timeAgo(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + ' minute' + (minutes === 1 ? '' : 's') + ' ago';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+    const days = Math.floor(hours / 24);
+    if (days < 30) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+    const months = Math.floor(days / 30);
+    if (months < 12) return months + ' month' + (months === 1 ? '' : 's') + ' ago';
+    const years = Math.floor(days / 365);
+    return years + ' year' + (years === 1 ? '' : 's') + ' ago';
+}
+
+// HTML escape helper
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Mark a single notification as read
+function markNotificationRead(notificationId, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    fetch(`/admin/api/notifications/${notificationId}/mark-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Reload notifications
+            loadNotifications();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+    
+    return false;
+}
+
+// Mark all notifications as read
+function markAllNotificationsRead() {
+    fetch('/admin/api/notifications/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            loadNotifications();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking all notifications as read:', error);
+    });
+    
+    return false;
+}
+
+// Load notifications from API
+function loadNotifications() {
+    fetch('/admin/api/notifications/')
+        .then(response => response.json())
+        .then(data => {
+            const unreadCount = data.unread_count || 0;
+            const countElement = document.getElementById('notification-count');
+            const notificationList = document.getElementById('notification-list');
+            
+            // Update badge
+            if (countElement) {
+                if (unreadCount > 0) {
+                    countElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    countElement.style.display = 'inline-block';
+                } else {
+                    countElement.style.display = 'none';
+                }
+            }
+            
+            // Update notification list
+            if (!notificationList) return;
+            
+            if (!data.notifications || data.notifications.length === 0) {
+                notificationList.innerHTML = '<div class="notification-empty">No notifications</div>';
+                return;
+            }
+            
+            notificationList.innerHTML = data.notifications.map(notification => {
+                const isUnread = !notification.is_read;
+                const notificationId = notification.id;
+                const timeDisplay = notification.time_ago || timeAgo(notification.created_at);
+                const link = notification.link || '#';
+                
+                return `
+                    <div class="notification-item ${isUnread ? 'unread' : ''}" 
+                         onclick="location.href='${link}'"
+                         data-notification-id="${notificationId}">
+                        <div class="notification-title">
+                            ${escapeHtml(notification.title)}
+                            ${isUnread ? `
+                                <button class="mark-read-btn" 
+                                        onclick="markNotificationRead('${notificationId}', event)"
+                                        title="Mark as read">
+                                    Mark read
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="notification-message">
+                            ${escapeHtml(notification.message.substring(0, 100))}
+                            ${notification.message.length > 100 ? '...' : ''}
+                        </div>
+                        <div class="notification-time">
+                            <i class="far fa-clock" style="margin-right: 3px;"></i>
+                            ${timeDisplay}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            const notificationList = document.getElementById('notification-list');
+            if (notificationList) {
+                notificationList.innerHTML = '<div class="notification-empty">Unable to load notifications</div>';
+            }
+        });
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+});
+
+// Auto-refresh notifications every 30 seconds
+let refreshInterval = setInterval(loadNotifications, 30000);
+
+// Optional: Clear interval on page unload to prevent memory leaks
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+{% endblock %}

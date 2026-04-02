@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Document - {{ document.title }} | FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">Document Signing</h3>
+                    <p class="mb-0 text-white-50">Please review and sign the document below</p>
+                </div>
+                
+                <div class="card-body p-0">
+                    <!-- Document Preview -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">{{ document.title }}</h4>
+                            <span class="badge bg-{{ document.get_status_color }} px-3 py-2">
+                                {{ document.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="text-muted">
+                            <i class="fas fa-calendar-alt me-2"></i>Created: {{ document.created_at|date:"F j, Y" }}
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-clock me-2"></i>Expires: {{ document.expires_at|date:"F j, Y" }}
+                        </p>
+                    </div>
+                    
+                    <!-- Document Content -->
+                    <div class="p-4 border-bottom" style="min-height: 400px; max-height: 500px; overflow-y: auto;">
+                        <div class="document-content">
+                            {% if document.content %}
+                                <div class="bg-light p-4 rounded">
+                                    {{ document.content|safe|linebreaks }}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-file-pdf fa-4x text-muted mb-3"></i>
+                                    <p class="text-muted">Document content will be displayed here</p>
+                                    {% if document.file %}
+                                        <a href="{{ document.file.url }}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="fas fa-download me-2"></i>Download Document
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Signature Section -->
+                    <div class="p-4">
+                        <h5 class="mb-3">Sign Document</h5>
+                        
+                        {% if document.is_signed %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            This document has already been signed by {{ document.user.get_full_name|default:document.user.email }} on {{ document.signed_at|date:"F j, Y H:i" }}.
+                        </div>
+                        {% elif document.is_expired %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                This document has expired and cannot be signed.
+                            </div>
+                        {% else %}
+                            <form method="post" id="signature-form">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" 
+                                               name="full_name" 
+                                               class="form-control" 
+                                               value="{{ user.get_full_name|default:user.email }}"
+                                               required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Title/Position (Optional)</label>
+                                        <input type="text" name="title" class="form-control">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Digital Signature</label>
+                                    <div class="signature-pad-container border rounded p-3" style="background: #f8f9fa;">
+                                        <canvas id="signature-pad" class="signature-pad" width="500" height="200" style="border: 1px solid #dee2e6; background: white; width: 100%; height: auto; touch-action: none;"></canvas>
+                                        <input type="hidden" name="signature_data" id="signature-data">
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-secondary" id="clear-signature">
+                                                <i class="fas fa-eraser me-1"></i>Clear Signature
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="type-signature">
+                                                <i class="fas fa-keyboard me-1"></i>Type Signature
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        Draw your signature in the box above, or click "Type Signature" to enter a typed signature.
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="agree-checkbox" required>
+                                    <label class="form-check-label" for="agree-checkbox">
+                                        I confirm that I have read and understood this document, and I agree to be bound by its terms and conditions.
+                                    </label>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-gavel me-2"></i>
+                                    <strong>Legal Notice:</strong> By signing this document, you acknowledge that this digital signature is legally binding.
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1" id="sign-button" disabled>
+                                        <i class="fas fa-signature me-2"></i>Sign Document
+                                    </button>
+                                    <a href="{% url 'documents:view' document.id %}" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .signature-pad {
+        width: 100%;
+        height: auto;
+        cursor: crosshair;
+        touch-action: none;
+    }
+    .signature-pad-container {
+        cursor: crosshair;
+    }
+    .document-content {
+        font-family: 'Georgia', serif;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize signature pad
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'white',
+            penColor: '#2a5298',
+            minWidth: 1,
+            maxWidth: 2
+        });
+        
+        // Resize canvas to maintain aspect ratio
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+            signaturePad.clear();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Clear signature button
+        document.getElementById('clear-signature').addEventListener('click', function() {
+            signaturePad.clear();
+            document.getElementById('signature-data').value = '';
+            checkSignature();
+        });
+        
+        // Type signature button (show modal with text input)
+        document.getElementById('type-signature').addEventListener('click', function() {
+            const typedName = prompt('Enter your typed signature:', '{{ user.get_full_name|default:user.email }}');
+            if (typedName) {
+                // Draw typed signature on canvas
+                const ctx = canvas.getContext('2d');
+                signaturePad.clear();
+                ctx.font = '24px "Brush Script MT", cursive';
+                ctx.fillStyle = '#2a5298';
+                ctx.fillText(typedName, 20, canvas.height / 2 + 10);
+                document.getElementById('signature-data').value = canvas.toDataURL();
+                checkSignature();
+            }
+        });
+        
+        // Check if signature is drawn
+        function checkSignature() {
+            const signButton = document.getElementById('sign-button');
+            const agreeCheckbox = document.getElementById('agree-checkbox');
+            const hasSignature = !signaturePad.isEmpty();
+            signButton.disabled = !(hasSignature && agreeCheckbox.checked);
+        }
+        
+        // Update signature data on draw
+        signaturePad.addEventListener('endStroke', function() {
+            document.getElementById('signature-data').value = signaturePad.toDataURL();
+            checkSignature();
+        });
+        
+        // Handle checkbox change
+        document.getElementById('agree-checkbox').addEventListener('change', function() {
+            checkSignature();
+        });
+        
+        // Form submission
+        document.getElementById('signature-form').addEventListener('submit', function(e) {
+            if (signaturePad.isEmpty()) {
+                e.preventDefault();
+                alert('Please draw or type your signature before signing.');
+                return false;
+            }
+            
+            // Make sure signature data is set
+            if (!document.getElementById('signature-data').value) {
+                document.getElementById('signature-data').value = signaturePad.toDataURL();
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

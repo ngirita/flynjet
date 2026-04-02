@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports - FlynJet Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'analytics/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Reports</h1>
+        <button class="btn btn-primary" onclick="reportsManager.createReport()">
+            <i class="fas fa-plus me-2"></i>Create Report
+        </button>
+    </div>
+    
+    <!-- Report Templates -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5 class="mb-3">Quick Reports</h5>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h6>Revenue Report</h6>
+                    <p class="text-muted small">Daily, weekly, monthly revenue</p>
+                    <button class="btn btn-sm btn-outline-primary w-100" 
+                            onclick="createQuickReport('revenue')">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                    <h6>Bookings Report</h6>
+                    <p class="text-muted small">Booking volume and value</p>
+                    <button class="btn btn-sm btn-outline-success w-100"
+                            onclick="createQuickReport('bookings')">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h6>Customer Report</h6>
+                    <p class="text-muted small">Customer acquisition and retention</p>
+                    <button class="btn btn-sm btn-outline-info w-100"
+                            onclick="createQuickReport('customer')">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-plane fa-3x text-warning mb-3"></i>
+                    <h6>Fleet Report</h6>
+                    <p class="text-muted small">Fleet utilization and performance</p>
+                    <button class="btn btn-sm btn-outline-warning w-100"
+                            onclick="createQuickReport('fleet')">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saved Reports -->
+    <div class="row">
+        <div class="col-12">
+            <h5 class="mb-3">Saved Reports</h5>
+            <div class="reports-grid" id="reportsList">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Builder Modal -->
+<div class="modal fade" id="reportBuilderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reportBuilderContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'analytics/js/reports.js' %}"></script>
+<script src="{% static 'analytics/js/dashboard.js' %}"></script>
+<script>
+    function createQuickReport(type) {
+        const container = document.getElementById('reportBuilderContainer');
+        container.innerHTML = '';
+        
+        const builder = new ReportBuilder({
+            container: container,
+            reportType: type
+        });
+        
+        const modal = new bootstrap.Modal(document.getElementById('reportBuilderModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

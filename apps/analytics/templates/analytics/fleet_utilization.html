@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fleet Utilization Report - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'analytics/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:reports' %}">Reports</a></li>
+                    <li class="breadcrumb-item active">Fleet Utilization</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2">Fleet Utilization Report</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" onclick="exportReport('csv')">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button class="btn btn-outline-success" onclick="exportReport('excel')">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="exportReport('pdf')">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Aircraft</h6>
+                    <h2 class="card-title mb-0">{{ report.summary.total_aircraft }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Flight Hours</h6>
+                    <h2 class="card-title mb-0">{{ report.summary.total_flight_hours|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Avg Utilization</h6>
+                    <h2 class="card-title mb-0">{{ report.summary.avg_utilization|floatformat:1 }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Period</h6>
+                    <h2 class="card-title mb-0">{{ report.period }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Utilization Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Aircraft Utilization</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="utilizationChart" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fleet Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Aircraft Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Registration</th>
+                                    <th>Model</th>
+                                    <th>Flights</th>
+                                    <th>Flight Hours</th>
+                                    <th>Revenue</th>
+                                    <th>Utilization</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aircraft in report.aircraft %}
+                                <tr>
+                                    <td><strong>{{ aircraft.registration }}</strong></td>
+                                    <td>{{ aircraft.model }}</td>
+                                    <td>{{ aircraft.flights }}</td>
+                                    <td>{{ aircraft.hours|floatformat:1 }}</td>
+                                    <td>${{ aircraft.revenue|floatformat:2|default:"0" }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if aircraft.utilization > 70 %}bg-success{% elif aircraft.utilization > 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ aircraft.utilization }}%;"
+                                                 aria-valuenow="{{ aircraft.utilization }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ aircraft.utilization|floatformat:1 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if aircraft.utilization > 70 %}
+                                        <span class="badge bg-success">High</span>
+                                        {% elif aircraft.utilization > 40 %}
+                                        <span class="badge bg-warning">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Low</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Utilization chart
+    const ctx = document.getElementById('utilizationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ report.aircraft|map(attribute='registration')|list|safe }},
+            datasets: [{
+                label: 'Utilization %',
+                data: {{ report.aircraft|map(attribute='utilization')|list|safe }},
+                backgroundColor: {{ report.aircraft|map(attribute='utilization')|map('utilizationColor')|list|safe }},
+                borderColor: 'transparent',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Utilization %'
+                    }
+                }
+            }
+        }
+    });
+    
+    function exportReport(format) {
+        window.location.href = `/api/v1/analytics/reports/export/?type=fleet&format=${format}`;
+    }
+</script>
+
+<script>
+    // Helper filter for chart colors
+    window.utilizationColor = function(utilization) {
+        if (utilization > 70) return '#28a745';
+        if (utilization > 40) return '#ffc107';
+        return '#dc3545';
+    };
+</script>
+{% endblock %}

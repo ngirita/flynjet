@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request My Data - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Request My Data</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Under data protection laws, you have the right to request a copy of all personal data
+                        we hold about you.
+                    </p>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-download fa-3x text-primary mb-3"></i>
+                                    <h6>Export My Data</h6>
+                                    <p class="small text-muted">
+                                        Receive a JSON file containing all your personal data
+                                    </p>
+                                    <a href="{% url 'compliance:data_export' %}" class="btn btn-primary">
+                                        Request Export
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-trash fa-3x text-danger mb-3"></i>
+                                    <h6>Delete My Account</h6>
+                                    <p class="small text-muted">
+                                        Permanently delete your account and all associated data
+                                    </p>
+                                    <a href="{% url 'compliance:account_deletion' %}" class="btn btn-danger"
+                                       onclick="return confirm('Are you sure? This action cannot be undone.')">
+                                        Request Deletion
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock me-2"></i>
+                        Please allow up to 30 days for processing. You will be notified when your data is ready.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

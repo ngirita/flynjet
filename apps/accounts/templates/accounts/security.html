@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Security Settings - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        {% if user.profile.profile_image %}
+                            <img src="{{ user.profile.profile_image.url }}" class="rounded-circle" width="80" height="80" alt="{{ user.get_full_name }}">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                        {% endif %}
+                        <h5 class="mt-3">{{ user.get_full_name }}</h5>
+                        <p class="text-muted small">{{ user.email }}</p>
+                    </div>
+                    <hr>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                        <a href="{% url 'accounts:edit_profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-edit me-2"></i> Edit Profile
+                        </a>
+                        <a href="{% url 'accounts:security_settings' %}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-shield-alt me-2"></i> Security
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Password Change Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Current Password</label>
+                                {{ password_form.old_password }}
+                                {% if password_form.old_password.errors %}
+                                    <div class="text-danger small">{{ password_form.old_password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">New Password</label>
+                                {{ password_form.new_password1 }}
+                                {% if password_form.new_password1.errors %}
+                                    <div class="text-danger small">{{ password_form.new_password1.errors.0 }}</div>
+                                {% endif %}
+                                <div class="small text-muted mt-1">
+                                    Password must be at least 12 characters with uppercase, lowercase, number, and special character.
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Confirm New Password</label>
+                                {{ password_form.new_password2 }}
+                                {% if password_form.new_password2.errors %}
+                                    <div class="text-danger small">{{ password_form.new_password2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" name="change_password" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Change Password
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Two-Factor Authentication Section -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-mobile-alt me-2"></i>Two-Factor Authentication (2FA)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if security_settings.two_factor_enabled %}
+                        <!-- 2FA ENABLED STATE -->
+                        <div class="alert alert-success mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Two-factor authentication is enabled</strong> for your account.
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold">What this means:</h6>
+                            <p class="text-muted">When you log in, you'll need to enter a verification code from your authenticator app in addition to your password.</p>
+                        </div>
+                        
+                        <form method="post" class="mt-3">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Enter 2FA code to disable</label>
+                                    {{ two_factor_form.code }}
+                                    <small class="text-muted">Enter the current 6-digit code from your authenticator app</small>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <button type="submit" name="disable_2fa" class="btn btn-danger" onclick="return confirm('Are you sure you want to disable two-factor authentication? This will make your account less secure.');">
+                                        <i class="fas fa-times me-2"></i>Disable 2FA
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                    {% elif setup_mode %}
+                        <!-- 2FA SETUP MODE - QR CODE AND BACKUP CODES -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Setting up Two-Factor Authentication</strong> - Follow the steps below to secure your account.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Step 1: Install an authenticator app</h6>
+                                <p>Download one of these apps on your phone:</p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fab fa-google me-2"></i> <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank">Google Authenticator</a> (Android/iOS)</li>
+                                    <li><i class="fas fa-shield-alt me-2"></i> <a href="https://authy.com/download/" target="_blank">Authy</a> (Multi-platform)</li>
+                                    <li><i class="fab fa-microsoft me-2"></i> <a href="https://www.microsoft.com/en-us/security/mobile-authenticator-app" target="_blank">Microsoft Authenticator</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Step 2: Scan the QR code</h6>
+                                <p>Open your authenticator app and scan this QR code:</p>
+                                {% if qr_code %}
+                                <div class="text-center my-3">
+                                    <img src="{{ qr_code }}" alt="QR Code" class="img-fluid border p-3 rounded" style="max-width: 200px; background: white;">
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning">QR code not available. Please try refreshing the page.</div>
+                                {% endif %}
+                                <p class="small text-muted">Can't scan? You can manually enter this code: <code class="bg-light p-1">{{ security_settings.two_factor_secret }}</code></p>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="alert alert-warning mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important: Save these backup codes!</strong>
+                            <p class="mb-2 mt-2">Backup codes allow you to access your account if you lose your phone or can't use your authenticator app. <strong>Each code can only be used once.</strong></p>
+                            
+                            <div class="bg-dark text-white p-3 rounded mb-3" style="font-family: monospace; font-size: 14px;">
+                                {% for code in backup_codes %}
+                                    <div class="mb-1">{{ code }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="copyBackupCodes()">
+                                        <i class="fas fa-copy me-1"></i> Copy Codes
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="printBackupCodes()">
+                                        <i class="fas fa-print me-1"></i> Print Codes
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="small mt-3 mb-0 text-dark">
+                                <i class="fas fa-check-circle text-success"></i> Store these codes in a safe place (password manager, printed copy, etc.)
+                            </p>
+                        </div>
+                        
+                        <h6 class="mb-3">Step 3: Verify and enable 2FA</h6>
+                        <p class="text-muted mb-3">Enter the 6-digit code from your authenticator app to verify setup and enable 2FA.</p>
+                        
+                        <form method="post" class="mt-3">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">6-digit verification code</label>
+                                    {{ two_factor_form.code }}
+                                    <small class="text-muted">Enter the code currently showing in your authenticator app</small>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end gap-2">
+                                    <button type="submit" name="enable_2fa" class="btn btn-success">
+                                        <i class="fas fa-check me-2"></i>Verify & Enable 2FA
+                                    </button>
+                                    <button type="submit" name="cancel_setup" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                    {% else %}
+                        <!-- 2FA DISABLED STATE - SHOW SETUP BUTTON -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Two-factor authentication adds an extra layer of security</strong> to your account. When enabled, you'll need both your password and a code from your phone to log in.
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Benefits of 2FA:</h6>
+                            <ul class="text-muted">
+                                <li>Protects your account even if your password is stolen</li>
+                                <li>Prevents unauthorized access from unknown devices</li>
+                                <li>Meets security best practices for account protection</li>
+                            </ul>
+                        </div>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="setup_2fa" class="btn btn-primary btn-lg">
+                                <i class="fas fa-mobile-alt me-2"></i>Set Up Two-Factor Authentication
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyBackupCodes() {
+    const codes = document.querySelectorAll('.bg-dark .mb-1');
+    let codeText = '';
+    codes.forEach(code => {
+        codeText += code.innerText + '\n';
+    });
+    
+    navigator.clipboard.writeText(codeText).then(() => {
+        alert('Backup codes copied to clipboard! Store them in a safe place.');
+    }).catch(() => {
+        alert('Unable to copy. Please copy the codes manually.');
+    });
+}
+
+function printBackupCodes() {
+    const codes = document.querySelectorAll('.bg-dark .mb-1');
+    let printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>FlynJet 2FA Backup Codes</title>
+            <style>
+                body { font-family: monospace; padding: 40px; }
+                h1 { font-size: 18px; }
+                .codes { font-size: 16px; margin-top: 20px; }
+                .warning { color: #856404; background: #fff3cd; padding: 10px; margin-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <h1>FlynJet Two-Factor Authentication Backup Codes</h1>
+            <p>Keep this page safe. Each code can be used only once.</p>
+            <div class="codes">
+    `);
+    
+    codes.forEach(code => {
+        printWindow.document.write(`<div>${code.innerText}</div>`);
+    });
+    
+    printWindow.document.write(`
+            </div>
+            <div class="warning">
+                <strong>⚠️ Important:</strong> Store these codes in a safe place. 
+                If you lose your phone and these codes, you may lose access to your account.
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
+
+<style>
+    .list-group-item.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 12px;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    body.dark-mode .form-control {
+        background-color: #252525;
+        border-color: #333;
+        color: white;
+    }
+    
+    .bg-dark {
+        background-color: #1a1a1a !important;
+    }
+    
+    .bg-dark code {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}

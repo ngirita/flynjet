@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Details - {{ booking.booking_reference }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'bookings:list' %}">My Bookings</a></li>
+                    <li class="breadcrumb-item active">{{ booking.booking_reference }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Flight Details Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Flight Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">From</h6>
+                            {% if departure_airport %}
+                                <h3 class="mb-0">{{ departure_airport.city }}</h3>
+                                <p class="text-muted">{{ departure_airport.name }} ({{ departure_airport.iata_code }})</p>
+                                <p class="text-muted small">{{ departure_airport.country }}</p>
+                            {% else %}
+                                <h3 class="mb-0">{{ booking.departure_airport }}</h3>
+                            {% endif %}
+                            <p class="mt-2 mb-0">Departs at: <strong>{{ booking.departure_datetime|date:"l, F j, Y" }}</strong></p>
+                            <p class="mb-0">Time: <strong>{{ booking.departure_datetime|date:"g:i A" }}</strong></p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6 class="text-muted">To</h6>
+                            {% if arrival_airport %}
+                                <h3 class="mb-0">{{ arrival_airport.city }}</h3>
+                                <p class="text-muted">{{ arrival_airport.name }} ({{ arrival_airport.iata_code }})</p>
+                                <p class="text-muted small">{{ arrival_airport.country }}</p>
+                            {% else %}
+                                <h3 class="mb-0">{{ booking.arrival_airport }}</h3>
+                            {% endif %}
+                            <p class="mt-2 mb-0">Arrives at: <strong>{{ booking.arrival_datetime|date:"l, F j, Y" }}</strong></p>
+                            <p class="mb-0">Time: <strong>{{ booking.arrival_datetime|date:"g:i A" }}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p class="mb-0"><strong>Aircraft:</strong></p>
+                            <p>{{ booking.aircraft.manufacturer.name }} {{ booking.aircraft.model }}</p>
+                            {% if booking.aircraft.registration_number %}
+                                <p class="small text-muted">Reg: {{ booking.aircraft.registration_number }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-0"><strong>Passengers:</strong></p>
+                            <p>{{ booking.passenger_count }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-0"><strong>Flight Duration:</strong></p>
+                            <p>{{ booking.flight_duration_hours|floatformat:1 }} hours</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Route Map (optional) -->
+                    <div class="mt-3">
+                        <div class="alert alert-light border">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-center flex-grow-1">
+                                    <i class="fas fa-plane-departure fa-2x text-primary"></i>
+                                    <div class="small mt-1">
+                                        {% if departure_airport %}{{ departure_airport.iata_code }}{% else %}{{ booking.departure_airport }}{% endif %}
+                                    </div>
+                                </div>
+                                <div class="text-center flex-grow-1">
+                                    <i class="fas fa-arrow-right fa-2x text-muted"></i>
+                                    <div class="small">{{ booking.flight_duration_hours|floatformat:1 }} hrs</div>
+                                </div>
+                                <div class="text-center flex-grow-1">
+                                    <i class="fas fa-plane-arrival fa-2x text-success"></i>
+                                    <div class="small mt-1">
+                                        {% if arrival_airport %}{{ arrival_airport.iata_code }}{% else %}{{ booking.arrival_airport }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Passenger Details -->
+            {% if booking.passenger_details.all %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Passenger Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                 <tr>
+                                    <th>Name</th>
+                                    <th>Passport Number</th>
+                                    <th>Nationality</th>
+                                    <th>Special Requests</th>
+                                 </tr>
+                            </thead>
+                            <tbody>
+                                {% for passenger in booking.passenger_details.all %}
+                                <tr>
+                                    <td>
+                                        {{ passenger.title|default:"" }} {{ passenger.first_name }} {{ passenger.last_name }}
+                                    </td>
+                                    <td>{{ passenger.passport_number }}</td>
+                                    <td>{{ passenger.nationality }}</td>
+                                    <td>
+                                        {% if passenger.dietary_requirements %}
+                                            <span class="badge bg-info">Dietary</span>
+                                        {% endif %}
+                                        {% if passenger.medical_requirements %}
+                                            <span class="badge bg-warning">Medical</span>
+                                        {% endif %}
+                                        {% if passenger.special_assistance %}
+                                            <span class="badge bg-danger">Special Assistance</span>
+                                        {% endif %}
+                                        {% if not passenger.dietary_requirements and not passenger.medical_requirements and not passenger.special_assistance %}
+                                            None
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Booking History Timeline -->
+            {% if booking.history.all %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Booking Timeline
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="timeline">
+                        {% for history in booking.history.all %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker 
+                                    {% if history.new_status == 'confirmed' %}bg-success
+                                    {% elif history.new_status == 'paid' %}bg-primary
+                                    {% elif history.new_status == 'cancelled' %}bg-danger
+                                    {% elif history.new_status == 'completed' %}bg-secondary
+                                    {% elif history.new_status == 'in_progress' %}bg-info
+                                    {% else %}bg-warning{% endif %}">
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <strong>
+                                                {% if history.old_status %}
+                                                    {{ history.old_status|title }} → {{ history.new_status|title }}
+                                                {% else %}
+                                                    {{ history.new_status|title }}
+                                                {% endif %}
+                                            </strong>
+                                            {% if history.reason %}
+                                                <p class="mb-0 small text-muted mt-1">
+                                                    <i class="fas fa-info-circle me-1"></i>{{ history.reason }}
+                                                </p>
+                                            {% endif %}
+                                            {% if history.changed_by %}
+                                                <small class="text-muted d-block mt-1">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    {% if history.changed_by == request.user %}
+                                                        You
+                                                    {% else %}
+                                                        {{ history.changed_by.get_full_name|default:history.changed_by.email }}
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted ms-3">
+                                            <i class="fas fa-clock me-1"></i>{{ history.created_at|date:"M j, Y H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Status Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Booking Status</h5>
+                </div>
+                <div class="card-body text-center">
+                    <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'paid' %}success{% elif booking.status == 'in_progress' %}info{% elif booking.status == 'completed' %}secondary{% elif booking.status == 'cancelled' %}danger{% else %}warning{% endif %} p-2 mb-3" style="font-size: 16px;">
+                        {{ booking.get_status_display }}
+                    </span>
+                    <p class="small text-muted">Booking Reference: <strong>{{ booking.booking_reference }}</strong></p>
+                    
+                    <!-- Countdown to departure (if applicable) -->
+                    {% if booking.departure_datetime > now and booking.status != 'cancelled' %}
+                        <div class="alert alert-info py-2 mb-3">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            <strong>Departure in:</strong>
+                            <div id="countdown" class="small mt-1"></div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if booking.status == 'confirmed' or booking.status == 'paid' %}
+                    <a href="{% url 'tracking:flight_track' booking.id %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>Track Flight
+                    </a>
+                    {% endif %}
+                    
+                    {% if booking.status == 'draft' %}
+                    <a href="{% url 'bookings:update' booking.id %}" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-edit me-2"></i>Edit Booking
+                    </a>
+                    <a href="{% url 'bookings:cancel' booking.id %}" class="btn btn-outline-danger w-100">
+                        <i class="fas fa-times me-2"></i>Cancel Booking
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Payment Card - FIXED VERSION -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Base Price:</span>
+                        <span>${{ booking.base_price_usd|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Fuel Surcharge:</span>
+                        <span>${{ booking.fuel_surcharge_usd|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Handling Fee:</span>
+                        <span>${{ booking.handling_fee_usd|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Catering:</span>
+                        <span>${{ booking.catering_cost_usd|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Insurance:</span>
+                        <span>${{ booking.insurance_cost_usd|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax (10%):</span>
+                        <span>${{ booking.tax_amount_usd|floatformat:2 }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong>Total:</strong>
+                        <strong>${{ booking.total_amount_usd|floatformat:2 }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Paid:</span>
+                        <span class="text-success">${{ booking.amount_paid|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Due:</span>
+                        <span class="text-danger">${{ booking.amount_due|floatformat:2 }}</span>
+                    </div>
+                    
+                    <!-- FIXED: Check payment_status instead of booking.status -->
+                    {% if booking.payment_status == 'pending' and booking.amount_due > 0 %}
+                    <div class="mt-3">
+                        <a href="{% url 'bookings:review' booking.id %}" class="btn btn-success w-100">
+                            <i class="fas fa-credit-card me-2"></i>Make Payment
+                        </a>
+                    </div>
+                    {% elif booking.payment_status == 'partial' %}
+                    <div class="mt-3">
+                        <div class="alert alert-info text-center mb-2">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            <strong>Partial Payment Made</strong><br>
+                            Amount paid: ${{ booking.amount_paid|floatformat:2 }}<br>
+                            Remaining: ${{ booking.amount_due|floatformat:2 }}
+                        </div>
+                        <a href="{% url 'bookings:review' booking.id %}" class="btn btn-warning w-100">
+                            <i class="fas fa-credit-card me-2"></i>Pay Remaining ${{ booking.amount_due|floatformat:2 }}
+                        </a>
+                    </div>
+                    {% elif booking.payment_status == 'paid' %}
+                    <div class="mt-3">
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Paid in Full</strong><br>
+                            Thank you for your payment!
+                        </div>
+                    </div>
+                    {% elif booking.payment_status == 'overdue' %}
+                    <div class="mt-3">
+                        <div class="alert alert-danger text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Payment Overdue</strong><br>
+                            Please contact support.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions Card - FIXED VERSION -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Check payment_status instead of booking.status -->
+                    {% if booking.payment_status == 'paid' or booking.status == 'confirmed' %}
+                        <!-- Download buttons for paid/confirmed bookings -->
+                        <a href="{% url 'documents:generate' booking.id 'invoice' %}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-file-invoice me-2"></i>Download Invoice
+                        </a>
+                        <a href="{% url 'documents:generate' booking.id 'ticket' %}" class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-ticket-alt me-2"></i>Download Ticket
+                        </a>
+                        
+                        <!-- Refund Request Button - Only show if departure is in future and amount paid > 0 -->
+                        {% if booking.departure_datetime > now and booking.amount_paid > 0 %}
+                        <a href="{% url 'payments:refund_request' booking.id %}" class="btn btn-outline-danger w-100 mt-2">
+                            <i class="fas fa-money-bill-wave me-2"></i>Request Refund
+                        </a>
+                        {% endif %}
+
+                        <!-- Dispute Button -->
+                        <a href="{% url 'disputes:create' booking.id %}" class="btn btn-outline-warning w-100 mt-2">
+                            <i class="fas fa-gavel me-2"></i>File a Dispute
+                        </a>
+                        
+                    {% elif booking.payment_status == 'pending' %}
+                        <div class="alert alert-info text-center mb-2">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Payment Required</strong><br>
+                            Invoice and ticket will be available after successful payment.
+                        </div>
+                        <a href="{% url 'bookings:review' booking.id %}" class="btn btn-success w-100">
+                            <i class="fas fa-credit-card me-2"></i>Complete Payment
+                        </a>
+                    {% else %}
+                        <div class="alert alert-secondary text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Documents will be available once payment is confirmed.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- Disputes Section -->
+{% if booking.disputes.exists %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-gavel me-2"></i>Disputes</h5>
+            </div>
+            <div class="card-body">
+                {% for dispute in booking.disputes.all %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <strong>{{ dispute.dispute_number }}</strong>
+                        <span class="text-muted ms-2">{{ dispute.get_dispute_type_display }}</span>
+                        <br>
+                        <small class="text-muted">Filed {{ dispute.filed_at|date:"M d, Y" }} · ${{ dispute.disputed_amount }}</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-{% if dispute.status == 'resolved' %}success{% elif dispute.status == 'pending' %}warning{% elif dispute.status == 'investigating' %}info{% elif dispute.status == 'escalated' %}danger{% else %}secondary{% endif %}">
+                            {{ dispute.get_status_display }}
+                        </span>
+                        <a href="{% url 'disputes:detail' dispute.id %}" class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 12px;
+    bottom: -8px;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item:last-child:before {
+    display: none;
+}
+
+.timeline-content {
+    padding-left: 10px;
+}
+
+/* Countdown styling */
+#countdown {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+</style>
+
+<script>
+// Countdown timer for departure
+{% if booking.departure_datetime > now and booking.status != 'cancelled' %}
+function updateCountdown() {
+    const departure = new Date('{{ booking.departure_datetime|date:"Y-m-d H:i:s" }}').getTime();
+    const now = new Date().getTime();
+    const distance = departure - now;
+    
+    if (distance < 0) {
+        document.getElementById('countdown').innerHTML = 'Departure time passed';
+        return;
+    }
+    
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    let countdownText = '';
+    if (days > 0) countdownText += days + 'd ';
+    countdownText += hours + 'h ' + minutes + 'm ' + seconds + 's';
+    
+    document.getElementById('countdown').innerHTML = countdownText;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .payment-form {
+        max-width: 600px;
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .booking-list {
+        margin: 20px 0;
+        padding: 15px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .booking-list ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    .booking-list li {
+        margin: 5px 0;
+    }
+    .total-amount {
+        font-weight: bold;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Record Partial Payment</h1>
+
+<div class="booking-list">
+    <h3>Selected Bookings:</h3>
+    <ul>
+    {% for booking in bookings %}
+        <li>
+            <strong>{{ booking.booking_reference }}</strong> - 
+            Total: ${{ booking.total_amount_usd|floatformat:2 }} | 
+            Paid: ${{ booking.amount_paid|floatformat:2 }} | 
+            Due: ${{ booking.amount_due|floatformat:2 }}
+        </li>
+    {% endfor %}
+    </ul>
+    <p class="total-amount">
+        Total Amount for all bookings: ${{ bookings|length|add:0 }}
+        {# This is just a placeholder - you might want to sum the amounts #}
+    </p>
+</div>
+
+<div class="payment-form">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <label for="amount_paid">Payment Amount (USD):</label>
+            <input type="number" 
+                   name="amount_paid" 
+                   id="amount_paid" 
+                   step="0.01" 
+                   min="0" 
+                   required 
+                   style="width: 200px; padding: 5px; margin: 10px 0;">
+        </div>
+        
+        <div class="form-row">
+            <p><strong>Note:</strong> This amount will be applied to all selected bookings. 
+            If the amount exceeds the total due, the excess will be applied to the next booking.</p>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Record Payment" class="default" style="background: #28a745;">
+            <a href="{% url 'admin:bookings_booking_changelist' %}" class="button cancel-link">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

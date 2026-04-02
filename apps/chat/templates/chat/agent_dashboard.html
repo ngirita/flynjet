@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Dashboard - FlynJet Support{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'chat/css/agent.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="agent-container">
+    <!-- Sidebar -->
+    <div class="agent-sidebar">
+        <div class="agent-sidebar-header">
+            <h5>Support Queue</h5>
+            <div class="agent-status">
+                <span>Status:</span>
+                <span id="statusToggle" class="status-toggle online" onclick="agentDashboard.updateStatus('away')">
+                    Online
+                </span>
+            </div>
+        </div>
+        
+        <div class="queue-list" id="queueList">
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="agent-main">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <h5 id="currentCustomer">Select a conversation</h5>
+                <p id="currentSubject"></p>
+            </div>
+            <div class="chat-header-actions">
+                <button class="resolve" onclick="agentDashboard.resolveConversation()">
+                    <i class="fas fa-check me-2"></i>Resolve
+                </button>
+                <button onclick="agentDashboard.transferConversation()">
+                    <i class="fas fa-exchange-alt me-2"></i>Transfer
+                </button>
+                <button onclick="agentDashboard.sendTranscript()">
+                    <i class="fas fa-envelope me-2"></i>Transcript
+                </button>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will appear here -->
+        </div>
+        
+        <div class="quick-responses">
+            <h6>Quick Responses</h6>
+            <div class="response-tags" id="quickResponses">
+                <!-- Quick responses will be populated by JS -->
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="agentMessageInput" placeholder="Type your message..."
+                       onkeypress="handleAgentKeyPress(event)">
+                <button onclick="agentDashboard.sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Panel -->
+    <div class="agent-info-panel">
+        <div class="customer-info">
+            <h6>Customer Info</h6>
+            <div id="customerInfo">
+                <p class="text-muted">Select a conversation to view customer details</p>
+            </div>
+        </div>
+        
+        <div class="conversation-info">
+            <h6>Booking Info</h6>
+            <div id="bookingInfo">
+                <p class="text-muted">No booking information available</p>
+            </div>
+        </div>
+        
+        <div class="notes">
+            <h6>Private Notes</h6>
+            <textarea id="privateNotes" rows="4" placeholder="Add private notes about this conversation..."></textarea>
+            <button class="save-notes" onclick="saveNotes()">
+                <i class="fas fa-save me-2"></i>Save Notes
+            </button>
+        </div>
+        
+        <div class="transcript-actions">
+            <button onclick="agentDashboard.sendTranscript()">
+                <i class="fas fa-envelope"></i> Email
+            </button>
+            <button onclick="agentDashboard.downloadTranscript()">
+                <i class="fas fa-download"></i> Download
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'chat/js/agent.js' %}"></script>
+<script>
+    const agentDashboard = new AgentDashboard({
+        wsUrl: 'ws://{{ request.get_host }}/ws/agent/',
+        agentId: '{{ user.id }}',
+        agentName: '{{ user.get_full_name|default:user.email }}'
+    });
+    
+    function handleAgentKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            agentDashboard.sendMessage();
+        }
+    }
+    
+    function saveNotes() {
+        const notes = document.getElementById('privateNotes').value;
+        // Save notes via API
+        fetch('/api/v1/chat/conversations/' + agentDashboard.currentConversation + '/notes/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ notes: notes })
+        });
+    }
+</script>
+{% endblock %}

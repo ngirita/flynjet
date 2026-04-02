@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Special Offers - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'marketing/css/campaigns.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold">Special Offers</h1>
+            <p class="lead text-muted">Exclusive deals and promotions for our valued customers</p>
+        </div>
+    </div>
+    
+    <!-- Active Promotions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Active Promotions</h2>
+        </div>
+        
+        {% for promotion in promotions %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-{{ promotion.promotion_type }}">NEW</span>
+                        <small class="text-muted">Ends {{ promotion.end_date|date:"M d" }}</small>
+                    </div>
+                    
+                    <h5 class="card-title">{{ promotion.name }}</h5>
+                    <p class="card-text text-muted">{{ promotion.description }}</p>
+                    
+                    <div class="promo-value my-3">
+                        {% if promotion.discount_percentage %}
+                        <span class="display-6 text-primary">{{ promotion.discount_percentage }}% OFF</span>
+                        {% elif promotion.discount_amount %}
+                        <span class="display-6 text-primary">${{ promotion.discount_amount }} OFF</span>
+                        {% elif promotion.bonus_points %}
+                        <span class="display-6 text-primary">+{{ promotion.bonus_points }} POINTS</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="promo-code bg-light p-3 text-center rounded mb-3">
+                        <strong>Code:</strong> {{ promotion.promotion_code }}
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                    <button class="btn btn-primary w-100" onclick="applyPromo('{{ promotion.promotion_code }}')">
+                        Apply to Booking
+                    </button>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'bookings:create' %}" class="btn btn-outline-primary w-100">
+                        Login to Apply
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-tag fa-3x text-muted mb-3"></i>
+            <h3>No Active Promotions</h3>
+            <p class="text-muted">Check back soon for new offers!</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Terms & Conditions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Terms & Conditions</h5>
+                    <ul class="text-muted small">
+                        <li>Promotions cannot be combined with other offers</li>
+                        <li>Valid for new bookings only</li>
+                        <li>Subject to availability</li>
+                        <li>FlynJet reserves the right to modify or cancel promotions at any time</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function applyPromo(code) {
+    // Store in session or redirect to booking with promo
+    window.location.href = "{% url 'bookings:create' %}?promo=" + code;
+}
+</script>
+{% endblock %}

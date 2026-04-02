@@ -1,0 +1,396 @@
+{% load math_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ contract.invoice_number }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: "FLY N'JET AIR AND LOGISTICS";
+                font-size: 10pt;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #c5a059;
+            padding-bottom: 15px;
+        }
+
+        .logo { max-height: 80px; margin-bottom: 10px; }
+
+        .company-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #c5a059;
+            letter-spacing: 2px;
+        }
+
+        .company-details { font-size: 9pt; color: #666; margin-top: 5px; }
+
+        .invoice-title {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 20px 0 5px 0;
+            color: #1a1a2e;
+        }
+
+        .invoice-subtitle {
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .payment-link-box {
+            background: linear-gradient(135deg, #c5a059 0%, #a8893a 100%);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .payment-link-box .pay-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .payment-link-box .pay-amount {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .payment-link-box a {
+            color: white;
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .payment-link-box .expiry {
+            font-size: 9pt;
+            margin-top: 8px;
+            opacity: 0.85;
+        }
+
+        .info-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #c5a059;
+        }
+
+        .info-row { display: flex; margin: 5px 0; }
+        .info-label { width: 160px; font-weight: bold; color: #555; }
+        .info-value { flex: 1; }
+
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #c5a059; color: white; font-weight: bold; }
+
+        .line-items td { padding: 10px; }
+
+        .total-row { font-weight: bold; background-color: #f0f0f0; }
+
+        .grand-total-row {
+            font-weight: bold;
+            font-size: 12pt;
+            background-color: #1a1a2e;
+            color: white;
+        }
+
+        .grand-total-row td { color: white; border-color: #1a1a2e; }
+
+        .payment-methods {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .payment-method-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid #c5a059;
+            background: white;
+        }
+
+        .payment-method-title {
+            font-weight: bold;
+            font-size: 11pt;
+            color: #c5a059;
+            margin-bottom: 8px;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 9pt;
+            background: #f0f0f0;
+            padding: 5px;
+            word-break: break-all;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 8pt;
+            text-align: center;
+            color: #999;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #c5a059;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 9pt;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        {% if company_logo %}
+        <img src="{{ company_logo }}" class="logo" alt="Logo">
+        {% endif %}
+        <div class="company-name">FLY N'JET AIR AND LOGISTICS</div>
+        <div class="company-details">
+            {% for contact in company_contacts %}
+                {% if contact.contact_type == 'phone' %}
+                    Tel: {{ contact.value }} |
+                {% elif contact.contact_type == 'email' %}
+                    Email: {{ contact.value }}
+                {% endif %}
+            {% endfor %}
+            Nairobi, Kenya<br>
+            Jomo Kenyatta International Airport, North Road, Embakasi
+        </div>
+    </div>
+
+    <div class="invoice-title">INVOICE</div>
+    <div class="invoice-subtitle">
+        Invoice No: <strong>{{ contract.invoice_number }}</strong> &nbsp;|&nbsp;
+        Contract Ref: {{ contract.contract_number }} &nbsp;|&nbsp;
+        Date: {{ contract.invoice_date|date:"F j, Y"|default:contract.created_at|date:"F j, Y" }}
+    </div>
+
+    <div class="payment-link-box">
+        <div class="pay-title">CLICK BELOW TO PAY</div>
+        <div class="pay-amount">${{ contract.total_amount_usd|floatformat:2 }} USD</div>
+        <div>
+            <a href="{{ contract.payment_link }}">{{ contract.payment_link }}</a>
+        </div>
+        <div class="expiry">
+            Payment link valid until: {{ contract.payment_link_expiry|date:"F j, Y H:i" }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; margin: 15px 0;">
+        <div style="flex: 1;">
+            <div class="info-section">
+                <strong>BILL TO:</strong><br>
+                {{ contract.client_name }}<br>
+                {{ contract.client_email }}<br>
+                {{ contract.client_phone }}
+            </div>
+        </div>
+        <div style="flex: 1;">
+            <div class="info-section">
+                <div class="info-row">
+                    <div class="info-label">Invoice No:</div>
+                    <div class="info-value">{{ contract.invoice_number }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Invoice Date:</div>
+                    <div class="info-value">{{ contract.invoice_date|date:"F j, Y"|default:contract.created_at|date:"F j, Y" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Due Date:</div>
+                    <div class="info-value">{{ contract.invoice_due_date|date:"F j, Y"|default:contract.valid_until|date:"F j, Y" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Contract Ref:</div>
+                    <div class="info-value">{{ contract.contract_number }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Service:</div>
+            <div class="info-value">Private Air Charter</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Aircraft:</div>
+            <div class="info-value">{{ contract.aircraft.manufacturer.name }} {{ contract.aircraft.model }} ({{ contract.aircraft.registration_number }})</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Route:</div>
+            <div class="info-value">{{ contract.departure_airport }} → {{ contract.arrival_airport }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Departure:</div>
+            <div class="info-value">{{ contract.departure_datetime|date:"l, F j, Y \a\t g:i A" }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Passengers:</div>
+            <div class="info-value">{{ contract.passenger_count }}</div>
+        </div>
+    </div>
+
+    <h3>INVOICE BREAKDOWN</h3>
+    <table class="line-items">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th style="width: 150px; text-align: right;">Amount (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if contract.invoice_line_items %}
+                {% for item in contract.invoice_line_items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td style="text-align: right;">${{ item.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td>Base Charter Fee ({{ contract.aircraft.model }})</td>
+                    <td style="text-align: right;">${{ contract.base_price_usd|floatformat:2 }}</td>
+                </tr>
+                {% if contract.fuel_surcharge_usd %}
+                <tr>
+                    <td>Fuel Surcharge</td>
+                    <td style="text-align: right;">${{ contract.fuel_surcharge_usd|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% if contract.handling_fee_usd %}
+                <tr>
+                    <td>Handling Fee</td>
+                    <td style="text-align: right;">${{ contract.handling_fee_usd|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% if contract.catering_cost_usd %}
+                <tr>
+                    <td>Catering</td>
+                    <td style="text-align: right;">${{ contract.catering_cost_usd|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% if contract.insurance_cost_usd %}
+                <tr>
+                    <td>Insurance</td>
+                    <td style="text-align: right;">${{ contract.insurance_cost_usd|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+            {% endif %}
+
+            {% if contract.discount_amount_usd %}
+            <tr>
+                <td><em>Discount</em></td>
+                <td style="text-align: right;"><em>-${{ contract.discount_amount_usd|floatformat:2 }}</em></td>
+            </tr>
+            {% endif %}
+
+            <tr class="total-row">
+                <td>Subtotal</td>
+                <td style="text-align: right;">${{ contract.base_price_usd|add:contract.fuel_surcharge_usd|add:contract.handling_fee_usd|add:contract.catering_cost_usd|add:contract.insurance_cost_usd|floatformat:2 }}</td>
+            </tr>
+
+            <tr>
+                <td>Tax ({{ contract.tax_rate }}%)</td>
+                <td style="text-align: right;">
+                    ${{ contract.total_amount_usd|subtract:contract.base_price_usd|subtract:contract.fuel_surcharge_usd|subtract:contract.handling_fee_usd|subtract:contract.catering_cost_usd|subtract:contract.insurance_cost_usd|add:contract.discount_amount_usd|floatformat:2 }}
+                </td>
+            </tr>
+
+            <tr class="grand-total-row">
+                <td><strong>TOTAL AMOUNT DUE</strong></td>
+                <td style="text-align: right;"><strong>${{ contract.total_amount_usd|floatformat:2 }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% if contract.invoice_notes %}
+    <div class="info-section">
+        <strong>Notes:</strong><br>
+        {{ contract.invoice_notes }}
+    </div>
+    {% endif %}
+
+    <h3>PAYMENT METHODS</h3>
+    <div class="payment-methods">
+        <p><strong>1. Online Payment (Recommended):</strong><br>
+        Click the payment link at the top of this invoice: <a href="{{ contract.payment_link }}">{{ contract.payment_link }}</a></p>
+
+        {% if crypto_wallets %}
+        <p><strong>2. Cryptocurrency Payment:</strong></p>
+        {% for wallet in crypto_wallets %}
+        <div class="payment-method-item">
+            <div class="payment-method-title">{{ wallet.get_crypto_type_display }} ({{ wallet.get_network_display }})</div>
+            <div class="wallet-address">{{ wallet.wallet_address }}</div>
+            {% if wallet.min_deposit > 0 %}
+            <small>Minimum deposit: {{ wallet.min_deposit }} {{ wallet.get_crypto_type_display }}</small>
+            {% endif %}
+            {% if wallet.link_url %}
+            <div><a href="{{ wallet.link_url }}" target="_blank">{{ wallet.get_link_display|default:"View Details" }}</a></div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if bank_details %}
+        <p><strong>3. Bank Transfer / Wire Transfer:</strong></p>
+        {% for bank in bank_details %}
+        <div class="payment-method-item">
+            <div class="payment-method-title">{{ bank.bank_name }}</div>
+            <div>Account Name: {{ bank.account_name }}</div>
+            <div>Account Number: {{ bank.account_number }}</div>
+            {% if bank.swift_code %}<div>SWIFT/BIC: {{ bank.swift_code }}</div>{% endif %}
+            {% if bank.iban %}<div>IBAN: {{ bank.iban }}</div>{% endif %}
+            {% if bank.routing_number %}<div>Routing Number: {{ bank.routing_number }}</div>{% endif %}
+            <div>Currency: {{ bank.currency }}</div>
+            {% if bank.branch_address %}<div>Branch: {{ bank.branch_address }}</div>{% endif %}
+            {% if bank.notes %}<small>{{ bank.notes }}</small>{% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <p style="font-size: 9pt; color: #666; margin-top: 15px;">
+            <em>After making payment via bank or crypto, please email your proof of payment to info@flynjet.com quoting invoice {{ contract.invoice_number }}.</em>
+        </p>
+    </div>
+
+    <div style="font-size: 9pt; margin-top: 15px;">
+        <strong>Payment Terms:</strong> Full payment required before departure.
+        This invoice is valid until {{ contract.valid_until|date:"F j, Y" }}.
+        All charges are in USD. Rates subject to exchange rate fluctuations.
+    </div>
+
+    <div class="footer">
+        Fly N'Jet Air and Logistics | Jomo Kenyatta International Airport, North Road, Embakasi, Nairobi Kenya<br>
+        This invoice is issued pursuant to Contract {{ contract.contract_number }}.
+    </div>
+
+</body>
+</html>

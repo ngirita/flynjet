@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resolution Proposal - Dispute {{ dispute.dispute_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Resolution Proposal</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-gavel me-2"></i>
+                        A resolution has been proposed for your dispute.
+                    </div>
+                    
+                    <div class="resolution-details p-4 bg-light rounded mb-4">
+                        <h6 class="text-success">Proposed Resolution:</h6>
+                        <p class="lead">{{ resolution.description }}</p>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Type:</strong> {{ resolution.get_resolution_type_display }}</p>
+                                {% if resolution.refund_amount > 0 %}
+                                <p><strong>Refund Amount:</strong> ${{ resolution.refund_amount }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Proposed By:</strong> {{ resolution.proposed_by.get_full_name }}</p>
+                                <p><strong>Proposed On:</strong> {{ resolution.proposed_at|date:"F j, Y H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if resolution.credit_amount > 0 %}
+                        <div class="alert alert-warning mt-3">
+                            <strong>Credit Amount:</strong> ${{ resolution.credit_amount }}<br>
+                            <small>Credit expires on: {{ resolution.credit_expiry|date:"F j, Y" }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex gap-3">
+                            <button type="submit" name="action" value="accept" class="btn btn-success flex-grow-1">
+                                <i class="fas fa-check me-2"></i>Accept Resolution
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger flex-grow-1">
+                                <i class="fas fa-times me-2"></i>Reject Resolution
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

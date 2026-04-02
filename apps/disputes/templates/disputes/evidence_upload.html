@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Evidence - Dispute {{ dispute.dispute_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Upload Evidence</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Dispute: {{ dispute.dispute_number }}</p>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Evidence Type</label>
+                            <select name="evidence_type" class="form-control" required>
+                                <option value="document">Document</option>
+                                <option value="image">Image</option>
+                                <option value="receipt">Receipt</option>
+                                <option value="contract">Contract</option>
+                                <option value="communication">Communication</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">File</label>
+                            <input type="file" name="file" class="form-control" required>
+                            <small class="text-muted">Max size: 50MB. Allowed: PDF, DOC, JPG, PNG</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Upload Evidence
+                            </button>
+                            <a href="{% url 'disputes:detail' dispute.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

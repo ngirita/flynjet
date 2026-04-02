@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Export Options - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Export Data</h5>
+                </div>
+                <div class="card-body">
+                    <form id="exportForm" onsubmit="exportData(event)">
+                        {% csrf_token %}
+                        
+                        <!-- Data Type -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Data to Export</label>
+                            <select class="form-control" id="dataType" required>
+                                <option value="">Select data type...</option>
+                                <option value="bookings">Bookings</option>
+                                <option value="customers">Customers</option>
+                                <option value="payments">Payments</option>
+                                <option value="aircraft">Aircraft Fleet</option>
+                                <option value="reviews">Reviews</option>
+                                <option value="disputes">Disputes</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Date Range -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Date Range</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control" id="startDate" 
+                                           value="{{ default_start|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control" id="endDate" 
+                                           value="{{ default_end|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Format -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Export Format</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" 
+                                               id="formatCSV" value="csv" checked>
+                                        <label class="form-check-label" for="formatCSV">
+                                            <i class="fas fa-file-csv text-success"></i> CSV
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" 
+                                               id="formatExcel" value="excel">
+                                        <label class="form-check-label" for="formatExcel">
+                                            <i class="fas fa-file-excel text-success"></i> Excel
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" 
+                                               id="formatJSON" value="json">
+                                        <label class="form-check-label" for="formatJSON">
+                                            <i class="fas fa-file-code text-info"></i> JSON
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fields Selection -->
+                        <div class="mb-4" id="fieldsContainer">
+                            <label class="form-label fw-bold">Fields to Include</label>
+                            <div class="row" id="fieldsList">
+                                <!-- Dynamically populated based on data type -->
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Options -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Additional Options</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeHeaders" checked>
+                                <label class="form-check-label">Include column headers</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeSummary">
+                                <label class="form-check-label">Include summary statistics</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="compress">
+                                <label class="form-check-label">Compress as ZIP</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Schedule Export -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Schedule (Optional)</label>
+                            <select class="form-control" id="schedule">
+                                <option value="">Export now</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Email Notification -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Email Results To</label>
+                            <input type="email" class="form-control" id="email" 
+                                   placeholder="Enter email address for notification">
+                            <small class="text-muted">Leave blank to download directly</small>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="previewData()">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button type="button" class="btn btn-outline-info" onclick="saveTemplate()">
+                                <i class="fas fa-save"></i> Save as Template
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Data Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm" id="previewTable">
+                        <thead id="previewHeader"></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="confirmExport()">Export Full Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fieldSets = {
+        bookings: [
+            { value: 'booking_reference', label: 'Reference' },
+            { value: 'user_email', label: 'Customer' },
+            { value: 'departure_airport', label: 'From' },
+            { value: 'arrival_airport', label: 'To' },
+            { value: 'departure_datetime', label: 'Departure' },
+            { value: 'status', label: 'Status' },
+            { value: 'total_amount', label: 'Amount' }
+        ],
+        customers: [
+            { value: 'email', label: 'Email' },
+            { value: 'first_name', label: 'First Name' },
+            { value: 'last_name', label: 'Last Name' },
+            { value: 'user_type', label: 'Type' },
+            { value: 'date_joined', label: 'Joined' },
+            { value: 'total_bookings', label: 'Bookings' },
+            { value: 'total_spent', label: 'Spent' }
+        ],
+        payments: [
+            { value: 'transaction_id', label: 'Transaction ID' },
+            { value: 'user_email', label: 'Customer' },
+            { value: 'amount', label: 'Amount' },
+            { value: 'payment_method', label: 'Method' },
+            { value: 'status', label: 'Status' },
+            { value: 'created_at', label: 'Date' }
+        ],
+        aircraft: [
+            { value: 'registration', label: 'Registration' },
+            { value: 'model', label: 'Model' },
+            { value: 'manufacturer', label: 'Manufacturer' },
+            { value: 'passenger_capacity', label: 'Capacity' },
+            { value: 'status', label: 'Status' },
+            { value: 'total_flights', label: 'Flights' },
+            { value: 'utilization', label: 'Utilization %' }
+        ]
+    };
+    
+    document.getElementById('dataType').addEventListener('change', function() {
+        const type = this.value;
+        const container = document.getElementById('fieldsList');
+        
+        if (fieldSets[type]) {
+            container.innerHTML = fieldSets[type].map(field => `
+                <div class="col-md-4 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="fields" 
+                               value="${field.value}" id="field_${field.value}" checked>
+                        <label class="form-check-label" for="field_${field.value}">
+                            ${field.label}
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '';
+        }
+    });
+    
+    function exportData(event) {
+        event.preventDefault();
+        
+        const format = document.querySelector('input[name="format"]:checked').value;
+        const email = document.getElementById('email').value;
+        
+        if (email) {
+            // Send email with download link
+            alert('Export will be processed and sent to ' + email);
+        } else {
+            // Direct download
+            const params = new URLSearchParams({
+                type: document.getElementById('dataType').value,
+                start: document.getElementById('startDate').value,
+                end: document.getElementById('endDate').value,
+                format: format,
+                headers: document.getElementById('includeHeaders').checked,
+                summary: document.getElementById('includeSummary').checked
+            });
+            
+            window.location.href = `/api/v1/analytics/export/?${params.toString()}`;
+        }
+    }
+    
+    function previewData() {
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+        
+        // Simulate data preview
+        document.getElementById('previewHeader').innerHTML = `
+            <tr>
+                <th>Reference</th>
+                <th>Customer</th>
+                <th>Route</th>
+                <th>Date</th>
+                <th>Amount</th>
+            </tr>
+        `;
+        
+        document.getElementById('previewBody').innerHTML = `
+            <tr>
+                <td>FJ12345</td>
+                <td>john@example.com</td>
+                <td>JFK → LAX</td>
+                <td>2024-01-15</td>
+                <td>$25,000</td>
+            </tr>
+            <tr>
+                <td>FJ12346</td>
+                <td>jane@example.com</td>
+                <td>LHR → DXB</td>
+                <td>2024-01-16</td>
+                <td>$32,500</td>
+            </tr>
+            <tr>
+                <td colspan="5" class="text-muted text-center">Showing first 2 of 156 records</td>
+            </tr>
+        `;
+    }
+    
+    function saveTemplate() {
+        const name = prompt('Enter template name:');
+        if (name) {
+            const template = {
+                name: name,
+                dataType: document.getElementById('dataType').value,
+                fields: Array.from(document.querySelectorAll('input[name="fields"]:checked')).map(cb => cb.value),
+                format: document.querySelector('input[name="format"]:checked').value,
+                options: {
+                    headers: document.getElementById('includeHeaders').checked,
+                    summary: document.getElementById('includeSummary').checked
+                }
+            };
+            
+            // Save to localStorage
+            const templates = JSON.parse(localStorage.getItem('exportTemplates') || '[]');
+            templates.push(template);
+            localStorage.setItem('exportTemplates', JSON.stringify(templates));
+            
+            alert('Template saved successfully!');
+        }
+    }
+</script>
+{% endblock %}

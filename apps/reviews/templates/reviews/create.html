@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Write a Review - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Write a Review</h2>
+                        <p class="text-muted">Share your experience with {{ booking.aircraft.model }}</p>
+                        <p class="small">Booking: {{ booking.booking_reference }} | {{ booking.departure_airport }} → {{ booking.arrival_airport }}</p>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="reviewForm">
+                        {% csrf_token %}
+                        
+                        <!-- Review Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Review Type</label>
+                            {{ form.review_type }}
+                        </div>
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label class="form-label">Review Title</label>
+                            {{ form.title }}
+                        </div>
+                        
+                        <!-- Overall Rating -->
+                        <div class="mb-4">
+                            <label class="form-label">Overall Rating</label>
+                            <div class="rating-stars">
+                                {% for i in "12345"|make_list %}
+                                <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('overall', {{ forloop.counter }})">
+                                    <i class="far fa-star"></i>
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {{ form.overall_rating }}
+                        </div>
+                        
+                        <!-- Detailed Ratings -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Punctuality</label>
+                                <div class="rating-stars small">
+                                    {% for i in "12345"|make_list %}
+                                    <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('punctuality', {{ forloop.counter }})">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {{ form.punctuality_rating }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Comfort</label>
+                                <div class="rating-stars small">
+                                    {% for i in "12345"|make_list %}
+                                    <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('comfort', {{ forloop.counter }})">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {{ form.comfort_rating }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Service</label>
+                                <div class="rating-stars small">
+                                    {% for i in "12345"|make_list %}
+                                    <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('service', {{ forloop.counter }})">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {{ form.service_rating }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Value for Money</label>
+                                <div class="rating-stars small">
+                                    {% for i in "12345"|make_list %}
+                                    <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('value', {{ forloop.counter }})">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {{ form.value_rating }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Cleanliness</label>
+                                <div class="rating-stars small">
+                                    {% for i in "12345"|make_list %}
+                                    <span class="star" data-value="{{ forloop.counter }}" onclick="setRating('cleanliness', {{ forloop.counter }})">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {{ form.cleanliness_rating }}
+                            </div>
+                        </div>
+                        
+                        <!-- Review Content -->
+                        <div class="mb-3">
+                            <label class="form-label">Your Review</label>
+                            {{ form.content }}
+                        </div>
+                        
+                        <!-- Photos -->
+                        <div class="mb-4">
+                            <label class="form-label">Photos (Optional)</label>
+                            {{ photo_form.photos }}
+                            <div class="form-text">You can upload up to 5 photos</div>
+                        </div>
+                        
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-stars {
+        display: flex;
+        gap: 5px;
+        margin: 5px 0;
+    }
+    .star {
+        cursor: pointer;
+        font-size: 24px;
+        color: #ddd;
+        transition: color 0.2s;
+    }
+    .star.active {
+        color: #ffc107;
+    }
+    .star:hover {
+        color: #ffc107;
+    }
+    .rating-stars.small .star {
+        font-size: 18px;
+    }
+    #id_overall_rating, #id_punctuality_rating, #id_comfort_rating,
+    #id_service_rating, #id_value_rating, #id_cleanliness_rating {
+        display: none;
+    }
+</style>
+
+<script>
+function setRating(field, value) {
+    // Set hidden input
+    document.getElementById(`id_${field}_rating`).value = value;
+    
+    // Update stars
+    const stars = document.querySelectorAll(`[onclick*="${field}"]`);
+    stars.forEach((star, index) => {
+        const starIcon = star.querySelector('i');
+        if (index < value) {
+            starIcon.className = 'fas fa-star';
+            star.classList.add('active');
+        } else {
+            starIcon.className = 'far fa-star';
+            star.classList.remove('active');
+        }
+    });
+}
+
+// Initialize stars on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const fields = ['overall', 'punctuality', 'comfort', 'service', 'value', 'cleanliness'];
+    fields.forEach(field => {
+        const input = document.getElementById(`id_${field}_rating`);
+        if (input && input.value) {
+            setRating(field, parseInt(input.value));
+        }
+    });
+});
+
+// Preview photos before upload
+document.getElementById('id_photos').addEventListener('change', function(e) {
+    const preview = document.createElement('div');
+    preview.className = 'photo-preview mt-2';
+    
+    for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '5px';
+            img.style.margin = '5px';
+            preview.appendChild(img);
+        }
+        
+        reader.readAsDataURL(file);
+    }
+    
+    const existingPreview = document.querySelector('.photo-preview');
+    if (existingPreview) {
+        existingPreview.remove();
+    }
+    
+    e.target.parentNode.appendChild(preview);
+});
+</script>
+{% endblock %}

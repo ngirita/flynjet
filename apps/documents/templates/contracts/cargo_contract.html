@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cargo Transport Contract - {{ document.document_number }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #dc3545;
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        
+        .header h2 {
+            margin: 5px 0 0;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        
+        .contract-number {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .parties {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .party {
+            width: 45%;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .party h3 {
+            margin: 0 0 10px;
+            color: #dc3545;
+            font-size: 16px;
+        }
+        
+        .shipment-details {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .detail-item {
+            display: flex;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            width: 150px;
+            color: #666;
+        }
+        
+        .cargo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .cargo-table th {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .cargo-table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .terms {
+            margin: 30px 0;
+        }
+        
+        .term-item {
+            margin-bottom: 15px;
+        }
+        
+        .term-number {
+            font-weight: bold;
+            color: #dc3545;
+            display: inline-block;
+            width: 30px;
+        }
+        
+        .special-instructions {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            width: 45%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            margin: 20px 0 5px;
+            padding-top: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="contract-number">
+        <strong>Contract Number:</strong> {{ document.document_number }}<br>
+        <strong>Date:</strong> {{ document.created_at|date:"F j, Y" }}
+    </div>
+    
+    <div class="header">
+        <h1>CARGO TRANSPORT CONTRACT</h1>
+        <h2>FlynJet Cargo Services</h2>
+    </div>
+    
+    <div class="parties">
+        <div class="party">
+            <h3>CARRIER</h3>
+            <p><strong>FlynJet Air and Logistics.</strong><br>
+            Jomo Kenyatta International Airport. Airport Nort Road, Embakasi<br>
+            Nairobi, Kenya P.O. Box 19087-00501<br>
+            United States</p>
+        </div>
+        
+        <div class="party">
+            <h3>SHIPPER</h3>
+            <p><strong>{{ document.user.company_name|default:document.user.get_full_name }}</strong><br>
+            {{ document.user.address_line1|default:'' }}<br>
+            {{ document.user.city|default:'' }} {{ document.user.state|default:'' }} {{ document.user.postal_code|default:'' }}<br>
+            {{ document.user.country|default:'' }}</p>
+        </div>
+    </div>
+    
+    <div class="shipment-details">
+        <h3 style="color: #dc3545; margin-top: 0;">Shipment Details</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Flight Number:</span>
+                <span>CG{{ document.booking.booking_reference|slice:":6" }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Aircraft:</span>
+                <span>{{ document.booking.aircraft.model }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Departure:</span>
+                <span>{{ document.booking.departure_airport }} at {{ document.booking.departure_datetime|date:"M d, Y H:i" }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Arrival:</span>
+                <span>{{ document.booking.arrival_airport }} at {{ document.booking.arrival_datetime|date:"M d, Y H:i" }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Total Weight:</span>
+                <span>{{ document.booking.cargo_weight_kg }} kg</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Total Volume:</span>
+                <span>{{ document.booking.cargo_volume|default:"N/A" }} m³</span>
+            </div>
+        </div>
+    </div>
+    
+    <h3 style="color: #dc3545;">Cargo Manifest</h3>
+    <table class="cargo-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Weight (kg)</th>
+                <th>Dimensions (cm)</th>
+                <th>Special Handling</th>
+                <th>Dangerous Goods</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in document.booking.cargo_items.all %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.weight }}</td>
+                <td>{{ item.length }}x{{ item.width }}x{{ item.height }}</td>
+                <td>{{ item.special_handling|default:"No" }}</td>
+                <td>{{ item.dangerous_goods|yesno:"Yes,No" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">See attached cargo manifest</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="terms">
+        <h3 style="color: #dc3545;">Terms and Conditions</h3>
+        
+        <div class="term-item">
+            <span class="term-number">1.</span>
+            <strong>Acceptance of Goods:</strong> The Carrier accepts the goods described above for carriage subject to the terms and conditions herein.
+        </div>
+        
+        <div class="term-item">
+            <span class="term-number">2.</span>
+            <strong>Dangerous Goods:</strong> The Shipper certifies that any dangerous goods are properly declared, packaged, marked, and documented in accordance with IATA Dangerous Goods Regulations.
+        </div>
+        
+        <div class="term-item">
+            <span class="term-number">3.</span>
+            <strong>Liability:</strong> Carrier's liability for loss or damage is limited to $20.00 per kilogram unless a higher value is declared and additional charges paid.
+        </div>
+        
+        <div class="term-item">
+            <span class="term-number">4.</span>
+            <strong>Delay:</strong> Carrier is not liable for delay unless caused by Carrier's negligence and a specific delivery time has been agreed in writing.
+        </div>
+        
+        <div class="term-item">
+            <span class="term-number">5.</span>
+            <strong>Charges:</strong> Total freight charges: <strong>${{ document.booking.total_amount_usd|floatformat:2 }}</strong> USD, payable prior to departure.
+        </div>
+    </div>
+    
+    {% if document.booking.special_instructions %}
+    <div class="special-instructions">
+        <strong>Special Instructions:</strong>
+        <p>{{ document.booking.special_instructions }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <p><strong>FOR CARRIER</strong></p>
+            <div class="signature-line"></div>
+            <div class="signature-label">Authorized Signature</div>
+            <p>Name: ______________________</p>
+            <p>Date: ________________________</p>
+        </div>
+        
+        <div class="signature-box">
+            <p><strong>FOR SHIPPER</strong></p>
+            <div class="signature-line"></div>
+            <div class="signature-label">Authorized Signature</div>
+            <p>Name: ______________________</p>
+            <p>Title: _______________________</p>
+            <p>Date: ________________________</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This contract is governed by the Warsaw Convention and Montreal Protocol No. 4.</p>
+        <p>FlynJet Cargo • Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501 • info@flynjet.com</p>
+    </div>
+</body>
+</html>

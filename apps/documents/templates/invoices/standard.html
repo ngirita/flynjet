@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        {% if is_receipt %}Receipt{% else %}Invoice{% endif %}
+        - {{ document.document_number }}
+    </title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* ===== RECEIPT WATERMARK ===== */
+        {% if is_receipt %}
+        body::before {
+            content: "PAID";
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 120px;
+            font-weight: bold;
+            color: rgba(40, 167, 69, 0.08);
+            z-index: -1;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        {% endif %}
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+        }
+
+        .invoice-header h1 {
+            color: {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+            margin: 0;
+            font-size: 32px;
+            letter-spacing: 2px;
+        }
+
+        .invoice-header h2 {
+            color: #555;
+            margin: 5px 0 0;
+            font-size: 20px;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 16px;
+            background: {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+            color: white;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .company-details {
+            margin-bottom: 25px;
+        }
+
+        .company-details h3 {
+            color: #333;
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .company-details p {
+            margin: 2px 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .meta-grid {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .meta-box {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+        }
+
+        .meta-box h4 {
+            margin: 0 0 10px;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        .meta-box table { width: 100%; border-collapse: collapse; }
+        .meta-box td { padding: 3px 0; font-size: 13px; }
+        .meta-box td:first-child { color: #666; width: 120px; }
+        .meta-box td:last-child { font-weight: 600; color: #333; }
+
+        .billing-info {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .billing-info h3 {
+            color: #555;
+            margin: 0 0 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .billing-info p {
+            margin: 3px 0;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table th {
+            background: {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .items-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .items-table tr:last-child td { border-bottom: none; }
+
+        .items-table tr:nth-child(even) { background: #fafafa; }
+
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+        }
+
+        .totals-table {
+            width: 320px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+
+        .totals-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .totals-table .divider td {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .totals-table .total-row td {
+            font-size: 16px;
+            font-weight: bold;
+            color: {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+            border-top: 2px solid {% if is_receipt %}#28a745{% else %}#c5a059{% endif %};
+            padding-top: 10px;
+        }
+
+        /* ===== PAYMENT CONFIRMATION BOX (Receipt) ===== */
+        .payment-confirmed-box {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .payment-confirmed-box .confirm-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .payment-confirmed-box h3 {
+            margin: 0 0 5px;
+            font-size: 18px;
+        }
+
+        .payment-confirmed-box p {
+            margin: 4px 0;
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .payment-confirmed-box .txn-id {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* ===== PAYMENT PENDING BOX (Invoice) ===== */
+        .payment-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+
+        .payment-info h3 {
+            color: #155724;
+            margin: 0 0 10px;
+            font-size: 15px;
+        }
+
+        .payment-info p {
+            margin: 4px 0;
+            color: #155724;
+            font-size: 13px;
+        }
+
+        /* ===== FLIGHT ROUTE STRIP ===== */
+        .route-strip {
+            background: #1a1a2e;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .route-strip .airport {
+            text-align: center;
+        }
+
+        .route-strip .iata {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .route-strip .city {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        .route-strip .arrow {
+            font-size: 22px;
+            color: #c5a059;
+        }
+
+        .route-strip .flight-meta {
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .notes-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .notes-box h4 { margin: 0 0 8px; color: #856404; font-size: 14px; }
+        .notes-box p  { margin: 0; color: #856404; font-size: 13px; }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #aaa;
+            font-size: 11px;
+        }
+
+        .footer strong { color: #888; }
+
+        @media print {
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="invoice-header">
+        <h1>FLY N'JET</h1>
+        <h2>{% if is_receipt %}Payment Receipt{% else %}Invoice{% endif %}</h2>
+        <div class="header-badge">
+            {% if is_receipt %}✓ PAYMENT CONFIRMED{% else %}ORIGINAL DOCUMENT{% endif %}
+        </div>
+    </div>
+
+    <!-- ===== COMPANY & META ===== -->
+    <div class="meta-grid">
+        <div class="meta-box">
+            <h4>From</h4>
+            <div class="company-details">
+                <h3>FlynJet Air and Logistics.</h3>
+                <p>Jomo Kenyatta International Airport</p>
+                <p>Airport North Road, Embakasi, Nairobi Kenya</p>
+                <p>P.O. Box 19087-00501</p>
+                <p>+254785651832 | WhatsApp: +447393700477</p>
+                <p>info@flynjet.com</p>
+            </div>
+        </div>
+
+        <div class="meta-box">
+            <h4>Document Details</h4>
+            <table>
+                <tr>
+                    <td>{% if is_receipt %}Receipt No:{% else %}Invoice No:{% endif %}</td>
+                    <td>{{ document.document_number }}</td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td>{{ document.created_at|date:"F j, Y" }}</td>
+                </tr>
+                {% if not is_receipt %}
+                <tr>
+                    <td>Due Date:</td>
+                    <td>{{ document.due_date|date:"F j, Y" }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>Booking Ref:</td>
+                    <td>{{ booking.booking_reference }}</td>
+                </tr>
+                <tr>
+                    <td>Status:</td>
+                    <td>
+                        {% if is_receipt %}
+                            ✓ PAID
+                        {% else %}
+                            {{ document.content_data.status|default:"PENDING"|upper }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== BILL TO ===== -->
+    <div class="billing-info">
+        <h3>Bill To</h3>
+        <p><strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
+        {% if user.address_line1 %}<p>{{ user.address_line1 }}</p>{% endif %}
+        {% if user.address_line2 %}<p>{{ user.address_line2 }}</p>{% endif %}
+        {% if user.city and user.state %}
+        <p>{{ user.city }}, {{ user.state }} {{ user.postal_code }}</p>
+        {% endif %}
+        {% if user.country %}<p>{{ user.country }}</p>{% endif %}
+        <p>{{ user.email }}</p>
+        {% if user.phone_number %}<p>{{ user.phone_number }}</p>{% endif %}
+    </div>
+
+    <!-- ===== FLIGHT ROUTE STRIP ===== -->
+    <div class="route-strip">
+        <div class="airport">
+            <div class="iata">{{ booking.departure_airport }}</div>
+            <div class="city">Departure</div>
+        </div>
+        <div>
+            <div class="arrow">✈</div>
+            <div class="flight-meta">{{ booking.departure_datetime|date:"M d, Y" }}</div>
+        </div>
+        <div class="airport">
+            <div class="iata">{{ booking.arrival_airport }}</div>
+            <div class="city">Arrival</div>
+        </div>
+    </div>
+
+    <!-- ===== LINE ITEMS ===== -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in document.content_data.items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.unit_price_usd|floatformat:2 }}</td>
+                <td>${{ item.line_total_usd|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">Flight Charter Service</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ===== TOTALS ===== -->
+    <div class="totals-section">
+        <table class="totals-table">
+            <tr>
+                <td>Subtotal:</td>
+                <td>${{ document.content_data.subtotal_usd|floatformat:2|default:"0.00" }}</td>
+            </tr>
+            {% if document.content_data.discount_amount_usd > 0 %}
+            <tr>
+                <td>Discount:</td>
+                <td>-${{ document.content_data.discount_amount_usd|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr class="divider">
+                <td>Tax ({{ document.content_data.tax_rate|default:10 }}%):</td>
+                <td>${{ document.content_data.tax_amount_usd|floatformat:2|default:"0.00" }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL:</td>
+                <td>${{ document.content_data.total_usd|floatformat:2|default:"0.00" }}</td>
+            </tr>
+            {% if is_receipt %}
+            <tr>
+                <td style="color: #28a745; font-size: 13px;">Amount Paid:</td>
+                <td style="color: #28a745;">${{ document.content_data.total_usd|floatformat:2|default:"0.00" }}</td>
+            </tr>
+            <tr>
+                <td style="color: #666; font-size: 13px;">Balance Due:</td>
+                <td style="color: #666;">$0.00</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <!-- ===== PAYMENT STATUS ===== -->
+    {% if is_receipt %}
+    <!-- RECEIPT: Green confirmation box -->
+    <div class="payment-confirmed-box">
+        <div class="confirm-icon">✓</div>
+        <h3>Payment Confirmed</h3>
+        <p><strong>Method:</strong> {{ document.content_data.payment_method|default:"Card" }}</p>
+        {% if document.content_data.payment_date %}
+        <p><strong>Date:</strong> {{ document.content_data.payment_date|date:"F j, Y H:i" }}</p>
+        {% endif %}
+        <p><strong>Amount:</strong> ${{ document.content_data.total_usd|floatformat:2|default:"0.00" }}</p>
+        <div class="txn-id">
+            Transaction ID: {{ document.content_data.payment_transaction_id|default:"N/A" }}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- INVOICE: Payment info section -->
+    <div class="payment-info">
+        <h3>✓ Payment Information</h3>
+        <p><strong>Method:</strong> {{ document.content_data.payment_method|default:"Not paid yet" }}</p>
+        <p><strong>Transaction ID:</strong> {{ document.content_data.payment_transaction_id|default:"N/A" }}</p>
+        <p><strong>Status:</strong> {{ document.content_data.status|default:"PAID"|upper }}</p>
+        {% if document.content_data.payment_date %}
+        <p><strong>Payment Date:</strong> {{ document.content_data.payment_date|date:"F j, Y H:i" }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if document.notes %}
+    <div class="notes-box">
+        <h4>Notes</h4>
+        <p>{{ document.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer">
+        <p>
+            {% if is_receipt %}
+            This is an official payment receipt issued by FlynJet Air and Logistics.
+            {% else %}
+            This is a computer-generated document. No signature required.
+            {% endif %}
+        </p>
+        <p>For any questions contact <strong>info@flynjet.com</strong> | +254785651832</p>
+        <p>&copy; {% now "Y" %} <strong>FlynJet Air and Logistics.</strong> All rights reserved.</p>
+    </div>
+
+</body>
+</html>

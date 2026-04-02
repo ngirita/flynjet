@@ -1,0 +1,27 @@
+Special Offer Just for You!
+
+Hello {{ user.get_full_name|default:user.email }},
+
+We have an exclusive offer that we think you'll love!
+
+{{ promotion.name }}
+{{ promotion.description }}
+
+{% if promotion.discount_percentage %}
+{{ promotion.discount_percentage }}% OFF
+{% elif promotion.discount_amount %}
+${{ promotion.discount_amount }} OFF
+{% elif promotion.bonus_points %}
++{{ promotion.bonus_points }} BONUS POINTS
+{% endif %}
+
+Promo Code: {{ promotion.promotion_code }}
+
+Claim your offer: {{ site_url }}{% url 'bookings:create' %}?promo={{ promotion.promotion_code }}
+
+Offer valid until {{ promotion.end_date|date:"F j, Y" }}
+
+Don't miss out on this limited-time offer!
+
+Best regards,
+The FlynJet Team

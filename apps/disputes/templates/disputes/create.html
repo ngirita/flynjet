@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}File a Dispute - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">File a Dispute</h2>
+                        <p class="text-muted">Booking: {{ booking.booking_reference }}</p>
+                        <p class="small">{{ booking.departure_airport }} → {{ booking.arrival_airport }} | {{ booking.departure_datetime|date:"M d, Y" }}</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please provide as much detail as possible to help us resolve your issue quickly.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Dispute Type</label>
+                            {{ form.dispute_type }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            {{ form.subject }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Disputed Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="text" class="form-control" value="{{ booking.total_amount_usd }}" readonly>
+                            </div>
+                            <div class="form-text">The full booking amount will be disputed. Partial refunds can be arranged during resolution.</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-gavel me-2"></i>Submit Dispute
+                            </button>
+                            <a href="{% url 'bookings:detail' booking.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

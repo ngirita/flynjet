@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Dispute - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'disputes/css/disputes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Dispute Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Dispute #{{ dispute.dispute_number }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Customer:</strong> {{ dispute.user.email }}</p>
+                            <p><strong>Booking:</strong> {{ dispute.booking.booking_reference }}</p>
+                            <p><strong>Type:</strong> {{ dispute.get_dispute_type_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Filed:</strong> {{ dispute.filed_at|date:"M d, Y H:i" }}</p>
+                            <p><strong>Deadline:</strong> {{ dispute.response_deadline|date:"M d, Y H:i" }}</p>
+                            <p><strong>Amount:</strong> ${{ dispute.disputed_amount }}</p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-3">Subject</h6>
+                    <p>{{ dispute.subject }}</p>
+                    
+                    <h6>Description</h6>
+                    <p>{{ dispute.description }}</p>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Messages</h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% for message in messages %}
+                    <div class="message {% if message.is_staff %}staff{% else %}customer{% endif %} mb-3">
+                        <div class="message-header">
+                            <strong>
+                                {% if message.is_staff %}
+                                    Support Team
+                                {% else %}
+                                    {{ message.sender.email }}
+                                {% endif %}
+                            </strong>
+                            <small class="text-muted">{{ message.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <div class="message-body">{{ message.message }}</div>
+                        {% if message.attachment %}
+                        <a href="{{ message.attachment.url }}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">
+                            <i class="fas fa-paperclip"></i> View Attachment
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No messages</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Assignment -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Assignment</h5>
+                </div>
+                <div class="card-body">
+                    <form id="assignForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Assign to Agent</label>
+                            <select class="form-control" id="agentSelect">
+                                <option value="">Select agent...</option>
+                                {% for agent in agents %}
+                                <option value="{{ agent.id }}" {% if dispute.assigned_to == agent %}selected{% endif %}>
+                                    {{ agent.get_full_name|default:agent.email }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Assignment</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Resolution -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Propose Resolution</h5>
+                </div>
+                <div class="card-body">
+                    <form id="resolutionForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Resolution Type</label>
+                            <select class="form-control" id="resolutionType">
+                                <option value="full_refund">Full Refund</option>
+                                <option value="partial_refund">Partial Refund</option>
+                                <option value="credit">Future Credit</option>
+                                <option value="rebooking">Free Rebooking</option>
+                                <option value="upgrade">Complimentary Upgrade</option>
+                                <option value="apology">Formal Apology</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="resolutionDesc" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Refund Amount ($)</label>
+                            <input type="number" class="form-control" id="refundAmount" step="0.01" value="0">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Credit Amount ($)</label>
+                            <input type="number" class="form-control" id="creditAmount" step="0.01" value="0">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100">Propose Resolution</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Evidence -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Evidence</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in evidence %}
+                    <div class="evidence-item mb-2">
+                        <i class="fas fa-file me-2"></i>
+                        <a href="{{ item.file.url }}" target="_blank">{{ item.file.name|slice:"20:" }}</a>
+                        <small class="text-muted d-block">{{ item.uploaded_at|date }}</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No evidence uploaded</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const adminManager = new AdminDisputeManager({
+        disputeId: '{{ dispute.id }}',
+        csrfToken: '{{ csrf_token }}'
+    });
+    
+    document.getElementById('assignForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const agentId = document.getElementById('agentSelect').value;
+        if (agentId) {
+            adminManager.assignToAgent(agentId);
+        }
+    });
+    
+    document.getElementById('resolutionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = {
+            resolution_type: document.getElementById('resolutionType').value,
+            description: document.getElementById('resolutionDesc').value,
+            refund_amount: document.getElementById('refundAmount').value,
+            credit_amount: document.getElementById('creditAmount').value
+        };
+        adminManager.proposeResolution(data);
+    });
+</script>
+{% endblock %}

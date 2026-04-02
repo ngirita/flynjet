@@ -1,0 +1,802 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FlynJet - Luxury Private Charters{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Override Select2 styles for the home page */
+    .booking-form-section .select2-container--default .select2-selection--single {
+        height: 54px !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* CRITICAL FIX: Prevent the text from stretching when tapped */
+    .booking-form-section .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 52px !important;
+        color: white !important;
+        padding-left: 15px !important;
+        padding-right: 30px !important;
+        width: auto !important;
+        max-width: calc(100% - 45px) !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        display: inline-block !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix the placeholder specifically */
+    .booking-form-section .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        display: inline-block !important;
+    }
+    
+    .booking-form-section .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 52px !important;
+        right: 12px !important;
+        position: absolute !important;
+    }
+    
+    /* CRITICAL: Fix dropdown visibility and clickability */
+    .select2-container--open {
+        z-index: 9999 !important;
+    }
+    
+    .select2-dropdown {
+        z-index: 10000 !important;
+        background-color: #1a1a2e !important;
+        border-color: #c5a059 !important;
+        border-radius: 8px !important;
+        overflow: visible !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Make results clickable and visible */
+    .select2-results {
+        display: block !important;
+    }
+    
+    .select2-results__options {
+        max-height: 300px !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Better contrast for results - DARK MODE */
+    .select2-results__option {
+        color: #ffffff !important;
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .select2-results__option:last-child {
+        border-bottom: none !important;
+    }
+    
+    .select2-results__option--highlighted {
+        background-color: #c5a059 !important;
+        color: #ffffff !important;
+    }
+    
+    .select2-results__option--selected {
+        background-color: rgba(197, 160, 89, 0.3) !important;
+    }
+    
+    /* LIGHT MODE styles */
+    body:not(.dark-mode) .select2-dropdown {
+        background-color: #ffffff !important;
+        border-color: #e0e0e0 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    body:not(.dark-mode) .select2-results__option {
+        color: #333333 !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+    }
+    
+    body:not(.dark-mode) .select2-results__option--highlighted {
+        background-color: #c5a059 !important;
+        color: #ffffff !important;
+    }
+    
+    body:not(.dark-mode) .select2-results__option--selected {
+        background-color: rgba(197, 160, 89, 0.1) !important;
+    }
+    
+    /* Dark mode body styles */
+    body.dark-mode .booking-form-section .select2-container--default .select2-selection--single {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Light mode body styles */
+    body:not(.dark-mode) .booking-form-section .select2-container--default .select2-selection--single {
+        background: white !important;
+        border-color: #e0e0e0 !important;
+    }
+    
+    body:not(.dark-mode) .booking-form-section .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #333 !important;
+    }
+    
+    body:not(.dark-mode) .booking-form-section .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #999 !important;
+    }
+    
+    /* Make sure the Select2 container takes full width */
+    .booking-form-section .select2 {
+        width: 100% !important;
+    }
+    
+    /* Fix for the input fields to match your design */
+    .booking-form-section .form-control-custom {
+        width: 100%;
+    }
+    
+    /* Airport result styling */
+    .airport-result {
+        padding: 5px;
+    }
+    
+    .airport-result strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+    
+    .airport-result small {
+        font-size: 11px;
+        opacity: 0.8;
+    }
+    
+    body.dark-mode .airport-result strong {
+        color: #ffffff;
+    }
+    
+    body.dark-mode .airport-result small {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    body:not(.dark-mode) .airport-result strong {
+        color: #333333;
+    }
+    
+    body:not(.dark-mode) .airport-result small {
+        color: #666666;
+    }
+    
+    /* Cargo mode indicator */
+    .cargo-mode-indicator {
+        background-color: rgba(197, 160, 89, 0.2);
+        border-left: 3px solid #c5a059;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    
+    /* ========== QUICK BOOKING DROPDOWN WIDTH FIX ========== */
+    /* This only affects the quick booking form on the homepage */
+    .booking-form-section .select2-dropdown {
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Prevent dropdown from stretching to edge of screen */
+    .booking-form-section .select2-container--open .select2-dropdown {
+        left: 0 !important;
+        right: auto !important;
+        width: 100% !important;
+    }
+    
+    /* Ensure results wrap properly */
+    .booking-form-section .select2-results__option {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* Airport result styling for quick booking */
+    .booking-form-section .airport-result {
+        max-width: 100%;
+    }
+    
+    .booking-form-section .airport-result strong {
+        display: block;
+        font-size: 13px;
+    }
+    
+    .booking-form-section .airport-result small {
+        display: block;
+        font-size: 10px;
+        white-space: normal;
+    }
+    
+    /* ========== CRITICAL FIX FOR FIELD STRETCHING WHEN TAPPED ========== */
+    /* These styles prevent the placeholder text from expanding horizontally */
+    
+    .booking-form-section .select2-container {
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .booking-form-section .select2-selection {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .booking-form-section .select2-container--default.select2-container--focus .select2-selection--single {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Force the parent columns to maintain their width */
+    .booking-form-section .col-md-3 {
+        position: relative !important;
+        overflow: visible !important;
+    }
+    
+    @media (max-width: 992px) {
+        .booking-form-section .col-md-3 {
+            width: 50% !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .booking-form-section .col-md-3 {
+            width: 100% !important;
+        }
+        
+        .booking-form-section .select2-container--default .select2-selection--single .select2-selection__rendered {
+            max-width: calc(100% - 50px) !important;
+            font-size: 14px !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="hero-section">
+    <div class="hero-jet-container">
+        <img src="{% static 'images/hero-jet.png' %}" alt="Private Jet" class="hero-jet-img">
+    </div>
+
+    <div class="container hero-content">
+        <span class="category">Exclusive Access</span>
+        <h1>Luxury.<br>Redefined.</h1>
+        
+        <p class="lead">Premium service meets seamless global travel.</p>
+        
+        <div class="d-flex gap-4 justify-content-center hero-actions">
+            <a href="{% url 'fleet:list' %}" class="btn btn-luxury-dark">Enquire Now</a>
+            <a href="{% url 'fleet:list' %}" class="btn btn-luxury-light">The Fleet</a>
+        </div>
+    </div>
+</section>
+
+<section class="booking-form-section pb-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <div class="booking-card">
+                    <h3 class="booking-title">Quick Booking</h3>
+                    <form action="{% url 'bookings:check_availability' %}" method="get" id="quick-booking-form">
+                        <div class="row g-4">
+                            <div class="col-md-3">
+                                <label class="form-label-custom">From</label>
+                                <select class="form-control-custom airport-autocomplete" 
+                                        name="from_display" 
+                                        id="from_airport"
+                                        style="width: 100%;">
+                                    <option value=""></option>
+                                </select>
+                                <input type="hidden" name="from" id="from_airport_iata">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label-custom">To</label>
+                                <select class="form-control-custom airport-autocomplete" 
+                                        name="to_display" 
+                                        id="to_airport"
+                                        style="width: 100%;">
+                                    <option value=""></option>
+                                </select>
+                                <input type="hidden" name="to" id="to_airport_iata">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label-custom">Departure</label>
+                                <input type="date" class="form-control-custom" name="departure" id="departure_date">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label-custom">Passengers / Cargo</label>
+                                <input type="number" class="form-control-custom" name="passengers" value="1" min="0" id="passengers">
+                                <small class="text-muted" id="passenger-help-text" style="font-size: 10px;">0 for cargo only</small>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-luxury-dark w-100 py-3" id="check-availability-btn">
+                                    <i class="fas fa-search me-2"></i>Check
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Cargo mode indicator -->
+                    <div id="cargo-mode-indicator" class="cargo-mode-indicator" style="display: none;">
+                        <i class="fas fa-box me-2"></i>
+                        <strong>Cargo Mode:</strong> You are searching for cargo aircraft. Set passengers to 0 for cargo-only aircraft.
+                    </div>
+                    
+                    <!-- Popular routes suggestions -->
+                    <div class="popular-routes mt-4 pt-3">
+                        <small class="text-muted">Popular routes:</small>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-light route-btn" data-from="JFK" data-to="LHR">
+                                New York → London
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light route-btn" data-from="LAX" data-to="JFK">
+                                Los Angeles → New York
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light route-btn" data-from="DXB" data-to="LHR">
+                                Dubai → London
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light route-btn" data-from="CDG" data-to="JFK">
+                                Paris → New York
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light route-btn" data-from="HND" data-to="LAX">
+                                Tokyo → Los Angeles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <h2 class="section-title">Why Choose FlynJet?</h2>
+        <div class="row g-5">
+            <div class="col-md-4">
+                <div class="luxury-card text-center">
+                    <div class="mb-4 icon-wrapper"><i class="fas fa-clock fa-2x"></i></div>
+                    <h5>24/7 Availability</h5>
+                    <p class="card-text">Round-the-clock service for your convenience.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="luxury-card text-center">
+                    <div class="mb-4 icon-wrapper"><i class="fas fa-shield-alt fa-2x"></i></div>
+                    <h5>Secure Payments</h5>
+                    <p class="card-text">Multiple payment options with bank-grade security.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="luxury-card text-center">
+                    <div class="mb-4 icon-wrapper"><i class="fas fa-map-marked-alt fa-2x"></i></div>
+                    <h5>Global Network</h5>
+                    <p class="card-text">Access to over 5,000 airports worldwide.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Aircraft Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title">Featured Aircraft</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="luxury-card">
+                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
+                    <h5>Gulfstream G650ER</h5>
+                    <p>Ultra-long-range business jet with luxurious cabin</p>
+                    <small>Range: 7,500 nm | Capacity: 19 passengers</small>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="luxury-card">
+                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
+                    <h5>Bombardier Global 7500</h5>
+                    <p>The ultimate in long-range business aviation</p>
+                    <small>Range: 7,700 nm | Capacity: 19 passengers</small>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="luxury-card">
+                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
+                    <h5>Dassault Falcon 8X</h5>
+                    <p>Trijet with exceptional range and comfort</p>
+                    <small>Range: 6,450 nm | Capacity: 16 passengers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reviews & Testimonials Section -->
+<section class="section-padding">
+    <div class="container">
+        <h2 class="section-title">What Our Clients Say</h2>
+
+        {% if featured_testimonials %}
+        <div class="row mb-5">
+            {% for testimonial in featured_testimonials %}
+            <div class="col-md-4 mb-4">
+                <div class="luxury-card h-100">
+                    <div class="mb-3">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= testimonial.rating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p style="font-style:italic;">"{{ testimonial.content|truncatewords:30 }}"</p>
+                    <div class="d-flex align-items-center mt-3">
+                        {% if testimonial.customer_image %}
+                        <img src="{{ testimonial.customer_image.url }}"
+                             class="rounded-circle me-3" width="45" height="45"
+                             style="object-fit:cover;" alt="{{ testimonial.customer_name }}">
+                        {% else %}
+                        <div class="rounded-circle me-3 d-flex align-items-center justify-content-center"
+                             style="width:45px;height:45px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:600;flex-shrink:0;">
+                            {{ testimonial.customer_name|first|upper }}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <strong>{{ testimonial.customer_name }}</strong>
+                            {% if testimonial.customer_title %}
+                            <br><small class="text-muted">{{ testimonial.customer_title }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if featured_reviews %}
+        <div class="row">
+            {% for review in featured_reviews %}
+            <div class="col-md-4 mb-4">
+                <div class="luxury-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width:40px;height:40px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:600;flex-shrink:0;">
+                                {{ review.display_name|first|upper }}
+                            </div>
+                            <div>
+                                <strong style="font-size:14px;">{{ review.display_name }}</strong>
+                                {% if review.is_verified %}
+                                <i class="fas fa-check-circle text-success ms-1" title="Verified Booking" style="font-size:12px;"></i>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        <div>
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.overall_rating %}
+                                    <i class="fas fa-star text-warning" style="font-size:12px;"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning" style="font-size:12px;"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <h6 class="mb-2">{{ review.title }}</h6>
+                    <p class="text-muted" style="font-size:14px;">{{ review.content|truncatewords:20 }}</p>
+                    {% if review.aircraft %}
+                    <small class="text-muted">
+                        <i class="fas fa-plane me-1"></i>{{ review.aircraft.model }}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not featured_reviews and not featured_testimonials %}
+        <div class="text-center py-4">
+            <p class="text-muted">No reviews yet. Be the first to share your experience!</p>
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'reviews:list' %}" class="btn btn-luxury-dark">
+                View All Reviews
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .popular-routes {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .route-btn {
+        font-size: 12px;
+        padding: 5px 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .route-btn:hover {
+        background-color: #c5a059;
+        border-color: #c5a059;
+        color: white;
+    }
+    
+    body.dark-mode .popular-routes {
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    body:not(.dark-mode) .popular-routes {
+        border-top-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    body:not(.dark-mode) .route-btn {
+        border-color: #dee2e6;
+        color: #6c757d;
+    }
+    
+    .cargo-mode-indicator {
+        display: none;
+        background-color: rgba(197, 160, 89, 0.1);
+        border-left: 3px solid #c5a059;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 13px;
+    }
+    
+    body.dark-mode .cargo-mode-indicator {
+        background-color: rgba(197, 160, 89, 0.15);
+    }
+</style>
+
+<!-- ALL SCRIPTS AT THE BOTTOM - ORDER MATTERS! -->
+<script>
+    // Theme Toggle Script
+    (function() {
+        const toggleBtn = document.getElementById('themeToggle');
+        const navbar = document.getElementById('mainNavbar');
+        const navbarLogo = document.getElementById('navbarLogo');
+        const footer = document.getElementById('mainFooter');
+        const footerLogo = document.getElementById('footerLogo');
+        
+        function updateThemeUI(isDark) {
+            if (!toggleBtn) return;
+            if (isDark) {
+                toggleBtn.innerHTML = '<i class="fas fa-sun me-1"></i> Light';
+                toggleBtn.classList.remove('btn-outline-secondary');
+                toggleBtn.classList.add('btn-outline-light');
+                if (navbar) {
+                    navbar.classList.add('navbar-dark', 'bg-dark');
+                    navbar.classList.remove('navbar-light', 'bg-white');
+                }
+                if (navbarLogo) navbarLogo.style.filter = 'brightness(0) invert(1)';
+                if (footerLogo) footerLogo.style.filter = 'brightness(0) invert(1)';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-moon me-1"></i> Dark';
+                toggleBtn.classList.remove('btn-outline-light');
+                toggleBtn.classList.add('btn-outline-secondary');
+                if (navbar) {
+                    navbar.classList.remove('navbar-dark', 'bg-dark');
+                    navbar.classList.add('navbar-light', 'bg-white');
+                }
+                if (navbarLogo) navbarLogo.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))';
+                if (footerLogo) footerLogo.style.filter = 'none';
+            }
+        }
+        
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            updateThemeUI(true);
+        }
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        }
+    })();
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function waitForJQuery() {
+            if (typeof $ !== 'undefined') {
+                console.log('Index page ready - jQuery loaded');
+                
+                $(document).ready(function() {
+                    // Store selected IATA values to prevent loss
+                    var selectedFromIata = '';
+                    var selectedToIata = '';
+                    
+                    // Passenger input help text update
+                    $('#passengers').on('change input', function() {
+                        var val = parseInt($(this).val());
+                        if (val === 0) {
+                            $('#passenger-help-text').html('<span class="text-warning"><i class="fas fa-box me-1"></i>Cargo mode - no passengers</span>');
+                            $('#check-availability-btn').html('<i class="fas fa-box me-2"></i>Check Cargo Availability');
+                            $('#cargo-mode-indicator').slideDown(300);
+                        } else {
+                            $('#passenger-help-text').html('0 for cargo only');
+                            $('#check-availability-btn').html('<i class="fas fa-search me-2"></i>Check');
+                            $('#cargo-mode-indicator').slideUp(300);
+                        }
+                    });
+                    
+                    // Trigger on load to set initial state
+                    $('#passengers').trigger('change');
+                    
+                    // Handle popular route buttons
+                    $('.route-btn').on('click', function(e) {
+                        e.preventDefault();
+                        var fromIata = $(this).data('from');
+                        var toIata = $(this).data('to');
+                        
+                        // Fetch and set from airport
+                        $.ajax({
+                            url: '{% url "airports:autocomplete" %}?q=' + fromIata,
+                            dataType: 'json',
+                            success: function(data) {
+                                if (data.results && data.results.length > 0) {
+                                    var airport = data.results[0];
+                                    var $fromSelect = $('#from_airport');
+                                    $fromSelect.empty().append(new Option(airport.city + ' (' + airport.iata + ')', airport.iata, true, true));
+                                    $fromSelect.trigger('change');
+                                    $('#from_airport_iata').val(airport.iata);
+                                    selectedFromIata = airport.iata;
+                                    console.log('From airport set:', airport.city, airport.iata);
+                                }
+                            }
+                        });
+                        
+                        // Fetch and set to airport
+                        $.ajax({
+                            url: '{% url "airports:autocomplete" %}?q=' + toIata,
+                            dataType: 'json',
+                            success: function(data) {
+                                if (data.results && data.results.length > 0) {
+                                    var airport = data.results[0];
+                                    var $toSelect = $('#to_airport');
+                                    $toSelect.empty().append(new Option(airport.city + ' (' + airport.iata + ')', airport.iata, true, true));
+                                    $toSelect.trigger('change');
+                                    $('#to_airport_iata').val(airport.iata);
+                                    selectedToIata = airport.iata;
+                                    console.log('To airport set:', airport.city, airport.iata);
+                                }
+                            }
+                        });
+                        
+                        var tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        $('#departure_date').val(tomorrow.toISOString().split('T')[0]);
+                    });
+                    
+                    // Update stored values when user selects from dropdown
+                    $(document).on('select2:select', '.airport-autocomplete', function(e) {
+                        var data = e.params.data;
+                        if (this.id === 'from_airport') {
+                            selectedFromIata = data.iata;
+                            console.log('Updated stored from IATA:', selectedFromIata);
+                        } else if (this.id === 'to_airport') {
+                            selectedToIata = data.iata;
+                            console.log('Updated stored to IATA:', selectedToIata);
+                        }
+                    });
+                    
+                    // Set default departure date
+                    var tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    $('#departure_date').val(tomorrow.toISOString().split('T')[0]);
+                    
+                    // Form validation - FIXED VERSION
+                    $('#quick-booking-form').on('submit', function(e) {
+                        // Get current values from hidden fields
+                        var fromIata = $('#from_airport_iata').val();
+                        var toIata = $('#to_airport_iata').val();
+                        
+                        // Also get select values as backup
+                        var fromSelectVal = $('#from_airport').val();
+                        var toSelectVal = $('#to_airport').val();
+                        
+                        console.log('=== FORM SUBMIT DEBUG ===');
+                        console.log('From hidden IATA:', fromIata);
+                        console.log('From select value:', fromSelectVal);
+                        console.log('To hidden IATA:', toIata);
+                        console.log('To select value:', toSelectVal);
+                        console.log('Stored from IATA:', selectedFromIata);
+                        console.log('Stored to IATA:', selectedToIata);
+                        
+                        // Fix: If hidden is empty but select has value, copy from select
+                        if (!fromIata && fromSelectVal) {
+                            console.log('FIX: Copying from select to hidden');
+                            $('#from_airport_iata').val(fromSelectVal);
+                            fromIata = fromSelectVal;
+                        }
+                        
+                        if (!toIata && toSelectVal) {
+                            console.log('FIX: Copying to select to hidden');
+                            $('#to_airport_iata').val(toSelectVal);
+                            toIata = toSelectVal;
+                        }
+                        
+                        // Fix: If still empty, use stored values
+                        if (!fromIata && selectedFromIata) {
+                            console.log('FIX: Using stored from IATA:', selectedFromIata);
+                            $('#from_airport_iata').val(selectedFromIata);
+                            fromIata = selectedFromIata;
+                        }
+                        
+                        if (!toIata && selectedToIata) {
+                            console.log('FIX: Using stored to IATA:', selectedToIata);
+                            $('#to_airport_iata').val(selectedToIata);
+                            toIata = selectedToIata;
+                        }
+                        
+                        // Final validation
+                        if (!fromIata) {
+                            alert('Please select a departure airport from the suggestions');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        if (!toIata) {
+                            alert('Please select an arrival airport from the suggestions');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        var departure = $('#departure_date').val();
+                        if (!departure) {
+                            alert('Please select a departure date');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        if (fromIata === toIata) {
+                            alert('Departure and arrival airports must be different');
+                            e.preventDefault();
+                            return false;
+                        }
+                        
+                        console.log('Form valid - submitting with From:', fromIata, 'To:', toIata);
+                        return true;
+                    });
+                });
+            } else {
+                setTimeout(waitForJQuery, 100);
+            }
+        }
+        
+        waitForJQuery();
+    });
+</script>
+
+{% endblock %}

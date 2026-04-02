@@ -1,0 +1,251 @@
+{% load static %}
+
+<div class="weather-widget">
+    <div class="weather-header">
+        <h5>Weather at {{ location }}</h5>
+        <span class="weather-updated">Updated {{ weather.last_update|timesince }} ago</span>
+    </div>
+    
+    <div class="weather-current">
+        <div class="weather-icon">
+            {% if weather.icon %}
+            <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="{{ weather.conditions }}">
+            {% else %}
+            <i class="fas fa-cloud-sun"></i>
+            {% endif %}
+        </div>
+        <div class="weather-temp">
+            <span class="temp">{{ weather.temperature|floatformat:0 }}°C</span>
+            <span class="feels-like">Feels like {{ weather.feels_like|floatformat:0 }}°C</span>
+        </div>
+        <div class="weather-conditions">{{ weather.conditions|title }}</div>
+    </div>
+    
+    <div class="weather-details">
+        <div class="detail-item">
+            <i class="fas fa-wind"></i>
+            <span class="detail-label">Wind</span>
+            <span class="detail-value">{{ weather.wind_speed }} m/s at {{ weather.wind_direction }}°</span>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-tint"></i>
+            <span class="detail-label">Humidity</span>
+            <span class="detail-value">{{ weather.humidity }}%</span>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-compress"></i>
+            <span class="detail-label">Pressure</span>
+            <span class="detail-value">{{ weather.pressure }} hPa</span>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-eye"></i>
+            <span class="detail-label">Visibility</span>
+            <span class="detail-value">{{ weather.visibility|default:"10" }} km</span>
+        </div>
+    </div>
+    
+    {% if weather.alerts %}
+    <div class="weather-alerts">
+        <h6>Weather Alerts</h6>
+        {% for alert in weather.alerts %}
+        <div class="alert alert-{{ alert.severity }} small">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ alert.message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if weather.forecast %}
+    <div class="weather-forecast">
+        <h6>5-Day Forecast</h6>
+        <div class="forecast-list">
+            {% for day in weather.forecast %}
+            <div class="forecast-day">
+                <div class="forecast-date">{{ day.date|date:"D" }}</div>
+                <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png" alt="">
+                <div class="forecast-temp">{{ day.temp_max }}°/{{ day.temp_min }}°</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .weather-widget {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .weather-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .weather-header h5 {
+        margin: 0;
+        font-size: 16px;
+    }
+    
+    .weather-updated {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    .weather-current {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .weather-icon {
+        width: 80px;
+        height: 80px;
+        margin-right: 15px;
+    }
+    
+    .weather-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .weather-temp {
+        flex: 1;
+    }
+    
+    .temp {
+        font-size: 36px;
+        font-weight: 700;
+        color: #333;
+        display: block;
+        line-height: 1;
+    }
+    
+    .feels-like {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .weather-conditions {
+        font-size: 16px;
+        color: #007bff;
+        font-weight: 500;
+    }
+    
+    .weather-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .detail-item {
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 5px;
+        font-size: 12px;
+    }
+    
+    .detail-item i {
+        color: #007bff;
+        width: 20px;
+        margin-right: 5px;
+    }
+    
+    .detail-label {
+        color: #666;
+        margin-right: 5px;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .weather-alerts {
+        margin: 15px 0;
+    }
+    
+    .weather-alerts h6 {
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    
+    .weather-alerts .alert {
+        padding: 8px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        font-size: 12px;
+    }
+    
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+    
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .weather-forecast {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .weather-forecast h6 {
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    
+    .forecast-list {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .forecast-day {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .forecast-date {
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    .forecast-day img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .forecast-temp {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .weather-current {
+            flex-wrap: wrap;
+        }
+        
+        .forecast-list {
+            flex-wrap: wrap;
+        }
+        
+        .forecast-day {
+            min-width: 60px;
+        }
+    }
+</style>

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'analytics/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" id="analyticsDashboard">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Analytics Dashboard</h1>
+        <div class="d-flex gap-3">
+            <div id="dateRangePicker"></div>
+            <div class="export-dropdown">
+                <button class="btn btn-outline-primary" onclick="toggleExportMenu()">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+                <div class="export-menu" id="exportMenu">
+                    <a href="#" onclick="exportData('csv')"><i class="fas fa-file-csv"></i> CSV</a>
+                    <a href="#" onclick="exportData('excel')"><i class="fas fa-file-excel"></i> Excel</a>
+                    <a href="#" onclick="exportData('pdf')"><i class="fas fa-file-pdf"></i> PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Revenue</div>
+                <div class="kpi-value" id="kpi-revenue">$0</div>
+                <div class="kpi-change" id="kpi-revenue-change"></div>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Bookings</div>
+                <div class="kpi-value" id="kpi-bookings">0</div>
+                <div class="kpi-change" id="kpi-bookings-change"></div>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">New Users</div>
+                <div class="kpi-value" id="kpi-users">0</div>
+                <div class="kpi-change" id="kpi-users-change"></div>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Page Views</div>
+                <div class="kpi-value" id="kpi-pageviews">0</div>
+                <div class="kpi-change" id="kpi-pageviews-change"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 1 -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">Revenue Trend</h5>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">Payment Methods</h5>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="paymentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 2 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">Daily Bookings</h5>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="bookingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">Fleet Utilization</h5>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="fleetChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Bookings Table -->
+    <div class="data-table">
+        <div class="table-header">
+            <h5 class="table-title">Recent Bookings</h5>
+            <div class="table-actions">
+                <a href="{% url 'analytics:reports' %}" class="btn btn-sm btn-outline-primary">
+                    View All
+                </a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="recentBookingsTable">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Customer</th>
+                        <th>Route</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'analytics/js/charts.js' %}"></script>
+<script src="{% static 'analytics/js/dashboard.js' %}"></script>
+<script>
+    // Initialize date range picker
+    const dateRangeElement = document.getElementById('dateRangePicker');
+    if (dateRangeElement) {
+        new DateRangePicker({
+            element: dateRangeElement,
+            onChange: (range) => {
+                window.dashboard.setDateRange(range);
+            }
+        });
+    }
+    
+    function toggleExportMenu() {
+        document.getElementById('exportMenu').classList.toggle('show');
+    }
+    
+    function exportData(format) {
+        window.dashboard.exportData(format);
+        document.getElementById('exportMenu').classList.remove('show');
+    }
+    
+    // Close export menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.export-dropdown')) {
+            document.getElementById('exportMenu').classList.remove('show');
+        }
+    });
+</script>
+{% endblock %}

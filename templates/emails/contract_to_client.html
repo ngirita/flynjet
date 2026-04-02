@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #c5a059; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; }
+        .button { display: inline-block; padding: 12px 30px; background: #c5a059; color: white; text-decoration: none; border-radius: 5px; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Your Charter Contract is Ready</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ contract.client_name }},</p>
+            
+            <p>Thank you for choosing FlynJet. Please find your charter contract attached to this email.</p>
+            
+            <h3>Contract Summary</h3>
+            <p>
+                <strong>Contract Number:</strong> {{ contract.contract_number }}<br>
+                <strong>Aircraft:</strong> {{ contract.aircraft.manufacturer.name }} {{ contract.aircraft.model }}<br>
+                <strong>Route:</strong> {{ contract.departure_airport }} → {{ contract.arrival_airport }}<br>
+                <strong>Departure:</strong> {{ contract.departure_datetime|date:"l, F j, Y \a\t g:i A" }}<br>
+                <strong>Total Amount:</strong> <strong style="color: #c5a059;">${{ contract.total_amount_usd|floatformat:2 }}</strong>
+            </p>
+            
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="{{ payment_link }}" class="button">ACCEPT & PAY NOW</a>
+            </p>
+            
+            <p><strong>Important:</strong> This contract is valid until {{ contract.valid_until|date:"F j, Y" }}. After this date, the offer will expire.</p>
+            
+            <p>If you have any questions, please contact us at <a href="mailto:info@flynjet.com">info@flynjet.com</a>.</p>
+            
+            <p>Best regards,<br>
+            <strong>FlynJet Charter Team</strong></p>
+        </div>
+        <div class="footer">
+            FlynJet Air and Logistics. | Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi, Ke | www.flynjet.com
+        </div>
+    </div>
+</body>
+</html>

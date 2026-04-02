@@ -1,0 +1,57 @@
+{% load static %}
+
+<div class="message {% if message.is_agent %}agent{% else %}user{% endif %} {% if message.is_ai %}ai{% endif %}" 
+     data-message-id="{{ message.id }}">
+    <div class="message-avatar">
+        {% if message.is_agent %}
+            <img src="{% static 'images/agent-avatar.png' %}" alt="Agent">
+        {% elif message.is_ai %}
+            <img src="{% static 'images/ai-avatar.png' %}" alt="AI Assistant">
+        {% else %}
+            <div class="user-avatar">{{ message.sender_name|first|upper }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="message-content">
+        <div class="message-header">
+            <span class="message-sender">{{ message.sender_name }}</span>
+            <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
+        </div>
+        
+        <div class="message-body">
+            {{ message.message|linebreaks }}
+        </div>
+        
+        {% if message.attachment %}
+        <div class="message-attachment">
+            <i class="fas fa-paperclip"></i>
+            <a href="{{ message.attachment.url }}" target="_blank">
+                {{ message.attachment_name|default:"View Attachment" }}
+            </a>
+            <span class="attachment-size">({{ message.attachment_size|filesizeformat }})</span>
+        </div>
+        {% endif %}
+        
+        {% if message.suggested_responses %}
+        <div class="suggested-responses">
+            {% for response in message.suggested_responses %}
+            <button class="suggestion-btn" onclick="useSuggestion('{{ response|escapejs }}')">
+                {{ response }}
+            </button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="message-status">
+        {% if message.is_read %}
+        <span class="read-receipt" title="Read">
+            <i class="fas fa-check-double"></i>
+        </span>
+        {% elif message.is_delivered %}
+        <span class="delivery-receipt" title="Delivered">
+            <i class="fas fa-check"></i>
+        </span>
+        {% endif %}
+    </div>
+</div>

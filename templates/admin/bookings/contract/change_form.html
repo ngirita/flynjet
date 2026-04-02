@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    {% if show_send_button and original.status == 'draft' %}
+        <div class="submit-row" style="margin-top: 10px;">
+            <input type="submit" value="{% trans 'Save and Send Contract to Client' %}" name="_send" class="default" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
+        </div>
+    {% endif %}
+    {% if show_send_button and original.status != 'draft' %}
+        <div class="submit-row" style="margin-top: 10px;">
+            <input type="submit" value="{% trans 'Resend Contract to Client' %}" name="_send" class="default" style="background: #c5a059; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ document.document_number }} - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'documents:list' %}">Documents</a></li>
+                    <li class="breadcrumb-item active">{{ document.document_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">{{ document.title }}</h2>
+                        <span class="badge bg-{{ document.status }}">{{ document.get_status_display }}</span>
+                    </div>
+                    
+                    <div class="document-content">
+                        {% if document.pdf_file %}
+                        <iframe src="{{ document.pdf_file.url }}" width="100%" height="600px" style="border: none;"></iframe>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-pdf fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">PDF not available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Document Details</h5>
+                    
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Number:</th>
+                            <td><code>{{ document.document_number }}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Type:</th>
+                            <td>{{ document.get_document_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ document.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>{{ document.get_status_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Signed:</th>
+                            <td>
+                                {% if document.is_signed %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {{ document.signed_at|date:"M d, Y" }}
+                                {% else %}
+                                <i class="fas fa-times-circle text-muted"></i>
+                                Not signed
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Views:</th>
+                            <td>{{ document.view_count }}</td>
+                        </tr>
+                        <tr>
+                            <th>Downloads:</th>
+                            <td>{{ document.download_count }}</td>
+                        </tr>
+                    </table>
+                    
+                    <hr>
+                    
+                    <h6>Related Booking</h6>
+                    {% if document.booking %}
+                    <p class="mb-0">
+                        <a href="{% url 'bookings:detail' document.booking.id %}">
+                            {{ document.booking.booking_reference }}
+                        </a>
+                    </p>
+                    <small class="text-muted">
+                        {{ document.booking.departure_airport }} → {{ document.booking.arrival_airport }}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Actions</h5>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'documents:download' document.id %}" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        
+                        {% if not document.is_signed %}
+                        <a href="{% url 'documents:sign' document.id %}" class="btn btn-warning">
+                            <i class="fas fa-pen me-2"></i>Sign Document
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-primary" onclick="shareDocument()">
+                            <i class="fas fa-share-alt me-2"></i>Share
+                        </button>
+                        
+                        <a href="{% url 'documents:verify' document.access_token %}" class="btn btn-outline-info" target="_blank">
+                            <i class="fas fa-qrcode me-2"></i>Verify
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Verification Link</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" 
+                               value="{{ request.build_absolute_uri }}{% url 'documents:verify' document.access_token %}" 
+                               id="verifyLink" readonly>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareDocument() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ document.title }}',
+            text: 'Check out my document from FlynJet',
+            url: window.location.href
+        });
+    } else {
+        copyLink();
+    }
+}
+
+function copyLink() {
+    const link = document.getElementById('verifyLink');
+    link.select();
+    document.execCommand('copy');
+    alert('Verification link copied to clipboard!');
+}
+</script>
+{% endblock %}

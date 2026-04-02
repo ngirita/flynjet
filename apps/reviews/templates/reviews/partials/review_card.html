@@ -1,0 +1,336 @@
+{% load static %}
+
+<div class="review-card" data-review-id="{{ review.id }}">
+    <div class="review-header">
+        <div class="reviewer-info">
+            {% if review.user.profile.profile_image %}
+            <img src="{{ review.user.profile.profile_image.url }}" alt="{{ review.display_name }}" 
+                 class="reviewer-avatar">
+            {% else %}
+            <div class="reviewer-avatar initials">
+                {{ review.display_name|first|upper }}
+            </div>
+            {% endif %}
+            
+            <div class="reviewer-details">
+                <h4 class="reviewer-name">
+                    {{ review.display_name }}
+                    {% if review.is_verified %}
+                    <span class="verified-badge" title="Verified Booking">
+                        <i class="fas fa-check-circle"></i>
+                    </span>
+                    {% endif %}
+                </h4>
+                
+                {% if review.booking %}
+                <div class="review-meta">
+                    <span class="flight-route">
+                        <i class="fas fa-plane"></i>
+                        {{ review.booking.departure_airport }} → {{ review.booking.arrival_airport }}
+                    </span>
+                    <span class="review-date">
+                        <i class="far fa-calendar"></i>
+                        {{ review.created_at|date:"M d, Y" }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="review-rating">
+            {% for i in "12345"|make_list %}
+                {% if forloop.counter <= review.overall_rating %}
+                <i class="fas fa-star"></i>
+                {% else %}
+                <i class="far fa-star"></i>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="review-content">
+        <h5 class="review-title">{{ review.title }}</h5>
+        <p class="review-text">{{ review.content }}</p>
+        
+        {% if review.photos %}
+        <div class="review-photos">
+            {% for photo in review.photos|slice:":3" %}
+            <div class="review-photo" onclick="openLightbox('{{ photo.url }}')">
+                <img src="{{ photo.thumbnail.url }}" alt="Review photo">
+            </div>
+            {% endfor %}
+            {% if review.photos|length > 3 %}
+            <div class="review-photo more">
+                <span>+{{ review.photos|length|add:"-3" }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if review.aircraft %}
+        <div class="review-aircraft">
+            <i class="fas fa-plane"></i>
+            {{ review.aircraft.manufacturer.name }} {{ review.aircraft.model }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="review-footer">
+        <div class="vote-section">
+            <button class="vote-btn helpful {% if user_vote == 'helpful' %}active{% endif %}" 
+                    onclick="vote({{ review.id }}, 'helpful')">
+                <i class="far fa-thumbs-up"></i>
+                <span class="vote-count">{{ review.helpful_votes }}</span>
+            </button>
+            <button class="vote-btn not-helpful {% if user_vote == 'not_helpful' %}active{% endif %}" 
+                    onclick="vote({{ review.id }}, 'not_helpful')">
+                <i class="far fa-thumbs-down"></i>
+                <span class="vote-count">{{ review.not_helpful_votes }}</span>
+            </button>
+        </div>
+        
+        {% if user.is_authenticated and user != review.user %}
+        <button class="report-btn" onclick="reportReview({{ review.id }})">
+            <i class="fas fa-flag"></i> Report
+        </button>
+        {% endif %}
+    </div>
+    
+    {% if review.response %}
+    <div class="review-response">
+        <div class="response-header">
+            <i class="fas fa-reply"></i>
+            <span class="response-author">{{ review.responded_by.get_full_name|default:'FlynJet Team' }}</span>
+            <span class="response-date">{{ review.responded_at|date:"M d, Y" }}</span>
+        </div>
+        <p class="response-text">{{ review.response }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .review-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .review-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .reviewer-info {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .reviewer-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .reviewer-avatar.initials {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    .reviewer-name {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .verified-badge {
+        color: #28a745;
+        font-size: 14px;
+    }
+    
+    .review-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .review-meta i {
+        margin-right: 3px;
+    }
+    
+    .review-rating {
+        color: #ffc107;
+        font-size: 14px;
+    }
+    
+    .review-title {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .review-text {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    
+    .review-photos {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .review-photo {
+        width: 80px;
+        height: 80px;
+        border-radius: 5px;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .review-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    
+    .review-photo:hover img {
+        transform: scale(1.1);
+    }
+    
+    .review-photo.more {
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #007bff;
+    }
+    
+    .review-aircraft {
+        font-size: 13px;
+        color: #666;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f1f3f5;
+    }
+    
+    .review-aircraft i {
+        color: #007bff;
+        margin-right: 5px;
+    }
+    
+    .review-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f3f5;
+    }
+    
+    .vote-section {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .vote-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        background: white;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .vote-btn:hover {
+        background: #f8f9fa;
+    }
+    
+    .vote-btn.helpful.active {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    
+    .vote-btn.not-helpful.active {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+    
+    .report-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 13px;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+    }
+    
+    .report-btn:hover {
+        opacity: 1;
+    }
+    
+    .review-response {
+        margin-top: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 3px solid #007bff;
+    }
+    
+    .response-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 13px;
+        color: #666;
+    }
+    
+    .response-header i {
+        color: #007bff;
+    }
+    
+    .response-author {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .response-text {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.5;
+    }
+</style>

@@ -1,0 +1,73 @@
+<!-- templates/payments/payment_instructions.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Instructions - FlynJet{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-envelope fa-4x text-primary mb-3"></i>
+                            <h2>Payment Instructions Sent</h2>
+                            <p class="lead">Please check your email for payment details</p>
+                        </div>
+                        
+                        <div class="alert alert-success mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Instructions Sent!</strong><br>
+                            We have sent payment instructions to <strong>{{ user.email }}</strong>.
+                            Please check your inbox (and spam folder) for details on how to complete your payment.
+                        </div>
+                        
+                        <div class="card mb-4 border-0 bg-light">
+                            <div class="card-body">
+                                <h5><i class="fas fa-info-circle me-2"></i>Payment Summary</h5>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Payment Reference:</strong></p>
+                                        <p><strong>Booking Reference:</strong></p>
+                                        <p><strong>Amount:</strong></p>
+                                        <p><strong>Payment Method:</strong></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><code>{{ payment.transaction_id }}</code></p>
+                                        <p><code>{{ booking.booking_reference }}</code></p>
+                                        <p><strong>${{ payment.amount_usd|floatformat:2 }}</strong></p>
+                                        <p>{{ payment.get_payment_method_display }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Important:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Your payment will be confirmed once we receive the funds</li>
+                                <li>You will receive a confirmation email once payment is verified</li>
+                                <li>If you don't see the email within 10 minutes, please check your spam folder</li>
+                                <li>For any questions, contact us at info@flynjet.com</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'bookings:detail' booking.id %}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-eye me-2"></i>View Booking
+                            </a>
+                            <a href="{% url 'core:home' %}" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Return Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

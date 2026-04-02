@@ -1,0 +1,171 @@
+<!-- templates/tracking/dashboard.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Flight Tracking Dashboard - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Flight Tracking Dashboard</h2>
+                <a href="{% url 'tracking:cargo_tracking' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-box me-2"></i>Track Cargo
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Active Flights</h6>
+                    <h3 class="mb-0">{{ active_tracks|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Delayed Flights</h6>
+                    <h3 class="mb-0">{{ delayed_tracks|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Scheduled</h6>
+                    <h3 class="mb-0">{{ scheduled_tracks|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Cargo Shipments</h6>
+                    <h3 class="mb-0">{{ cargo_tracks|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Flights Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Active Flights</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>ETA</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for track in active_tracks %}
+                        <tr>
+                            <td>
+                                <strong>{{ track.flight_number }}</strong><br>
+                                <small class="text-muted">{{ track.aircraft_registration }}</small>
+                            </td>
+                            <td>
+                                {{ track.departure_airport }} → {{ track.arrival_airport }}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if track.status == 'in_air' %}success{% elif track.status == 'delayed' %}warning{% elif track.status == 'boarding' %}info{% else %}secondary{% endif %}">
+                                    {{ track.get_status_display }}
+                                </span>
+                                {% if track.cargo_status != 'pending' %}
+                                <span class="badge bg-secondary ms-1">
+                                    <i class="fas fa-box"></i> {{ track.get_cargo_status_display }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar" style="width: {{ track.progress_percentage }}%"></div>
+                                </div>
+                                <small>{{ track.progress_percentage }}%</small>
+                            </td>
+                            <td>
+                                {% if track.estimated_arrival %}
+                                {{ track.estimated_arrival|date:"H:i" }}
+                                <br><small class="text-muted">{{ track.estimated_arrival|timeuntil }}</small>
+                                {% else %}
+                                --
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'tracking:flight_track' track.booking.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Track
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <p class="text-muted mb-0">No active flights</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scheduled Flights -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Scheduled Flights</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Departure</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for track in scheduled_tracks %}
+                        <tr>
+                            <td><strong>{{ track.flight_number }}</strong></td>
+                            <td>{{ track.departure_airport }} → {{ track.arrival_airport }}</td>
+                            <td>{{ track.departure_time|date:"M d, H:i" }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ track.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'tracking:flight_track' track.booking.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                             </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <p class="text-muted mb-0">No scheduled flights</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

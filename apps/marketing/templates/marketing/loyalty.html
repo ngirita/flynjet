@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Loyalty Program - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold">Loyalty Program</h1>
+            <p class="text-muted">Earn points on every flight and enjoy exclusive benefits</p>
+        </div>
+    </div>
+    
+    <!-- Tier Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <h3 class="display-4 fw-bold">{{ account.points_balance }}</h3>
+                            <p class="mb-0">Points Balance</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="h2 mb-0">{{ account.current_tier|title }}</h3>
+                            <p class="mb-0">Current Tier</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="h2 mb-0">${{ points_value|floatformat:2 }}</h3>
+                            <p class="mb-0">Points Value</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tier Progress -->
+    {% if next_tier %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Progress to {{ next_tier|title }}</h5>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ account.tier_progress }}%;" 
+                             aria-valuenow="{{ account.tier_progress }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                    <p class="text-muted mt-2">{{ account.lifetime_points }} lifetime points</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Benefits -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3>Tier Benefits</h3>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Bronze</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>1 point per $1 spent</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Priority check-in</li>
+                        <li><i class="fas fa-times text-muted me-2"></i>Lounge access</li>
+                        <li><i class="fas fa-times text-muted me-2"></i>Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Gold</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>1.5 points per $1 spent</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Priority check-in</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Lounge access</li>
+                        <li><i class="fas fa-times text-muted me-2"></i>Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Platinum</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>2 points per $1 spent</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Priority check-in</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Lounge access</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Source</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if transaction.transaction_type == 'earn' %}success{% else %}warning{% endif %}">
+                                            {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.get_source_display }}</td>
+                                    <td class="fw-bold">
+                                        {% if transaction.transaction_type == 'earn' %}+{% else %}-{% endif %}
+                                        {{ transaction.points }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No transactions yet
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

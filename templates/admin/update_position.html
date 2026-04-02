@@ -1,0 +1,181 @@
+<!-- templates/admin/tracking/update_position.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 400px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        width: 100%;
+    }
+    .position-form {
+        margin-top: 20px;
+    }
+    .form-row {
+        margin-bottom: 15px;
+    }
+    .form-row label {
+        display: inline-block;
+        width: 150px;
+        font-weight: bold;
+    }
+    .form-row input {
+        width: 200px;
+        padding: 5px;
+    }
+    .info-text {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #666;
+    }
+    .custom-marker {
+        background: #dc3545;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Update Position - {{ track.flight_number }}</h1>
+    
+    <div class="info-text">
+        <i class="fas fa-info-circle"></i> 
+        Click on the map or drag the marker to set position. Coordinates will auto-fill in the form.
+    </div>
+    
+    <div id="map"></div>
+    
+    <form method="post" class="position-form">
+        {% csrf_token %}
+        
+        <div class="module">
+            <h2>Current Position</h2>
+            
+            <div class="form-row">
+                <label for="latitude">Latitude:</label>
+                <input type="text" name="latitude" id="latitude" value="{{ track.latitude|default:'' }}" required step="any">
+            </div>
+            
+            <div class="form-row">
+                <label for="longitude">Longitude:</label>
+                <input type="text" name="longitude" id="longitude" value="{{ track.longitude|default:'' }}" required step="any">
+            </div>
+            
+            <div class="form-row">
+                <label for="altitude">Altitude (ft):</label>
+                <input type="text" name="altitude" id="altitude" value="{{ track.altitude|default:'' }}" step="any">
+            </div>
+            
+            <div class="form-row">
+                <label for="speed">Speed (kts):</label>
+                <input type="text" name="speed" id="speed" value="{{ track.speed|default:'' }}" step="any">
+            </div>
+            
+            <div class="form-row">
+                <label for="heading">Heading (°):</label>
+                <input type="text" name="heading" id="heading" value="{{ track.heading|default:'' }}" step="any">
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Update Position" class="default">
+            <a href="{% url 'admin:tracking_flighttrack_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map with OpenStreetMap
+    const map = L.map('map').setView([{{ track.latitude|default:"39.8283" }}, {{ track.longitude|default:"-98.5795" }}], 5);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Create custom marker icon
+    const markerIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background: #dc3545; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+    
+    // Add draggable marker
+    const marker = L.marker([{{ track.latitude|default:"39.8283" }}, {{ track.longitude|default:"-98.5795" }}], {
+        draggable: true,
+        icon: markerIcon
+    }).addTo(map);
+    
+    // Update form when marker is dragged
+    marker.on('dragend', function(e) {
+        const latLng = marker.getLatLng();
+        document.getElementById('latitude').value = latLng.lat.toFixed(6);
+        document.getElementById('longitude').value = latLng.lng.toFixed(6);
+    });
+    
+    // Update marker and form when map is clicked
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+        document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+    });
+    
+    // If there's existing position, center map on it
+    {% if track.latitude and track.longitude %}
+    map.setView([{{ track.latitude }}, {{ track.longitude }}], 8);
+    {% endif %}
+    
+    // Add search functionality (optional)
+    function searchLocation() {
+        const query = prompt("Enter location to search:", "");
+        if (query) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lng = parseFloat(data[0].lon);
+                        map.setView([lat, lng], 10);
+                        marker.setLatLng([lat, lng]);
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+                    } else {
+                        alert("Location not found");
+                    }
+                })
+                .catch(error => {
+                    console.error("Search error:", error);
+                    alert("Search failed");
+                });
+        }
+    }
+    
+    // Add search button to controls (optional)
+    const searchBtn = document.createElement('button');
+    searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+    searchBtn.style.position = 'absolute';
+    searchBtn.style.top = '10px';
+    searchBtn.style.right = '80px';
+    searchBtn.style.zIndex = '1000';
+    searchBtn.style.padding = '8px 12px';
+    searchBtn.style.background = 'white';
+    searchBtn.style.border = '1px solid #dee2e6';
+    searchBtn.style.borderRadius = '5px';
+    searchBtn.style.cursor = 'pointer';
+    searchBtn.onclick = searchLocation;
+    document.querySelector('#map').parentNode.appendChild(searchBtn);
+</script>
+{% endblock %}

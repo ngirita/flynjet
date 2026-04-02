@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moderate Reviews - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reviews/css/reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">Review Moderation</h1>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h2>{{ pending_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Approved</h5>
+                    <h2>{{ approved_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Flagged</h5>
+                    <h2>{{ flagged_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Reported</h5>
+                    <h2>{{ reported_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="flagged">Flagged</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Rating</label>
+                    <select name="rating" class="form-control">
+                        <option value="">All</option>
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Review content...">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Moderation Queue -->
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {% if not request.GET.status %}active{% endif %}" 
+                       href="?">All</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.status == 'pending' %}active{% endif %}" 
+                       href="?status=pending">Pending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.status == 'flagged' %}active{% endif %}" 
+                       href="?status=flagged">Flagged</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.GET.status == 'reported' %}active{% endif %}" 
+                       href="?status=reported">Reported</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="moderation-queue">
+                {% for review in reviews %}
+                <div class="queue-item {% if review.status == 'pending' %}pending{% elif review.status == 'flagged' %}flagged{% endif %}">
+                    <div class="queue-content">
+                        <div class="d-flex justify-content-between">
+                            <h5>{{ review.title }}</h5>
+                            <span class="badge bg-{% if review.status == 'approved' %}success
+                                                     {% elif review.status == 'rejected' %}danger
+                                                     {% elif review.status == 'pending' %}warning
+                                                     {% else %}secondary{% endif %}">
+                                {{ review.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="mb-1">
+                            <strong>{{ review.user.email }}</strong> | 
+                            Rating: {{ review.overall_rating }}/5 |
+                            Date: {{ review.created_at|date:"M d, Y H:i" }}
+                        </p>
+                        
+                        <p class="mb-2">{{ review.content|truncatechars:200 }}</p>
+                        
+                        {% if review.report_count > 0 %}
+                        <p class="text-danger">
+                            <i class="fas fa-flag"></i> Reported {{ review.report_count }} times
+                        </p>
+                        {% endif %}
+                        
+                        {% if review.moderation_note %}
+                        <p class="text-muted small">Note: {{ review.moderation_note }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="queue-actions">
+                        <button class="btn btn-sm btn-success" onclick="moderate('{{ review.id }}', 'approve')">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="moderate('{{ review.id }}', 'reject')">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="moderate('{{ review.id }}', 'feature')">
+                            <i class="fas fa-star"></i> Feature
+                        </button>
+                        <a href="{% url 'reviews:detail' review.id %}" class="btn btn-sm btn-info" target="_blank">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <p class="text-muted">No reviews to moderate</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Moderation Modal -->
+<div class="modal fade" id="moderationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Moderation Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="moderationForm">
+                    <input type="hidden" id="moderationReviewId">
+                    <input type="hidden" id="moderationAction">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason/Note (optional)</label>
+                        <textarea class="form-control" id="moderationNote" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmModeration()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const moderationModal = new bootstrap.Modal(document.getElementById('moderationModal'));
+    
+    function moderate(reviewId, action) {
+        document.getElementById('moderationReviewId').value = reviewId;
+        document.getElementById('moderationAction').value = action;
+        moderationModal.show();
+    }
+    
+    function confirmModeration() {
+        const reviewId = document.getElementById('moderationReviewId').value;
+        const action = document.getElementById('moderationAction').value;
+        const note = document.getElementById('moderationNote').value;
+        
+        fetch(`/api/v1/reviews/${reviewId}/moderate/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                action: action,
+                reason: note
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            moderationModal.hide();
+            location.reload();
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+<div class="data-table">
+    <div class="table-header">
+        <h5 class="table-title">{{ title|default:'Recent Bookings' }}</h5>
+        <div class="table-actions">
+            <a href="{{ view_all_url|default:'#' }}" class="btn btn-sm btn-outline-primary">
+                View All
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Customer</th>
+                    <th>Route</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="{{ table_id|default:'bookingsTableBody' }}">
+                {% for booking in bookings %}
+                <tr>
+                    <td><strong>{{ booking.booking_reference }}</strong></td>
+                    <td>{{ booking.user.email }}</td>
+                    <td>{{ booking.departure_airport }} → {{ booking.arrival_airport }}</td>
+                    <td>{{ booking.departure_datetime|date:"M d, Y" }}</td>
+                    <td>${{ booking.total_amount_usd|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge bg-{% if booking.status == 'confirmed' %}success
+                                               {% elif booking.status == 'pending' %}warning
+                                               {% elif booking.status == 'cancelled' %}danger
+                                               {% else %}info{% endif %}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'bookings:detail' booking.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <p class="text-muted mb-0">No bookings found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function refreshBookingsTable() {
+        fetch('{% url "analytics:api_recent_bookings" %}')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('{{ table_id|default:"bookingsTableBody" }}');
+                tbody.innerHTML = data.map(booking => `
+                    <tr>
+                        <td><strong>${booking.reference}</strong></td>
+                        <td>${booking.customer}</td>
+                        <td>${booking.route}</td>
+                        <td>${new Date(booking.date).toLocaleDateString()}</td>
+                        <td>$${booking.amount.toFixed(2)}</td>
+                        <td><span class="badge bg-${booking.status_color}">${booking.status}</span></td>
+                        <td>
+                            <a href="/bookings/${booking.id}/" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+    
+    // Auto-refresh every 5 minutes
+    setInterval(refreshBookingsTable, 300000);
+</script>

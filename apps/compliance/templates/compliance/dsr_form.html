@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Data Subject Request - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Data Subject Request</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Under GDPR and CCPA, you have the right to access, rectify, or delete your personal data.
+                        Submit a request below and we'll process it within 30 days.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Request Type</label>
+                            {{ form.request_type }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            {{ form.description }}
+                            <small class="text-muted">
+                                Please provide any additional details that might help us process your request.
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            We will verify your identity before processing this request.
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            Submit Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

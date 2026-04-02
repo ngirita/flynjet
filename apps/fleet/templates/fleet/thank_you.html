@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thank You - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    <h2 class="mb-3">Thank You for Your Enquiry!</h2>
+                    <p class="lead text-muted mb-4">
+                        Your enquiry has been received and our team will get back to you within 24 hours.
+                    </p>
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-envelope me-2"></i>
+                        A confirmation email has been sent to your inbox.
+                    </div>
+                    <a href="{% url 'fleet:list' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plane me-2"></i>Browse More Aircraft
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

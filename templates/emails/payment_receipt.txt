@@ -1,0 +1,28 @@
+<!-- C:\Users\user\flynjet\templates\emails\payment_receipt.txt -->
+
+FlynJet - Payment Receipt
+================================
+
+Dear {{ payment.user.get_full_name|default:payment.user.email }},
+
+Thank you for your payment. Your transaction has been completed successfully.
+
+Payment Details:
+- Transaction ID: {{ payment.transaction_id }}
+- Payment Date: {{ payment.payment_date|date:"F j, Y H:i" }}
+- Payment Method: {{ payment.get_payment_method_display }}
+- Status: Completed
+- Amount: ${{ payment.amount_usd|floatformat:2 }}
+
+{% if booking %}
+Booking Details:
+- Booking Reference: {{ booking.booking_reference }}
+- Flight: {{ booking.departure_airport }} → {{ booking.arrival_airport }}
+- Date: {{ booking.departure_datetime|date:"F j, Y" }}
+{% endif %}
+
+If you have any questions about your payment, please contact our support team.
+
+---
+© {% now "Y" %} FlynJet. All rights reserved.
+This is an automated receipt, please do not reply to this email.

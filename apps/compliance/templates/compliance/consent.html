@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Settings - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Privacy Settings</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Manage your privacy preferences. You can update your consent choices at any time.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for type, data in consents.items %}
+                        <div class="consent-item mb-4 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ type|title }} Consent</h6>
+                                    <p class="text-muted small mb-0">
+                                        Version {{ data.version }}
+                                        {% if data.date %}
+                                        - Last updated: {{ data.date|date }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="consent_{{ type }}" id="consent_{{ type }}"
+                                           {% if data.granted %}checked{% endif %}>
+                                </div>
+                            </div>
+                            
+                            {% if data.needs_update %}
+                            <div class="alert alert-warning mt-2 mb-0 py-2">
+                                <small>Your consent needs to be updated to the latest version.</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                Save Preferences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

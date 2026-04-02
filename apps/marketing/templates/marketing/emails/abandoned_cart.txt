@@ -1,0 +1,20 @@
+Don't Miss Out! - Complete Your Booking
+
+Hello {{ user.get_full_name|default:user.email }},
+
+You started booking a flight but didn't complete it. Your selected aircraft is still available, but it might not last long!
+
+Your Selected Flight:
+Route: {{ booking.departure_airport }} → {{ booking.arrival_airport }}
+Date: {{ booking.departure_datetime|date:"F j, Y H:i" }}
+Aircraft: {{ booking.aircraft.model }}
+Total: ${{ booking.total_amount_usd }}
+
+⏰ Your booking will expire in 24 hours
+
+Complete your booking now: {{ site_url }}{% url 'bookings:detail' booking.id %}
+
+Need help? Our support team is available 24/7.
+
+Best regards,
+The FlynJet Team

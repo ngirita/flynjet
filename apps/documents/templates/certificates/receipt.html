@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Payment Receipt - {{ document.document_number }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .receipt {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border: 1px solid #ddd;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #28a745;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .receipt-number {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        
+        .details {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        
+        .items {
+            margin: 20px 0;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        
+        .totals {
+            margin: 20px 0;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        
+        .grand-total {
+            font-size: 18px;
+            color: #28a745;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px dashed #28a745;
+        }
+        
+        .payment-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            font-size: 12px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 11px;
+            border-top: 1px dashed #ddd;
+            padding-top: 20px;
+        }
+        
+        .thank-you {
+            text-align: center;
+            font-size: 16px;
+            color: #28a745;
+            margin: 20px 0;
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .qr-code img {
+            width: 100px;
+            height: 100px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .receipt {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="receipt-number">Receipt #: {{ document.document_number }}</div>
+        
+        <div class="header">
+            <h1>PAYMENT RECEIPT</h1>
+            <p>FlynJet Private Aviation</p>
+        </div>
+        
+        <div class="details">
+            <div class="detail-row">
+                <span>Date:</span>
+                <span>{{ document.created_at|date:"F j, Y H:i" }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Customer:</span>
+                <span>{{ document.user.get_full_name|default:document.user.email }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Booking Reference:</span>
+                <span>{{ document.booking.booking_reference|default:"N/A" }}</span>
+            </div>
+        </div>
+        
+        <div class="items">
+            <h3 style="margin: 0 0 15px; font-size: 14px;">PAYMENT DETAILS</h3>
+            
+            {% for item in document.items.all %}
+            <div class="item-row">
+                <span>{{ item.description }}</span>
+                <span>${{ item.line_total_usd|floatformat:2 }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>${{ document.subtotal_usd|floatformat:2 }}</span>
+            </div>
+            <div class="total-row">
+                <span>Tax:</span>
+                <span>${{ document.tax_amount_usd|floatformat:2 }}</span>
+            </div>
+            {% if document.discount_amount_usd > 0 %}
+            <div class="total-row">
+                <span>Discount:</span>
+                <span>-${{ document.discount_amount_usd|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+            <div class="total-row grand-total">
+                <span>TOTAL PAID:</span>
+                <span>${{ document.total_usd|floatformat:2 }}</span>
+            </div>
+        </div>
+        
+        <div class="payment-info">
+            <div class="detail-row">
+                <span>Payment Method:</span>
+                <span>{{ document.payment_method|default:"Credit Card"|upper }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Transaction ID:</span>
+                <span>{{ document.payment_transaction_id|default:document.document_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Payment Status:</span>
+                <span>{{ document.get_status_display|upper }}</span>
+            </div>
+        </div>
+        
+        <div class="thank-you">
+            Thank you for choosing FlynJet!
+        </div>
+        
+        <div class="qr-code">
+            {% if document.qr_code %}
+            <img src="{{ document.qr_code.url }}" alt="QR Code">
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>This receipt is electronically generated and valid without signature.</p>
+            <p>For any questions, contact info@flynjet.com</p>
+            <p>FlynJet Air and Logistics. • Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501</p>
+        </div>
+    </div>
+</body>
+</html>

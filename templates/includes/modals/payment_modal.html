@@ -1,0 +1,126 @@
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Make Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="booking-summary mb-4" id="paymentBookingSummary"></div>
+                
+                <ul class="nav nav-tabs mb-3" id="paymentTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#card" type="button" role="tab">
+                            <i class="fas fa-credit-card"></i> Card
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="tab" data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin"></i> Crypto
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">
+                            <i class="fas fa-university"></i> Bank Transfer
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="paymentTabContent">
+                    <!-- Card Payment -->
+                    <div class="tab-pane fade show active" id="card" role="tabpanel">
+                        <form id="cardPaymentForm">
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-control" id="cardNumber" placeholder="4242 4242 4242 4242">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" id="expiry" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">CVC</label>
+                                    <input type="text" class="form-control" id="cvc" placeholder="123">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-control" id="cardholderName">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Pay Now</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Crypto Payment -->
+                    <div class="tab-pane fade" id="crypto" role="tabpanel">
+                        <div class="text-center mb-4">
+                            <p class="mb-2">Send the exact amount to this address:</p>
+                            <div class="bg-light p-3 rounded">
+                                <code id="walletAddress" class="d-block mb-2">0x742d35Cc6634C0532925a3b844Bc454e4438f44e</code>
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyWalletAddress()">
+                                    Copy Address
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Payment will be processed after 12 confirmations (approx. 10-30 minutes).
+                        </div>
+                    </div>
+                    
+                    <!-- Bank Transfer -->
+                    <div class="tab-pane fade" id="bank" role="tabpanel">
+                        <div class="bank-details">
+                            <h6>Bank Transfer Details</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Bank:</th>
+                                    <td>First International Bank</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Name:</th>
+                                    <td>FlynJet Air and Logistics.</td>
+                                </tr>
+                                <tr>
+                                    <th>Account Number:</th>
+                                    <td>1234567890</td>
+                                </tr>
+                                <tr>
+                                    <th>Routing Number:</th>
+                                    <td>021000021</td>
+                                </tr>
+                                <tr>
+                                    <th>SWIFT:</th>
+                                    <td>FIBCUS33</td>
+                                </tr>
+                                <tr>
+                                    <th>Reference:</th>
+                                    <td><strong id="paymentReference"></strong></td>
+                                </tr>
+                            </table>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock"></i>
+                                Please include the reference number. Transfers may take 1-3 business days.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyWalletAddress() {
+    const address = document.getElementById('walletAddress').textContent;
+    navigator.clipboard.writeText(address).then(() => {
+        alert('Wallet address copied to clipboard');
+    });
+}
+</script>

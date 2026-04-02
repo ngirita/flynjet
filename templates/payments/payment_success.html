@@ -1,0 +1,106 @@
+<!-- templates/payments/payment_success.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Successful - FlynJet{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h2>Payment Successful!</h2>
+                            <p class="lead">Your payment has been received and your booking is confirmed.</p>
+                        </div>
+                        
+                        <div class="alert alert-success mb-4">
+                            <i class="fas fa-check me-2"></i>
+                            <strong>Booking Confirmed!</strong><br>
+                            Your booking reference: <strong>{{ booking.booking_reference }}</strong>
+                        </div>
+                        
+                        <div class="card mb-4 border-0 bg-light">
+                            <div class="card-body">
+                                <h5><i class="fas fa-receipt me-2"></i>Payment Details</h5>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Amount Paid:</strong></p>
+                                        <p><strong>Payment Method:</strong></p>
+                                        <p><strong>Transaction ID:</strong></p>
+                                        <p><strong>Payment Date:</strong></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>${{ payment.amount_usd|floatformat:2 }}</strong></p>
+                                        <p>{{ payment.get_payment_method_display }}</p>
+                                        <p><code>{{ payment.transaction_id }}</code></p>
+                                        <p>{{ payment.payment_date|date:"F j, Y H:i" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                                        <h5>Invoice</h5>
+                                        <p class="text-muted small">Download your payment invoice</p>
+                                        {% if invoice %}
+                                            <a href="{% url 'documents:download' invoice.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-download me-2"></i>Download Invoice
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'documents:generate' booking.id 'invoice' %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-download me-2"></i>Generate Invoice
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-ticket-alt fa-3x text-primary mb-3"></i>
+                                        <h5>E-Ticket</h5>
+                                        <p class="text-muted small">Download your flight ticket</p>
+                                        {% if ticket %}
+                                            <a href="{% url 'documents:download' ticket.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-download me-2"></i>Download Ticket
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'documents:generate' booking.id 'ticket' %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-download me-2"></i>Generate Ticket
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-envelope me-2"></i>
+                            <strong>Check your email!</strong><br>
+                            We've sent your invoice and ticket to <strong>{{ user.email }}</strong>.
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'bookings:detail' booking.id %}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-eye me-2"></i>View Booking
+                            </a>
+                            <a href="{% url 'core:home' %}" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Return Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Document - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header {% if document and is_valid %}bg-success{% else %}bg-warning{% endif %} text-white py-3">
+                    <h3 class="mb-0">Document Verification</h3>
+                    <p class="mb-0 text-white-50">Verify the authenticity of your document</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ error }}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'core:home' %}" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Return to Home
+                            </a>
+                        </div>
+                    {% elif document %}
+                        <div class="verification-status text-center mb-4">
+                            {% if is_valid %}
+                                <div class="display-1 text-success mb-3">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h4 class="text-success">✓ Document Verified</h4>
+                                <p class="text-muted">This document is authentic and has been verified by FlynJet.</p>
+                            {% else %}
+                                <div class="display-1 text-danger mb-3">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <h4 class="text-danger">✗ Verification Failed</h4>
+                                <p class="text-muted">This document could not be verified or may have been tampered with.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="document-details">
+                            <h5 class="border-bottom pb-2 mb-3">Document Details</h5>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Document ID:</div>
+                                <div class="col-md-8">{{ document.id|truncatechars:12 }}</div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Document Type:</div>
+                                <div class="col-md-8">{{ document.get_document_type_display|default:document.document_type|title }}</div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Title:</div>
+                                <div class="col-md-8">{{ document.title }}</div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Created:</div>
+                                <div class="col-md-8">{{ document.created_at|date:"F j, Y H:i" }}</div>
+                            </div>
+                            
+                            {% if document.expires_at %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Expires:</div>
+                                <div class="col-md-8">{{ document.expires_at|date:"F j, Y H:i" }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Issued By:</div>
+                                <div class="col-md-8">{{ document.user.get_full_name|default:document.user.email }}</div>
+                            </div>
+                            
+                            {% if document.signed_at %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Signed At:</div>
+                                <div class="col-md-8">{{ document.signed_at|date:"F j, Y H:i" }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if document.is_signed %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Signed By:</div>
+                                <div class="col-md-8">{{ document.user.get_full_name|default:document.user.email }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Status:</div>
+                                <div class="col-md-8">
+                                    <span class="badge {% if document.is_signed %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ document.get_status_display|default:"Draft" }}
+                                    </span>
+                                    {% if document.is_signed %}
+                                        <span class="badge bg-info ms-2">Signed & Verified</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if document.content_data %}
+                        <div class="document-content mt-4">
+                            <h5 class="border-bottom pb-2 mb-3">Document Information</h5>
+                            <div class="bg-light p-3 rounded">
+                                {% if document.document_type == 'invoice' %}
+                                    <p><strong>Invoice Number:</strong> {{ document.content_data.document_number|default:"N/A" }}</p>
+                                    <p><strong>Amount:</strong> ${{ document.content_data.total_amount_usd|default:"0.00" }}</p>
+                                    <p><strong>Customer:</strong> {{ document.content_data.customer_name|default:"N/A" }}</p>
+                                {% elif document.document_type == 'contract' %}
+                                    <p><strong>Contract Type:</strong> {{ document.content_data.contract_type|default:"N/A" }}</p>
+                                    <p><strong>Parties:</strong> {{ document.content_data.parties|default:"N/A" }}</p>
+                                {% else %}
+                                    <pre class="mb-0" style="white-space: pre-wrap;">{{ document.content_data|pprint }}</pre>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if document.pdf_file %}
+                        <div class="text-center mt-4">
+                            <a href="{{ document.pdf_file.url }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-file-pdf me-2"></i>View Full Document
+                            </a>
+                            <a href="{% url 'documents:download' document.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-download me-2"></i>Download PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="verification-footer mt-4 pt-3 border-top">
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    This document is digitally signed and verified by FlynJet.
+                                    Verification timestamp: {% now "Y-m-d H:i:s" %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Please provide a valid verification token.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .document-details {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    .verification-status {
+        padding: 20px;
+    }
+    .document-content pre {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}

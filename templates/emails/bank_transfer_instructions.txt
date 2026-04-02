@@ -1,0 +1,41 @@
+FlynJet - Bank Transfer Instructions
+====================================
+
+Dear {{ user.get_full_name|default:user.email }},
+
+Thank you for choosing FlynJet. Please complete your payment using the bank transfer details below:
+
+Booking Reference: {{ booking.booking_reference }}
+Amount: ${{ payment.amount_usd|floatformat:2 }} USD
+Payment Reference: {{ payment.transaction_id }}
+
+{% if bank_detail %}
+BANK TRANSFER DETAILS
+---------------------
+Bank Name: {{ bank_detail.bank_name }}
+Account Name: {{ bank_detail.account_name }}
+Account Number: {{ bank_detail.account_number }}
+{% if bank_detail.swift_code %}SWIFT Code: {{ bank_detail.swift_code }}{% endif %}
+{% if bank_detail.iban %}IBAN: {{ bank_detail.iban }}{% endif %}
+{% if bank_detail.routing_number %}Routing Number: {{ bank_detail.routing_number }}{% endif %}
+Currency: {{ bank_detail.currency }}
+{% if bank_detail.branch_address %}Branch Address: {{ bank_detail.branch_address }}{% endif %}
+{% else %}
+NOTE: Bank transfer details will be provided upon request. Please contact support.
+{% endif %}
+
+IMPORTANT:
+- Please include your payment reference: {{ payment.transaction_id }} in the transfer notes
+- Bank transfers typically take 1-2 business days to process
+- Your booking will be confirmed once we receive the funds
+- You will receive a confirmation email once payment is verified
+
+If you have any questions, please contact us at info@flynjet.com
+
+Thank you for choosing FlynJet!
+
+---
+FlynJet Air and Logistics.
+Jomo Kenyatta International Airport. Airport North Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501
+www.flynjet.com

@@ -1,0 +1,39 @@
+Dispute Status Update - FlynJet
+
+Hello {{ dispute.user.get_full_name|default:dispute.user.email }},
+
+We wanted to inform you that the status of your dispute has been updated.
+
+Dispute Number: {{ dispute.dispute_number }}
+Booking Reference: {{ dispute.booking.booking_reference }}
+Previous Status: {{ old_status }}
+New Status: {{ new_status }}
+{% if dispute.assigned_to %}
+Assigned To: {{ dispute.assigned_to.get_full_name|default:dispute.assigned_to.email }}
+{% endif %}
+
+Status: {{ dispute.get_status_display }}
+
+Our team is working diligently to resolve your issue. You can check the latest updates and respond to messages through your dispute dashboard.
+
+View your dispute here: {{ site_url }}{% url 'disputes:detail' dispute.id %}
+
+What happens next?
+{% if new_status == 'investigating' %}
+Your dispute is now under investigation. Our team will review all details and may contact you for additional information.
+{% elif new_status == 'approved' %}
+Your dispute has been approved! We'll process the resolution shortly.
+{% elif new_status == 'rejected' %}
+We've reviewed your dispute and unfortunately cannot approve it at this time. You can view the detailed explanation in your dispute dashboard.
+{% elif new_status == 'resolved' %}
+Great news! Your dispute has been resolved. The agreed resolution will be processed within 2-3 business days.
+{% elif new_status == 'escalated' %}
+Your dispute has been escalated to our management team for further review. This ensures your case receives the highest level of attention.
+{% endif %}
+
+If you have any questions or need to provide additional information, please log in to your account to add a message to the dispute thread.
+
+Thank you for your patience and cooperation.
+
+Best regards,
+FlynJet Support Team

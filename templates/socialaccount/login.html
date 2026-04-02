@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% load static %}
+
+{% block title %}Social Login - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <i class="fab fa-{{ provider.id }} fa-3x mb-2"></i>
+                    <h3 class="mb-0">Sign In Via {{ provider.name }}</h3>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <p class="lead mb-4">
+                        You are about to sign in using a third-party account from 
+                        <strong>{{ provider.name }}</strong>.
+                    </p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        By continuing, you agree to our 
+                        <a href="{% url 'core:terms' %}" class="alert-link">Terms of Service</a> and 
+                        <a href="{% url 'core:privacy' %}" class="alert-link">Privacy Policy</a>.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Continue with {{ provider.name }}
+                            </button>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

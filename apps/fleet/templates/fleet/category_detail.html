@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold mb-3">{{ category.name }}</h1>
+            {% if category.description %}
+            <p class="lead text-muted">{{ category.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        {% for aircraft in aircraft %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ aircraft.manufacturer.name }} {{ aircraft.model }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-users me-2"></i>{{ aircraft.passenger_capacity }} Passengers<br>
+                        <i class="fas fa-tachometer-alt me-2"></i>{{ aircraft.max_range_nm }} nm Range
+                    </p>
+                    <a href="{% url 'fleet:detail' aircraft.id %}" class="btn btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                No aircraft available in this category at the moment.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'fleet:list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to All Fleet
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

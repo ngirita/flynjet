@@ -1,0 +1,87 @@
+<div id="cookieConsent" class="cookie-banner" style="display: none;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p class="mb-md-0">
+                    <i class="fas fa-cookie-bite me-2"></i>
+                    We use cookies to enhance your experience. By continuing to visit this site,
+                    you agree to our use of cookies.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="manageCookies()">
+                    Manage
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="acceptCookies()">
+                    Accept
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="rejectCookies()">
+                    Reject
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cookie-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(33, 37, 41, 0.95);
+        color: white;
+        padding: 15px 0;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    
+    function showCookieBanner() {
+        const consent = getCookie('cookie_consent');
+        if (!consent) {
+            document.getElementById('cookieConsent').style.display = 'block';
+        }
+    }
+    
+    function acceptCookies() {
+        fetch('/compliance/cookie-consent/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'consent=true'
+        }).then(() => {
+            document.getElementById('cookieConsent').style.display = 'none';
+        });
+    }
+    
+    function rejectCookies() {
+        fetch('/compliance/cookie-consent/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'consent=false'
+        }).then(() => {
+            document.getElementById('cookieConsent').style.display = 'none';
+        });
+    }
+    
+    function manageCookies() {
+        // Open cookie preferences modal
+        window.location.href = '/compliance/consent/';
+    }
+    
+    document.addEventListener('DOMContentLoaded', showCookieBanner);
+</script>

@@ -1,0 +1,574 @@
+{% load math_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Contract {{ contract.contract_number }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: "FLY N'JET AIR AND LOGISTICS";
+                font-size: 10pt;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #c5a059;
+            padding-bottom: 15px;
+        }
+        
+        .logo {
+            max-height: 150px;
+            max-width: 300px;
+            width: auto;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .company-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #c5a059;
+            letter-spacing: 2px;
+        }
+        
+        .company-details {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .contract-title {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #1a1a2e;
+        }
+        
+        .info-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #c5a059;
+        }
+        
+        .info-row {
+            display: flex;
+            margin: 5px 0;
+        }
+        
+        .info-label {
+            width: 150px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #c5a059;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .pricing-table {
+            background: white;
+        }
+        
+        .pricing-table td {
+            padding: 10px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        
+        .checklist {
+            margin: 15px 0;
+        }
+        
+        .checklist-item {
+            display: inline-block;
+            width: 45%;
+            margin: 5px 0;
+        }
+        
+        .checklist-item .checked {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .signature-section {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .signature-box {
+            width: 45%;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #000;
+            margin-top: 30px;
+            padding-bottom: 5px;
+        }
+        
+        .payment-link {
+            background: #c5a059;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .payment-link a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .payment-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 8pt;
+            text-align: center;
+            color: #999;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+        }
+        
+        .amenity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .amenity-item {
+            padding: 5px;
+            border-left: 3px solid #c5a059;
+            background: #f9f9f9;
+        }
+        
+        .amenity-name {
+            font-weight: bold;
+            color: #c5a059;
+        }
+        
+        .custom-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        
+        .custom-item {
+            margin: 5px 0;
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if company_logo %}
+        <img src="{{ company_logo }}" class="logo" alt="Logo">
+        {% endif %}
+        <div class="company-name">FLY N'JET AIR AND LOGISTICS</div>
+        <div class="company-details">
+            Customer Care Desk: (+44 7393700477) or (+254785651832) Kenya Nairobi<br>
+            Jomo Kenyatta International Airpot North Road, Embakasi<br>
+            Email: info@flynjet.com |info@flynjet.com
+        </div>
+    </div>
+    
+    <div class="contract-title">
+        CHARTER CONTRACT & INVOICE
+        <br>
+        <span style="font-size: 10pt;">{{ contract.contract_number }}</span>
+    </div>
+
+    <div style="background: #f9f9f9; border-left: 3px solid #c5a059; padding: 10px; margin: 15px 0; font-size: 9pt;">
+        <strong>Note:</strong> Please refer to the accompanying Invoice ({{ contract.invoice_number|default:contract.contract_number }})
+        for payment details and the secure payment link.
+    </div>
+    
+    <!-- Client Details -->
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Client Name:</div>
+            <div class="info-value">{{ contract.client_name }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value">{{ contract.client_email }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Phone:</div>
+            <div class="info-value">{{ contract.client_phone }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Enquiry Reference:</div>
+            <div class="info-value">{{ contract.enquiry.enquiry_number }}</div>
+        </div>
+    </div>
+    
+    <!-- Flight Details -->
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Aircraft:</div>
+            <div class="info-value">{{ contract.aircraft.manufacturer.name }} {{ contract.aircraft.model }} ({{ contract.aircraft.registration_number }})</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Route:</div>
+            <div class="info-value">{{ contract.departure_airport }} → {{ contract.arrival_airport }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Departure:</div>
+            <div class="info-value">{{ contract.departure_datetime|date:"l, F j, Y \a\t g:i A" }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Arrival:</div>
+            <div class="info-value">{{ contract.arrival_datetime|date:"l, F j, Y \a\t g:i A" }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Passengers:</div>
+            <div class="info-value">{{ contract.passenger_count }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Luggage:</div>
+            <div class="info-value">{{ contract.luggage_weight_kg|floatformat:0 }} kg</div>
+        </div>
+    </div>
+    
+    <!-- FULL CHARTER Rates -->
+    <h3>FULL CHARTER RATES</h3>
+    <table class="pricing-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount (USD)</th>
+            </thead>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Base Price ({{ contract.aircraft.model }})</td>
+                <td>${{ contract.base_price_usd|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Fuel Surcharge</td>
+                <td>${{ contract.fuel_surcharge_usd|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Handling Fee</td>
+                <td>${{ contract.handling_fee_usd|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Catering Cost</td>
+                <td>${{ contract.catering_cost_usd|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Insurance</td>
+                <td>${{ contract.insurance_cost_usd|floatformat:2 }}</td>
+            </tr>
+            {% if contract.discount_amount_usd > 0 %}
+            <tr>
+                <td>Discount</td>
+                <td>-${{ contract.discount_amount_usd|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr class="total-row">
+                <td><strong>Subtotal</strong></td>
+                <td>${{ contract.base_price_usd|add:contract.fuel_surcharge_usd|add:contract.handling_fee_usd|add:contract.catering_cost_usd|add:contract.insurance_cost_usd|add:contract.discount_amount_usd|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Tax ({{ contract.tax_rate }}%)</td>
+                <td>${{ contract.total_amount_usd|subtract:contract.base_price_usd|subtract:contract.fuel_surcharge_usd|subtract:contract.handling_fee_usd|subtract:contract.catering_cost_usd|subtract:contract.insurance_cost_usd|add:contract.discount_amount_usd|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td><strong>TOTAL AMOUNT</strong></td>
+                <td><strong>${{ contract.total_amount_usd|floatformat:2 }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- INCLUSIONS & EXCLUSIONS using new checkbox and text fields -->
+    <h3>INCLUSIONS & EXCLUSIONS</h3>
+    
+    <!-- Standard Amenities (from checkboxes) -->
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✓ Standard Amenities Included:</h4>
+        <div class="amenity-grid">
+            {% if contract.amenity_wifi %}
+            <div class="amenity-item">
+                <div class="amenity-name">WiFi</div>
+                <div>High-speed satellite internet</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_catering %}
+            <div class="amenity-item">
+                <div class="amenity-name">Catering</div>
+                <div>In-flight meals and refreshments</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_entertainment %}
+            <div class="amenity-item">
+                <div class="amenity-name">Entertainment System</div>
+                <div>4K screens, streaming</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_conference %}
+            <div class="amenity-item">
+                <div class="amenity-name">Conference Table</div>
+                <div>Seats 6 with power outlets</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_bedroom %}
+            <div class="amenity-item">
+                <div class="amenity-name">Bedroom</div>
+                <div>Private sleeping area</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_shower %}
+            <div class="amenity-item">
+                <div class="amenity-name">Shower</div>
+                <div>In-flight shower facility</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_lavatory %}
+            <div class="amenity-item">
+                <div class="amenity-name">Lavatory</div>
+                <div>Full-size with amenities</div>
+            </div>
+            {% endif %}
+            {% if contract.amenity_galley %}
+            <div class="amenity-item">
+                <div class="amenity-name">Full Galley</div>
+                <div>Gourmet meal preparation</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Additional Services -->
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✓ Additional Services Included:</h4>
+        <div class="amenity-grid">
+            {% if contract.ground_transport_included %}
+            <div class="amenity-item">
+                <div class="amenity-name">Ground Transportation</div>
+                <div>Airport transfers and local transport</div>
+            </div>
+            {% endif %}
+            {% if contract.hotel_accommodation_included %}
+            <div class="amenity-item">
+                <div class="amenity-name">Hotel Accommodation</div>
+                <div>Luxury hotel stay included</div>
+            </div>
+            {% endif %}
+            {% if not contract.ground_transport_included and not contract.hotel_accommodation_included %}
+            <div class="custom-item">No additional services selected</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Custom Inclusions (from text field) -->
+    {% if contract.custom_inclusions_text %}
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✓ Additional Inclusions:</h4>
+        {% for line in contract.custom_inclusions_text.splitlines %}
+            {% if line.strip %}
+            <div class="custom-item">• {{ line.strip }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Custom Amenities (from text field) -->
+    {% if contract.custom_amenities_text %}
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✓ Additional Amenities:</h4>
+        {% for line in contract.custom_amenities_text.splitlines %}
+            {% if line.strip %}
+            <div class="custom-item">• {{ line.strip }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Exclusions (from text field) -->
+    {% if contract.custom_exclusions_text %}
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✗ Exclusions:</h4>
+        {% for line in contract.custom_exclusions_text.splitlines %}
+            {% if line.strip %}
+            <div class="custom-item">• {{ line.strip }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="custom-section">
+        <h4 style="margin: 0 0 10px 0;">✗ Standard Exclusions:</h4>
+        <div class="custom-item">• Pet Travel</div>
+        <div class="custom-item">• Hazardous Materials</div>
+        <div class="custom-item">• Additional Crew beyond standard complement</div>
+        <div class="custom-item">• Special Cargo handling</div>
+    </div>
+    {% endif %}
+    
+    <!-- Cancellation Penalties -->
+    <h3>CANCELLATION PENALTIES</h3>
+    <table class="pricing-table">
+        <thead>
+            <tr>
+                <th>Time Before Departure</th>
+                <th>Levy Applicable</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>10 - 6 days to departure</td>
+                <td>{{ contract.cancellation_10_6_days|default:30 }}%</td>
+            </tr>
+            <tr>
+                <td>5 days prior to departure</td>
+                <td>{{ contract.cancellation_5_days|default:40 }}%</td>
+            </tr>
+            <tr>
+                <td>3 days prior to departure</td>
+                <td>{{ contract.cancellation_3_days|default:50 }}%</td>
+            </tr>
+            <tr>
+                <td>24 hrs prior to departure</td>
+                <td>{{ contract.cancellation_24_hours|default:60 }}%</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    {% if contract.cancellation_notes %}
+    <div class="info-section">
+        <p><strong>Cancellation Notes:</strong> {{ contract.cancellation_notes }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Payment Details -->
+    <h3>PAYMENT DETAILS</h3>
+    <table>
+        <thead><tr><th>Method</th><th>Details</th></tr></thead>
+        <tbody>
+            <tr><td><strong>USDT (TRC20)</strong></td><td>TCU2QowQRYF55ZM1deS7BgXN8Mcfzkw5M</td></tr>
+            <tr><td><strong>Bank Transfer</strong></td><td>Account Name: FLY N'JET AIR AND LOGISTICS<br>Bank: Stanbic Bank Uganda<br>Account: 0140001234567<br>Swift: SBICUGKX</td></tr>
+            <tr><td><strong>Card Payment</strong></td><td>Available via the payment link above (Visa/Mastercard)</td></tr>
+        </tbody>
+    </table>
+    
+    <!-- Terms and Conditions -->
+    <h3>TERMS AND CONDITIONS</h3>
+    <div style="font-size: 9pt;">
+        <p><strong>Quote Validity:</strong> This quote is valid for {{ contract.valid_until|date:"F j, Y" }} and is subject to change without notice if not confirmed within the stipulated period.</p>
+        <p><strong>Payment:</strong> Confirmation of air charter service should be made by clicking the payment link above. Full payment is required before flight departure.</p>
+        <p><strong>Insurance:</strong> Rates are subject to exchange rate fluctuations. All charges are payable in USD.</p>
+        <p><strong>Smoking:</strong> Smoking is strictly prohibited on all flights.</p>
+        <p><strong>Dangerous Goods:</strong> Dangerous Goods, as per IATA Dangerous Goods Regulations, must be declared.</p>
+        <p><strong>Health & Legal Requirements:</strong> The client acknowledges that all applicable health, exit, entry, tax, visa, customs requirements are not the responsibility of Fly N'Jet Air and Logistics.</p>
+        <p><strong>Force Majeure:</strong> Fly N'Jet Air and Logistics shall not be liable for delays or failures in performance resulting from causes beyond reasonable control.</p>
+    </div>
+    
+    <div class="info-section">
+        <p><strong>Note:</strong> Only once the deposit is received, then FLY N'JET AIR AND LOGISTICS begins preparation for positioning. Crew daily allowance is $100.00 per crew member, payable in advance.</p>
+        <p><strong>Aircraft Availability:</strong> This quotation is strictly subject to aircraft availability at time of confirmation.</p>
+    </div>
+    
+    <!-- Quote Acceptance Section with Admin Signature -->
+    <div class="signature-section">
+        <h3>QUOTE ACCEPTANCE</h3>
+        <p>I hereby acknowledge that I have read and accepted this quotation and the applicable terms and conditions listed above. I also confirm that I am duly authorized to confirm this quotation on behalf of the client.</p>
+        
+        <div class="signature-row">
+            <div class="signature-box">
+                <strong>FLY N'JET AIR AND LOGISTICS</strong><br>
+                <div class="signature-line"></div>
+                <div>Date: 
+                    {% if contract.admin_signed_at %}
+                        {{ contract.admin_signed_at|date:"F j, Y" }}
+                    {% else %}
+                        {{ contract.sent_at|date:"F j, Y"|default:created_at }}
+                    {% endif %}
+                </div>
+                <div>Signed By: 
+                    {% if contract.admin_signature %}
+                        {{ contract.admin_signature }}
+                    {% else %}
+                        {{ contract.created_by.get_full_name|default:"Admin" }}
+                    {% endif %}
+                </div>
+                {% if contract.admin_signature_image %}
+                <div style="margin-top: 10px;">
+                    <img src="{{ contract.admin_signature_image.url }}" style="max-height: 50px;" alt="Signature">
+                </div>
+                {% endif %}
+            </div>
+            <div class="signature-box">
+                <strong>CLIENT</strong><br>
+                <div class="signature-line"></div>
+                <div>Date: _________________</div>
+                <div>Signed By: {{ contract.client_name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Fly N'Jet Air and Logistics | Jomo Kenyatta International Airport, Nairobi Kenya<br>
+        This contract is governed by the Laws of Kenya. All disputes shall be resolved in Nairobi, Kenya.
+    </div>
+</body>
+</html>

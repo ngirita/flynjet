@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reviews - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reviews/css/reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reviews-container">
+    <!-- Header -->
+    <div class="reviews-header">
+        <div>
+            <h1 class="display-5 fw-bold">Customer Reviews</h1>
+            <p class="text-muted">See what our customers are saying</p>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'reviews:create' %}" class="btn btn-primary">
+            <i class="fas fa-pen me-2"></i>Write a Review
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Filters -->
+    <div class="reviews-filter">
+        <form method="get" class="filter-group">
+            <select name="rating" class="form-select filter-select">
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+            </select>
+            
+            <select name="sort" class="form-select filter-select">
+                <option value="recent">Most Recent</option>
+                <option value="helpful">Most Helpful</option>
+                <option value="highest">Highest Rated</option>
+                <option value="lowest">Lowest Rated</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </form>
+    </div>
+    
+    <!-- Reviews Grid -->
+    <div class="reviews-grid">
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <div class="reviewer-info">
+                    <div class="reviewer-avatar">
+                        {{ review.display_name|first|upper }}
+                    </div>
+                    <div>
+                        <div class="reviewer-name">
+                            {{ review.display_name }}
+                            {% if review.is_verified %}
+                            <span class="review-badge badge-verified" title="Verified Booking">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                
+                {% if review.aircraft %}
+                <div class="review-aircraft">
+                    <small class="text-muted">{{ review.aircraft.model }}</small>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="review-content">
+                <div class="review-rating">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= review.overall_rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <h3 class="review-title">{{ review.title }}</h3>
+                
+                <div class="review-text" id="review-text-{{ review.id }}">
+                    {{ review.content }}
+                </div>
+                
+                {% if review.content|length > 300 %}
+                <a href="javascript:void(0)" class="read-more" onclick="toggleReview({{ review.id }})">
+                    Read more
+                </a>
+                {% endif %}
+                
+                {% if review.photos %}
+                <div class="review-photos">
+                    {% for photo in review.photos|slice:":3" %}
+                    <img src="{{ photo.url }}" class="review-photo" alt="Review photo">
+                    {% endfor %}
+                    {% if review.photos|length > 3 %}
+                    <span class="review-photo more">+{{ review.photos|length|add:"-3" }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="review-meta">
+                    {% if review.booking %}
+                    <span><i class="fas fa-plane"></i> Flight {{ review.booking.flight_number }}</span>
+                    {% endif %}
+                    
+                    {% if review.punctuality_rating %}
+                    <span><i class="fas fa-clock"></i> Punctuality: {{ review.punctuality_rating }}/5</span>
+                    {% endif %}
+                    
+                    {% if review.comfort_rating %}
+                    <span><i class="fas fa-couch"></i> Comfort: {{ review.comfort_rating }}/5</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="review-footer">
+                <div class="vote-buttons">
+                    <button class="vote-btn helpful" id="helpful-{{ review.id }}" 
+                            onclick="vote({{ review.id }}, 'helpful')">
+                        <i class="far fa-thumbs-up"></i>
+                        <span id="helpful-count-{{ review.id }}">{{ review.helpful_votes }}</span>
+                    </button>
+                    
+                    <button class="vote-btn not-helpful" id="not-helpful-{{ review.id }}"
+                            onclick="vote({{ review.id }}, 'not_helpful')">
+                        <i class="far fa-thumbs-down"></i>
+                        <span id="not-helpful-count-{{ review.id }}">{{ review.not_helpful_votes }}</span>
+                    </button>
+                </div>
+                
+                <a href="javascript:void(0)" class="report-btn" id="report-{{ review.id }}"
+                   onclick="report({{ review.id }})">
+                    <i class="fas fa-flag"></i> Report
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+            <h3>No Reviews Yet</h3>
+            <p class="text-muted">Be the first to share your experience!</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'reviews:create' %}" class="btn btn-primary">
+                Write a Review
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Report Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Reason for reporting</label>
+                        <select class="form-control" id="report-reason">
+                            <option value="inappropriate">Inappropriate content</option>
+                            <option value="spam">Spam</option>
+                            <option value="offensive">Offensive language</option>
+                            <option value="fake">Fake review</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional details</label>
+                        <textarea class="form-control" id="report-details" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger submit-report">Submit Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'reviews/js/rating.js' %}"></script>
+<script>
+    let currentReviewId = null;
+    const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+    
+    function toggleReview(reviewId) {
+        const text = document.getElementById(`review-text-${reviewId}`);
+        const link = text.nextElementSibling;
+        
+        if (text.classList.contains('expanded')) {
+            text.classList.remove('expanded');
+            link.textContent = 'Read more';
+        } else {
+            text.classList.add('expanded');
+            link.textContent = 'Read less';
+        }
+    }
+    
+    function vote(reviewId, type) {
+        const csrfToken = '{{ csrf_token }}';
+        const voting = new ReviewVoting({
+            reviewId: reviewId,
+            csrfToken: csrfToken
+        });
+        voting.vote(type);
+    }
+    
+    function report(reviewId) {
+        currentReviewId = reviewId;
+        reportModal.show();
+    }
+    
+    document.querySelector('.submit-report').addEventListener('click', function() {
+        if (currentReviewId) {
+            const csrfToken = '{{ csrf_token }}';
+            const reporting = new ReviewReporting({
+                reviewId: currentReviewId,
+                csrfToken: csrfToken,
+                modal: reportModal
+            });
+            reporting.submitReport();
+        }
+    });
+</script>
+{% endblock %}

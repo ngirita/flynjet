@@ -1,0 +1,25 @@
+FlynJet Newsletter
+
+Hello {{ user.get_full_name|default:user.email }},
+
+Here's what's new at FlynJet this month:
+
+NEW AIRCRAFT ADDED TO FLEET
+We're excited to announce the addition of two new Gulfstream G650ER aircraft to our fleet.
+View them here: {{ site_url }}{% url 'fleet:list' %}
+
+SUMMER PROMOTION
+Book your summer getaway now and enjoy 15% off all flights to Europe. Use code SUMMER15 at checkout.
+Book now: {{ site_url }}{% url 'bookings:create' %}
+
+LOYALTY PROGRAM UPDATES
+We've enhanced our loyalty program with new tier benefits.
+View benefits: {{ site_url }}{% url 'marketing:loyalty' %}
+
+Thank you for being part of the FlynJet family!
+
+Best regards,
+The FlynJet Team
+
+---
+To unsubscribe: {{ site_url }}{% url 'marketing:unsubscribe' %}?email={{ user.email }}

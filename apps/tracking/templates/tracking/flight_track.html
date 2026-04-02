@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track {{ track.flight_number }} - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 500px;
+        border-radius: 8px;
+        width: 100%;
+    }
+    .flight-info-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    .info-label {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+    .info-value {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .progress-track {
+        height: 10px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 5px;
+    }
+    .progress-track-fill {
+        height: 100%;
+        background: white;
+        border-radius: 5px;
+        transition: width 0.3s ease;
+    }
+    .alert-btn {
+        border: 1px solid rgba(255,255,255,0.3);
+        background: transparent;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+    .alert-btn:hover {
+        background: white;
+        color: #667eea;
+    }
+    .share-link {
+        background: rgba(255,255,255,0.1);
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .share-link:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .custom-marker {
+        background: #28a745;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'tracking:dashboard' %}">Tracking</a></li>
+                    <li class="breadcrumb-item active">{{ track.flight_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="flight-info-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h4 mb-0">{{ track.flight_number }}</h3>
+                    <span class="badge bg-light text-dark">{{ track.aircraft_registration }}</span>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <div class="info-label">From</div>
+                        <div class="info-value">{{ track.departure_airport }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">To</div>
+                        <div class="info-value">{{ track.arrival_airport }}</div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="info-label mb-2">Flight Progress</div>
+                    <div class="progress-track">
+                        <div class="progress-track-fill" id="progressBar" style="width: {{ track.progress_percentage }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small>{{ track.progress_percentage }}% Complete</small>
+                        <small id="etaDisplay">{{ track.estimated_arrival|timeuntil|default:"Calculating..." }}</small>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-4 text-center">
+                        <div class="info-label">Altitude</div>
+                        <div class="info-value" id="altitude">{{ track.altitude|default:"0" }} ft</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="info-label">Speed</div>
+                        <div class="info-value" id="speed">{{ track.speed|default:"0" }} kts</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="info-label">Heading</div>
+                        <div class="info-value" id="heading">{{ track.heading|default:"0" }}°</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="info-label">Last Update</div>
+                        <div class="info-value" id="lastUpdate">{{ track.last_update|timesince|default:"Just now" }} ago</div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="alert-btn flex-grow-1" onclick="setAlert()">
+                        <i class="fas fa-bell me-2"></i>Alert
+                    </button>
+                    <button class="alert-btn flex-grow-1" onclick="shareFlight()">
+                        <i class="fas fa-share-alt me-2"></i>Share
+                    </button>
+                    <a href="{% url 'tracking:history' booking.id %}" class="alert-btn">
+                        <i class="fas fa-history"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Modal -->
+<div class="modal fade" id="alertModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Flight Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="alertForm">
+                    <div class="mb-3">
+                        <label class="form-label">Alert Type</label>
+                        <select class="form-control" id="alertType">
+                            <option value="takeoff">Takeoff</option>
+                            <option value="landing">Landing</option>
+                            <option value="waypoint">Waypoint</option>
+                            <option value="altitude">Altitude Change</option>
+                            <option value="delay">Delay</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notification Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="emailAlert" checked>
+                            <label class="form-check-label">Email</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="pushAlert">
+                            <label class="form-check-label">Push Notification</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="smsAlert">
+                            <label class="form-check-label">SMS</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveAlert()">Save Alert</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Flight Tracking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Share this link to let others track this flight:</p>
+                <div class="share-link mb-3" onclick="copyLink()">
+                    <i class="fas fa-link me-2"></i>
+                    <span id="shareLink">{{ request.build_absolute_uri }}?share=1</span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Expires after (hours)</label>
+                    <input type="number" class="form-control" id="expiryHours" value="24" min="1" max="168">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password (optional)</label>
+                    <input type="password" class="form-control" id="sharePassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="generateShareLink()">Generate Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map with OpenStreetMap (free and unlimited)
+    const map = L.map('map').setView([39.8283, -98.5795], 4);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Custom airplane icon
+    const planeIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<i class="fas fa-plane" style="color: #28a745; font-size: 24px; transform: rotate({{ track.heading|default:0 }}deg);"></i>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    
+    // Flight marker
+    let marker = L.marker([{{ track.latitude|default:"39.8283" }}, {{ track.longitude|default:"-98.5795" }}], {
+        icon: planeIcon
+    }).addTo(map);
+    
+    // Add popup
+    marker.bindPopup(`
+        <strong>{{ track.flight_number }}</strong><br>
+        {{ track.departure_airport }} → {{ track.arrival_airport }}<br>
+        Altitude: {{ track.altitude|default:"0" }} ft<br>
+        Speed: {{ track.speed|default:"0" }} kts
+    `);
+    
+    // WebSocket connection for real-time updates
+    const ws = new WebSocket('{{ ws_url }}');
+    
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'position_update') {
+            updatePosition(data.data);
+        }
+    };
+    
+    function updatePosition(data) {
+        // Update map marker
+        const newLatLng = [data.latitude, data.longitude];
+        marker.setLatLng(newLatLng);
+        
+        // Update icon rotation
+        const iconHtml = `<i class="fas fa-plane" style="color: #28a745; font-size: 24px; transform: rotate(${data.heading || 0}deg);"></i>`;
+        marker.setIcon(L.divIcon({
+            className: 'custom-marker',
+            html: iconHtml,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        }));
+        
+        // Update popup content
+        marker.getPopup().setContent(`
+            <strong>{{ track.flight_number }}</strong><br>
+            {{ track.departure_airport }} → {{ track.arrival_airport }}<br>
+            Altitude: ${data.altitude || 0} ft<br>
+            Speed: ${data.speed || 0} kts
+        `);
+        
+        // Pan map to new position if marker is near edge
+        const mapBounds = map.getBounds();
+        if (!mapBounds.contains(newLatLng)) {
+            map.panTo(newLatLng);
+        }
+        
+        // Update info display
+        document.getElementById('altitude').textContent = (data.altitude || 0) + ' ft';
+        document.getElementById('speed').textContent = (data.speed || 0) + ' kts';
+        document.getElementById('heading').textContent = (data.heading || 0) + '°';
+        document.getElementById('progressBar').style.width = (data.progress || 0) + '%';
+        document.getElementById('lastUpdate').textContent = 'Just now';
+        
+        if (data.estimated_arrival) {
+            const eta = new Date(data.estimated_arrival);
+            const now = new Date();
+            const diff = eta - now;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            document.getElementById('etaDisplay').textContent = `${hours}h ${minutes}m`;
+        }
+    }
+    
+    function setAlert() {
+        new bootstrap.Modal(document.getElementById('alertModal')).show();
+    }
+    
+    function saveAlert() {
+        const alertType = document.getElementById('alertType').value;
+        const notifyEmail = document.getElementById('emailAlert').checked;
+        const notifyPush = document.getElementById('pushAlert').checked;
+        const notifySms = document.getElementById('smsAlert').checked;
+        
+        fetch('/api/v1/tracking/alerts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                track: '{{ track.id }}',
+                alert_type: alertType,
+                notify_email: notifyEmail,
+                notify_push: notifyPush,
+                notify_sms: notifySms
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('alertModal')).hide();
+            alert('Alert set successfully!');
+        });
+    }
+    
+    function shareFlight() {
+        new bootstrap.Modal(document.getElementById('shareModal')).show();
+    }
+    
+    function generateShareLink() {
+        const hours = document.getElementById('expiryHours').value;
+        const password = document.getElementById('sharePassword').value;
+        
+        fetch(`/api/v1/tracking/tracks/{{ track.id }}/share/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                hours: hours,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('shareLink').textContent = window.location.origin + '/tracking/share/' + data.token + '/';
+        });
+    }
+    
+    function copyLink() {
+        const link = document.getElementById('shareLink').textContent;
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Link copied to clipboard!');
+        });
+    }
+</script>
+{% endblock %}

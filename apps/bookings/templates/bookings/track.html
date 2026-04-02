@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Your Flight - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-search me-2"></i>Track Your Flight</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if user.is_authenticated %}
+                        <div class="alert alert-success mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Welcome back, {{ user.email }}!</strong> 
+                            Enter your booking reference below to track your flight.
+                        </div>
+                    {% endif %}
+                    
+                    <p class="text-muted mb-4">
+                        Enter your booking reference to track your flight in real-time.
+                    </p>
+                    
+                    <form method="get" action="{% url 'bookings:track' %}" class="mb-4">
+                        <div class="input-group input-group-lg">
+                            <input type="text" 
+                                   name="booking_reference" 
+                                   class="form-control" 
+                                   placeholder="Enter booking reference (e.g., FJABC123)"
+                                   value="{{ search_query|default:'' }}"
+                                   required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-plane me-2"></i>Track Flight
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Booking reference can be found in your confirmation email
+                        </small>
+                    </form>
+                    
+                    {% if search_query %}
+                        {% if bookings %}
+                            <div class="tracking-results">
+                                <h5 class="mb-3">Search Results for "{{ search_query }}"</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Booking Reference</th>
+                                                <th>Route</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in bookings %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ booking.booking_reference }}</strong>
+                                                </td>
+                                                <td>
+                                                    <div class="route-info">
+                                                        {% if booking.departure_airport_obj %}
+                                                            <div><strong>{{ booking.departure_airport_obj.city }}</strong></div>
+                                                            <div class="small text-muted">{{ booking.departure_airport_obj.iata_code }}</div>
+                                                        {% else %}
+                                                            <div><strong>{{ booking.departure_airport }}</strong></div>
+                                                        {% endif %}
+                                                        
+                                                        <i class="fas fa-arrow-right text-muted mx-1 my-1 d-inline-block"></i>
+                                                        
+                                                        {% if booking.arrival_airport_obj %}
+                                                            <div><strong>{{ booking.arrival_airport_obj.city }}</strong></div>
+                                                            <div class="small text-muted">{{ booking.arrival_airport_obj.iata_code }}</div>
+                                                        {% else %}
+                                                            <div><strong>{{ booking.arrival_airport }}</strong></div>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>{{ booking.departure_datetime|date:"M d, Y" }}</div>
+                                                    <small class="text-muted">{{ booking.departure_datetime|date:"H:i" }}</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'in_progress' %}info{% elif booking.status == 'paid' %}primary{% elif booking.status == 'completed' %}secondary{% else %}warning{% endif %}">
+                                                        {{ booking.get_status_display }}
+                                                    </span>
+                                                    {% if booking.status == 'in_progress' %}
+                                                        <div class="small text-success mt-1">
+                                                            <i class="fas fa-plane-departure"></i> In flight
+                                                        </div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'tracking:flight_track' booking.id %}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>Track Now
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                {% if is_paginated %}
+                                <nav aria-label="Page navigation" class="mt-3">
+                                    <ul class="pagination justify-content-center">
+                                        {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?booking_reference={{ search_query }}&page={{ page_obj.previous_page_number }}">
+                                                <i class="fas fa-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                        
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?booking_reference={{ search_query }}&page={{ num }}">{{ num }}</a>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?booking_reference={{ search_query }}&page={{ page_obj.next_page_number }}">
+                                                Next <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No active flights found with reference "{{ search_query }}".
+                                Please check your booking reference and try again.
+                            </div>
+                            
+                            <!-- Suggestions -->
+                            <div class="mt-3">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Common Issues:</h6>
+                                <ul class="text-muted small">
+                                    <li>Check if you're using the correct booking reference format (e.g., FJABC123)</li>
+                                    <li>Only confirmed, paid, and in-progress flights can be tracked</li>
+                                    <li>If your flight is completed or cancelled, it won't appear here</li>
+                                    <li>Make sure you're logged in with the email used for booking</li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- How to Find Your Booking Reference -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-question-circle me-2"></i>Where to Find Your Booking Reference?</h6>
+                    <p class="text-muted small mb-0">
+                        Your booking reference is included in your confirmation email sent to your registered email address.
+                        It usually starts with "FJ" followed by 6-8 alphanumeric characters (e.g., FJABC123).
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Need Help? -->
+            <div class="card mt-3 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-headset me-2"></i>Need Help?</h6>
+                    <p class="text-muted small mb-0">
+                        Can't find your booking? Contact our support team at 
+                        <a href="mailto:info@flynjet.com">info@flynjet.com</a><br>
+                        Call: <strong>+254785651832</strong> |
+                        WhatsApp: <strong>+447393700477</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-results {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .badge {
+        padding: 5px 10px;
+        font-weight: 500;
+    }
+    
+    .route-info {
+        min-width: 140px;
+    }
+    
+    .route-info div {
+        line-height: 1.3;
+    }
+    
+    .route-info i {
+        display: inline-block;
+        margin: 4px 0;
+    }
+    
+    body.dark-mode .table th {
+        background-color: #2d2d2d;
+        color: white;
+    }
+    
+    body.dark-mode .table {
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .table-hover tbody tr:hover {
+        background-color: rgba(197, 160, 89, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .table {
+            font-size: 13px;
+        }
+        
+        .btn-sm {
+            padding: 0.2rem 0.5rem;
+            font-size: 11px;
+        }
+        
+        .route-info {
+            min-width: 110px;
+        }
+        
+        .route-info div {
+            font-size: 12px;
+        }
+    }
+    
+    /* Dark mode support */
+    body.dark-mode .alert-success {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-color: #28a745;
+        color: #28a745;
+    }
+    
+    body.dark-mode .alert-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+    
+    body.dark-mode .card {
+        background-color: #161616;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    body.dark-mode .text-muted {
+        color: rgba(255,255,255,0.6) !important;
+    }
+</style>
+{% endblock %}

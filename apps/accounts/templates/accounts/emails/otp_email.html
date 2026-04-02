@@ -1,0 +1,141 @@
+{% load i18n %}{% autoescape off %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OTP Code - FlynJet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f7;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: rgba(255,255,255,0.9);
+            margin: 10px 0 0;
+        }
+        .content {
+            padding: 30px;
+        }
+        .otp-code {
+            font-size: 40px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 2px dashed #e0e0e0;
+            font-family: 'Courier New', monospace;
+            color: #1e3c72;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #2a5298;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+            .otp-code {
+                font-size: 32px;
+                letter-spacing: 5px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FlynJet</h1>
+            <p>Luxury Private Aviation</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.get_full_name|default:user.email }}!</h2>
+            
+            <p>You requested to log in to your FlynJet account. Please use the following One-Time Password (OTP) to complete your login:</p>
+            
+            <div class="otp-code">
+                {{ otp_code }}
+            </div>
+            
+            <div class="info-box">
+                <p><strong>⏰ This code will expire in {{ expires_in|default:"10" }} minutes.</strong></p>
+                <p>For security reasons, do not share this code with anyone.</p>
+            </div>
+            
+            <div class="warning-box">
+                <p><strong>⚠️ Didn't request this login?</strong></p>
+                <p>If you did not attempt to log in to your FlynJet account, please ignore this email. Your account is secure.</p>
+                <p>If you suspect unauthorized activity, please contact our support team immediately at <a href="mailto:info@flynjet.com">info@flynjet.com</a>.</p>
+            </div>
+            
+            <p style="margin-top: 25px;">
+                <strong>Having trouble?</strong> You can <a href="{{ site_url }}/auth/login/" style="color: #2a5298;">try logging in again</a> to request a new code.
+            </p>
+            
+            <p>Thank you for choosing FlynJet for your luxury travel needs!</p>
+            
+            <p>Safe travels,<br>
+            <strong>The FlynJet Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>FlynJet - Luxury Private Aviation</p>
+            <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501</p>
+            <p>© {% now "Y" %} FlynJet. All rights reserved.</p>
+            <p style="margin-top: 10px;">
+                <small>This is an automated message, please do not reply.</small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+{% endautoescape %}

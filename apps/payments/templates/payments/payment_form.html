@@ -1,0 +1,169 @@
+<!-- templates/payments/payment_form.html - EMAIL-ONLY VERSION -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Complete Payment - FlynJet{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">Complete Your Payment</h2>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-plane me-2"></i>
+                            <strong>Booking:</strong> {{ booking.booking_reference }}<br>
+                            <strong>Amount Due:</strong> ${{ booking.amount_due|floatformat:2 }}
+                        </div>
+                        
+                        <form method="post" id="payment-form">
+                            {% csrf_token %}
+                            
+                            <!-- Payment Method Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-3">Select Payment Method</label>
+                                
+                                <!-- Card Payment (Paystack) - Shows on page -->
+                                <div class="card mb-3 border-0 bg-light">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" checked>
+                                            <label class="form-check-label" for="card">
+                                                <i class="fas fa-credit-card me-2 text-primary"></i>
+                                                <strong>Card Payment</strong>
+                                            </label>
+                                        </div>
+                                        <div id="card_details" class="mt-3 ms-4">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-shield-alt me-2"></i>
+                                                Secure card payment via Paystack. All major cards accepted (Visa, Mastercard, etc.)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cryptocurrency - Instructions sent via EMAIL only -->
+                                <div class="card mb-3 border-0 bg-light">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="crypto" value="crypto">
+                                            <label class="form-check-label" for="crypto">
+                                                <i class="fab fa-bitcoin me-2 text-warning"></i>
+                                                <strong>Cryptocurrency (BTC / USDT)</strong>
+                                            </label>
+                                        </div>
+                                        <div id="crypto_details" class="mt-3 ms-4" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-envelope me-2"></i>
+                                                <strong>Instructions sent to your email!</strong><br>
+                                                Payment instructions for Bitcoin and USDT will be sent to <strong>{{ user.email }}</strong>.
+                                                Please check your inbox (and spam folder) for details.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bank Transfer - Instructions sent via EMAIL only -->
+                                <div class="card mb-3 border-0 bg-light">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                            <label class="form-check-label" for="bank_transfer">
+                                                <i class="fas fa-university me-2 text-primary"></i>
+                                                <strong>Bank Transfer / Wire Transfer</strong>
+                                            </label>
+                                        </div>
+                                        <div id="bank_transfer_details" class="mt-3 ms-4" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-envelope me-2"></i>
+                                                <strong>Instructions sent to your email!</strong><br>
+                                                Bank transfer details will be sent to <strong>{{ user.email }}</strong>.
+                                                Please check your inbox (and spam folder) for instructions.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label small" for="terms">
+                                    I confirm that I have read and agree to the Terms and Conditions
+                                </label>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary w-100 py-3" id="submit-button">
+                                    <i class="fas fa-lock me-2"></i>Continue to Payment
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    For crypto and bank transfers, payment instructions will be sent to your email.
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Show/hide payment method details
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    const cardDetails = document.getElementById('card_details');
+    const cryptoDetails = document.getElementById('crypto_details');
+    const bankDetails = document.getElementById('bank_transfer_details');
+    const submitButton = document.getElementById('submit-button');
+    
+    function updatePaymentDetails() {
+        if (cardDetails) cardDetails.style.display = 'none';
+        if (cryptoDetails) cryptoDetails.style.display = 'none';
+        if (bankDetails) bankDetails.style.display = 'none';
+        
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        if (selected) {
+            if (selected.value === 'card' && cardDetails) {
+                cardDetails.style.display = 'block';
+                submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay with Card';
+            } else if (selected.value === 'crypto' && cryptoDetails) {
+                cryptoDetails.style.display = 'block';
+                submitButton.innerHTML = '<i class="fab fa-bitcoin me-2"></i>Send Crypto Instructions to Email';
+            } else if (selected.value === 'bank_transfer' && bankDetails) {
+                bankDetails.style.display = 'block';
+                submitButton.innerHTML = '<i class="fas fa-university me-2"></i>Send Bank Instructions to Email';
+            }
+        }
+    }
+    
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentDetails);
+    });
+    
+    updatePaymentDetails();
+</script>
+
+<style>
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    .form-check-input {
+        cursor: pointer;
+    }
+    .form-check-label {
+        cursor: pointer;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+</style>
+{% endblock %}

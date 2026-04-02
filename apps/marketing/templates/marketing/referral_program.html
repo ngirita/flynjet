@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Refer a Friend - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'marketing/css/campaigns.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="referral-header">
+        <h1 class="display-4 fw-bold mb-3">Refer a Friend</h1>
+        <p class="lead mb-4">Share the luxury and earn rewards</p>
+        
+        <div class="referral-code" id="referralLink">
+            {{ site_url }}/signup/?ref={{ user.metadata.referral_code }}
+        </div>
+        
+        <div class="share-buttons">
+            <button class="share-btn email" onclick="shareViaEmail()">
+                <i class="fas fa-envelope"></i>
+            </button>
+            <button class="share-btn facebook" onclick="shareOnFacebook()">
+                <i class="fab fa-facebook-f"></i>
+            </button>
+            <button class="share-btn twitter" onclick="shareOnTwitter()">
+                <i class="fab fa-twitter"></i>
+            </button>
+            <button class="share-btn whatsapp" onclick="shareOnWhatsApp()">
+                <i class="fab fa-whatsapp"></i>
+            </button>
+            <button class="share-btn" onclick="copyLink()">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="referral-stats">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Total Referrals</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.completed }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.points_earned }}</div>
+            <div class="stat-label">Points Earned</div>
+        </div>
+    </div>
+    
+    <!-- How It Works -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-4">How It Works</h3>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">1</div>
+                    <h5>Share Your Link</h5>
+                    <p class="text-muted">Send your unique referral link to friends</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">2</div>
+                    <h5>They Sign Up</h5>
+                    <p class="text-muted">Your friend creates an account using your link</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">3</div>
+                    <h5>You Both Earn</h5>
+                    <p class="text-muted">Get 1000 points, they get 500 bonus points</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Referrals List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Referrals</h5>
+                </div>
+                <div class="card-body">
+                    <div id="referralsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'marketing/js/campaigns.js' %}"></script>
+<script>
+    const referralManager = new ReferralManager({
+        csrfToken: '{{ csrf_token }}'
+    });
+    
+    function shareViaEmail() {
+        referralManager.shareViaEmail();
+    }
+    
+    function shareOnFacebook() {
+        const url = encodeURIComponent(document.getElementById('referralLink').textContent);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+    
+    function shareOnTwitter() {
+        const url = encodeURIComponent(document.getElementById('referralLink').textContent);
+        const text = encodeURIComponent('Join me on FlynJet for luxury private jet charters!');
+        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+    }
+    
+    function shareOnWhatsApp() {
+        const url = document.getElementById('referralLink').textContent;
+        const text = encodeURIComponent(`Join me on FlynJet! ${url}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+    
+    function copyLink() {
+        referralManager.copyReferralLink();
+    }
+    
+    // Load referrals
+    referralManager.loadReferrals();
+</script>
+{% endblock %}

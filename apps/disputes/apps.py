@@ -1,0 +1,9 @@
+from django.apps import AppConfig
+
+class DisputesConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.disputes'
+    verbose_name = 'Disputes & Refunds'
+
+    def ready(self):
+        import apps.disputes.signals

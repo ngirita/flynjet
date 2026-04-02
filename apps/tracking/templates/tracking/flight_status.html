@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Flight Status - {{ track.flight_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'tracking:dashboard' %}">Tracking</a></li>
+                    <li class="breadcrumb-item active">{{ track.flight_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Status Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">Flight Status</h4>
+                        <span class="badge bg-{% if track.status == 'in-air' %}success{% elif track.status == 'delayed' %}warning{% else %}info{% endif %} p-2">
+                            {{ track.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="flight-info-card p-3">
+                                <h5 class="text-muted mb-3">Departure</h5>
+                                <h3>{{ track.departure_airport }}</h3>
+                                <p class="mb-1">{{ track.departure_airport_name }}</p>
+                                <p class="mb-0">
+                                    <i class="fas fa-clock me-2"></i>
+                                    {{ track.departure_time|date:"H:i" }} (Scheduled)
+                                </p>
+                                {% if track.actual_departure %}
+                                <p class="text-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Departed at {{ track.actual_departure|date:"H:i" }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="flight-info-card p-3">
+                                <h5 class="text-muted mb-3">Arrival</h5>
+                                <h3>{{ track.arrival_airport }}</h3>
+                                <p class="mb-1">{{ track.arrival_airport_name }}</p>
+                                <p class="mb-0">
+                                    <i class="fas fa-clock me-2"></i>
+                                    {{ track.arrival_time|date:"H:i" }} (Scheduled)
+                                </p>
+                                {% if track.estimated_arrival %}
+                                <p class="text-info">
+                                    <i class="fas fa-hourglass-half me-2"></i>
+                                    ETA: {{ track.estimated_arrival|date:"H:i" }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Flight Progress</span>
+                            <span class="fw-bold">{{ track.progress_percentage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: {{ track.progress_percentage }}%"
+                                 aria-valuenow="{{ track.progress_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div id="statusMap" style="height: 400px; border-radius: 10px;"></div>
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Flight Timeline</h5>
+                    
+                    <div class="timeline">
+                        {% for event in timeline %}
+                        <div class="timeline-item">
+                            <div class="timeline-time">{{ event.time|date:"H:i" }}</div>
+                            <div class="timeline-content">
+                                <h6>{{ event.title }}</h6>
+                                <p class="text-muted">{{ event.description }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No timeline events available</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Flight Details Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Flight Details</h5>
+                    
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Flight Number:</th>
+                            <td>{{ track.flight_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Aircraft:</th>
+                            <td>{{ track.aircraft_registration }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type:</th>
+                            <td>{{ track.aircraft.model }}</td>
+                        </tr>
+                        <tr>
+                            <th>Distance:</th>
+                            <td>{{ track.distance_remaining|default:"--" }} nm remaining</td>
+                        </tr>
+                        <tr>
+                            <th>Duration:</th>
+                            <td>{{ track.flight_duration }} hours</td>
+                        </tr>
+                        <tr>
+                            <th>Time Remaining:</th>
+                            <td>{{ track.time_remaining|default:"--" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Update:</th>
+                            <td>{{ track.last_update|timesince }} ago</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Current Position Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Current Position</h5>
+                    
+                    <div class="position-info">
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Latitude:</strong> {{ track.latitude|default:"--" }}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Longitude:</strong> {{ track.longitude|default:"--" }}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-arrow-up text-primary me-2"></i>
+                            <strong>Altitude:</strong> {{ track.altitude|default:"--" }} ft
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-tachometer-alt text-primary me-2"></i>
+                            <strong>Speed:</strong> {{ track.speed|default:"--" }} kts
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-compass text-primary me-2"></i>
+                            <strong>Heading:</strong> {{ track.heading|default:"--" }}°
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weather Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Weather</h5>
+                    
+                    {% if track.weather %}
+                    <div class="weather-info">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="weather-icon">{{ track.weather.icon }}</span>
+                            <span class="weather-temp ms-2">{{ track.weather.temperature }}°C</span>
+                        </div>
+                        <p class="mb-1">Conditions: {{ track.weather.conditions }}</p>
+                        <p class="mb-1">Wind: {{ track.weather.wind_speed }} kts at {{ track.weather.wind_direction }}°</p>
+                        <p class="mb-0">Visibility: {{ track.weather.visibility }} km</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Weather data unavailable</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Actions</h5>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="shareFlight()">
+                            <i class="fas fa-share-alt me-2"></i>Share Tracking
+                        </button>
+                        
+                        <button class="btn btn-outline-info" onclick="setAlert()">
+                            <i class="fas fa-bell me-2"></i>Set Alert
+                        </button>
+                        
+                        <a href="{% url 'tracking:history' track.booking.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-history me-2"></i>View History
+                        </a>
+                        
+                        {% if user.is_staff %}
+                        <button class="btn btn-outline-warning" onclick="updatePosition()">
+                            <i class="fas fa-edit me-2"></i>Update Position
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 30px;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 70px;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-time {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50px;
+        text-align: right;
+        font-weight: 600;
+        color: #007bff;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        position: relative;
+    }
+    
+    .timeline-content::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 15px;
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid #f8f9fa;
+    }
+    
+    .timeline-content h6 {
+        margin: 0 0 5px 0;
+        color: #333;
+    }
+    
+    .timeline-content p {
+        margin: 0;
+        font-size: 14px;
+    }
+</style>
+
+<script>
+function shareFlight() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Flight {{ track.flight_number }} Tracking',
+            text: 'Track flight {{ track.flight_number }} from {{ track.departure_airport }} to {{ track.arrival_airport }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback - copy link
+        const dummy = document.createElement('textarea');
+        dummy.value = window.location.href;
+        document.body.appendChild(dummy);
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert('Link copied to clipboard!');
+    }
+}
+
+function setAlert() {
+    // Open alert modal
+    const modal = new bootstrap.Modal(document.getElementById('alertModal'));
+    modal.show();
+}
+
+function updatePosition() {
+    // For staff - update position manually
+    // Implementation depends on your needs
+    alert('Position update form would open here');
+}
+</script>
+{% endblock %}

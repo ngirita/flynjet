@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proforma Invoice - {{ document.document_number }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #ffc107;
+        }
+        
+        .header h1 {
+            color: #ffc107;
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .header h2 {
+            color: #666;
+            margin: 5px 0 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            color: rgba(255, 193, 7, 0.1);
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: -1;
+        }
+        
+        .company-details {
+            margin-bottom: 30px;
+        }
+        
+        .company-details h3 {
+            color: #ffc107;
+            margin: 0 0 10px;
+        }
+        
+        .invoice-details {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 5px;
+        }
+        
+        .invoice-details table {
+            width: 100%;
+        }
+        
+        .invoice-details td {
+            padding: 5px;
+        }
+        
+        .invoice-details td:first-child {
+            font-weight: bold;
+            width: 150px;
+        }
+        
+        .billing-info {
+            margin-bottom: 30px;
+        }
+        
+        .billing-info h3 {
+            color: #ffc107;
+            margin: 0 0 10px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .items-table th {
+            background: #ffc107;
+            color: #333;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .totals-table {
+            width: 300px;
+            margin-left: auto;
+            border-collapse: collapse;
+        }
+        
+        .totals-table td {
+            padding: 8px;
+        }
+        
+        .totals-table td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .totals-table .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffc107;
+            border-top: 2px solid #ffc107;
+        }
+        
+        .validity {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .validity p {
+            margin: 0;
+            color: #856404;
+        }
+        
+        .payment-info {
+            margin-top: 30px;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .payment-info h3 {
+            color: #28a745;
+            margin: 0 0 10px;
+        }
+        
+        .payment-info p {
+            margin: 3px 0;
+            color: #155724;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        @media print {
+            .watermark {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">PROFORMA</div>
+    
+    <div class="header">
+        <h1>FlynJet</h1>
+        <h2>PROFORMA INVOICE</h2>
+    </div>
+    
+    <div class="company-details">
+        <h3>FlynJet Air and Logistics.</h3>
+        <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya</p>
+            <p>P.O. Box 19087-00501</p>
+            <p>Kenya</p>
+            <p>Tax ID: 12-3456789</p>
+            <p>+254785651832</p>
+            <p>Whatsapp: +447393700477</p>
+    </div>
+    
+    <div class="invoice-details">
+         <table>
+             <tr>
+                 <td>Proforma Number:</td>
+                 <td><strong>{{ document.document_number }}</strong></td>
+                 <td>Date:</td>
+                 <td>{{ document.created_at|date:"F j, Y" }}</td>
+             </tr>
+             <tr>
+                 <td>Valid Until:</td>
+                 <td>{{ document.expires_at|date:"F j, Y" }}</td>
+                 <td>Booking Reference:</td>
+                 <td>{{ booking.booking_reference|default:"N/A" }}</td>
+             </tr>
+         </table>
+    </div>
+    
+    <div class="billing-info">
+        <h3>Prepared for:</h3>
+        <p><strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
+        <p>{{ user.email }}</p>
+        {% if user.phone_number %}
+        <p>{{ user.phone_number }}</p>
+        {% endif %}
+    </div>
+    
+    <table class="items-table">
+        <thead>
+             <tr>
+                <th>Description</th>
+                <th>Details</th>
+                <th>Amount</th>
+             </tr>
+        </thead>
+        <tbody>
+            {% if booking %}
+             <tr>
+                <td>Private Jet Charter</td>
+                <td>
+                    {{ booking.departure_airport }} → {{ booking.arrival_airport }}<br>
+                    {{ booking.departure_datetime|date:"M d, Y H:i" }}
+                </td>
+                <td>${{ booking.total_amount_usd|floatformat:2 }}</td>
+             </tr>
+            {% endif %}
+        </tbody>
+     </table>
+    
+    <table class="totals-table">
+         <tr>
+            <td>Subtotal:</td>
+            <td>${{ document.subtotal_usd|floatformat:2 }}</td>
+         </tr>
+         <tr>
+            <td>Estimated Tax:</td>
+            <td>${{ document.tax_amount_usd|floatformat:2 }}</td>
+         </tr>
+        <tr class="total-row">
+            <td>ESTIMATED TOTAL:</td>
+            <td>${{ document.total_usd|floatformat:2 }}</td>
+         </tr>
+     </table>
+    
+    <div class="validity">
+        <p><strong>This is a proforma invoice - not a tax invoice</strong></p>
+        <p>Valid for 7 days from date of issue</p>
+        <p>Final amount may vary based on actual flight time and additional services</p>
+    </div>
+    
+    <!-- Check if payment has been made (from content_data) -->
+    {% if document.content_data.status == 'paid' or document.content_data.payment_method and document.content_data.payment_method != 'Not paid yet' %}
+    <div class="payment-info">
+        <h3>✓ Payment Information</h3>
+        <p><strong>Payment Method:</strong> {{ document.content_data.payment_method }}</p>
+        <p><strong>Transaction ID:</strong> {{ document.content_data.payment_transaction_id }}</p>
+        {% if document.content_data.payment_date %}
+        <p><strong>Payment Date:</strong> {{ document.content_data.payment_date|date:"F j, Y H:i" }}</p>
+        {% endif %}
+        <p><strong>Status:</strong> PAID</p>
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>For any questions regarding this proforma invoice, please contact default_if_none:""@flynjet.com</p>
+        <p>FlynJet Air and Logistics. &copy; {% now "Y" %}</p>
+    </div>
+</body>
+</html>

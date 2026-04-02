@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Success Stories - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold">Success Stories</h1>
+            <p class="lead text-muted">Real experiences from our valued clients</p>
+        </div>
+    </div>
+    
+    <!-- Featured Case Study -->
+    {% if featured %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body p-5">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-3">{{ featured.customer_name }}'s Story</h2>
+                            <p class="lead mb-4">{{ featured.content }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="me-4">
+                                    <strong>{{ featured.customer_name }}</strong>
+                                    {% if featured.customer_title %}
+                                    <br><small>{{ featured.customer_title }}</small>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= featured.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            {% if featured.customer_image %}
+                            <img src="{{ featured.customer_image.url }}" class="rounded-circle img-fluid" 
+                                 style="max-width: 200px;" alt="{{ featured.customer_name }}">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Case Study Grid -->
+    <div class="row">
+        {% for study in case_studies %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if study.customer_image %}
+                        <img src="{{ study.customer_image.url }}" class="rounded-circle me-3" 
+                             width="60" height="60" alt="{{ study.customer_name }}">
+                        {% else %}
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center 
+                                    justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <span class="h4 mb-0">{{ study.customer_name|first }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div>
+                            <h5 class="mb-1">{{ study.customer_name }}</h5>
+                            {% if study.customer_title %}
+                            <p class="text-muted mb-0">{{ study.customer_title }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= study.rating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <p class="lead mb-4">"{{ study.content }}"</p>
+                    
+                    {% if study.booking %}
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-1"><strong>Flight:</strong> 
+                            {{ study.booking.departure_airport }} → {{ study.booking.arrival_airport }}
+                        </p>
+                        <p class="mb-0"><strong>Aircraft:</strong> {{ study.booking.aircraft.model }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- CTA Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="card bg-light">
+                <div class="card-body p-5">
+                    <h3 class="mb-3">Ready to Create Your Own Success Story?</h3>
+                    <p class="lead mb-4">Experience the FlynJet difference for yourself</p>
+                    <a href="{% url 'bookings:create' %}" class="btn btn-primary btn-lg">
+                        Book Your Flight Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Login - FlynJet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0a1928 0%, #1a2a3a 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .login-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+        pointer-events: none;
+    }
+    
+    .login-card {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .login-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .login-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+    }
+    
+    .login-header::after {
+        content: '✈';
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #2a5298;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        line-height: 40px;
+    }
+    
+    .login-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+        filter: brightness(0) invert(1);
+    }
+    
+    .login-header h2 {
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    
+    .login-header p {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.9rem;
+        margin: 0.5rem 0 0;
+    }
+    
+    .login-body {
+        padding: 2.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        display: block;
+        letter-spacing: 0.3px;
+    }
+    
+    .input-group-custom {
+        position: relative;
+    }
+    
+    .input-group-custom i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+        pointer-events: none;
+    }
+    
+    .form-control-custom {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-control-custom:focus {
+        outline: none;
+        border-color: #2a5298;
+        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+    }
+    
+    .form-check-custom {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-check-custom input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #2a5298;
+    }
+    
+    .form-check-custom label {
+        margin: 0;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+    
+    .two-factor-section {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+    
+    .two-factor-options {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .two-factor-options label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: normal;
+        cursor: pointer;
+        margin: 0;
+    }
+    
+    .two-factor-options input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #2a5298;
+    }
+    
+    .method-description {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-left: 1.75rem;
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .btn-login::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-login:hover::before {
+        left: 100%;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(42, 82, 152, 0.3);
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .divider span {
+        padding: 0 1rem;
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .btn-social {
+        border: 2px solid #e2e8f0;
+        background: white;
+        padding: 0.75rem;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-decoration: none;
+    }
+    
+    .btn-social:hover {
+        border-color: #2a5298;
+        background: #f8fafc;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+    
+    .btn-google {
+        color: #ea4335;
+    }
+    
+    .btn-social i {
+        font-size: 1.25rem;
+    }
+    
+    .signup-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .signup-link a {
+        color: #2a5298;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .signup-link a:hover {
+        color: #1e3c72;
+        text-decoration: underline;
+    }
+    
+    .alert-custom {
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid;
+    }
+    
+    .alert-danger-custom {
+        background: #fef2f2;
+        border-color: #dc2626;
+        color: #991b1b;
+    }
+    
+    .alert-warning-custom {
+        background: #fffbeb;
+        border-color: #f59e0b;
+        color: #92400e;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .login-card {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .login-body {
+            padding: 1.5rem;
+        }
+        
+        .login-header {
+            padding: 1.5rem;
+        }
+        
+        .login-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .two-factor-options {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="container py-5">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                    <div class="login-header">
+                        <img src="{% static 'images/logo-white.png' %}" alt="FlynJet" class="login-logo" onerror="this.style.display='none'">
+                        <h2>Welcome Back</h2>
+                        <p>Experience luxury at 40,000 feet</p>
+                    </div>
+                    
+                    <div class="login-body">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger-custom alert-custom">
+                            {% for error in form.non_field_errors %}
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <form method="post" action="{% url 'accounts:login' %}">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label for="id_email">Email Address</label>
+                                <div class="input-group-custom">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" 
+                                           name="email" 
+                                           id="id_email" 
+                                           class="form-control-custom"
+                                           placeholder="Enter your email"
+                                           value="{{ form.email.value|default:'' }}"
+                                           required
+                                           autofocus>
+                                </div>
+                                {% if form.email.errors %}
+                                    <small class="text-danger">{{ form.email.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="id_password">Password</label>
+                                <div class="input-group-custom">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" 
+                                           name="password" 
+                                           id="id_password" 
+                                           class="form-control-custom"
+                                           placeholder="Enter your password"
+                                           required>
+                                </div>
+                                {% if form.password.errors %}
+                                    <small class="text-danger">{{ form.password.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Two-Factor Method Selection -->
+                            <div class="two-factor-section">
+                                <label class="form-label">Two-Factor Authentication Method</label>
+                                <div class="two-factor-options">
+                                    <label>
+                                        <input type="radio" name="two_factor_method" value="email" checked>
+                                        <i class="fas fa-envelope"></i> Email OTP
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="two_factor_method" value="authenticator">
+                                        <i class="fas fa-mobile-alt"></i> Authenticator App
+                                    </label>
+                                </div>
+                                <div class="method-description">
+                                    <span id="email-description">Receive a one-time code via email</span>
+                                    <span id="authenticator-description" style="display: none;">Use Google Authenticator, Authy, or similar app</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group d-flex justify-content-between align-items-center">
+                                <div class="form-check-custom">
+                                    <input type="checkbox" name="remember_me" id="id_remember_me">
+                                    <label for="id_remember_me">Remember me</label>
+                                </div>
+                                <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none small" style="color: #2a5298;">
+                                    Forgot Password?
+                                </a>
+                            </div>
+                            
+                            <button type="submit" class="btn-login">
+                                Sign In
+                            </button>
+                        </form>
+                        
+                        <div class="divider">
+                            <span>OR CONTINUE WITH</span>
+                        </div>
+                        
+                        <div class="d-grid gap-3">
+                            <a href="{% provider_login_url 'google' %}" class="btn-social btn-google">
+                                <i class="fab fa-google"></i>
+                                Continue with Google
+                            </a>
+                        </div>
+                        
+                        <div class="signup-link">
+                            <p class="mb-0 text-muted">
+                                Don't have an account? 
+                                <a href="{% url 'accounts:register' %}">Create an account</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle method descriptions
+    const emailRadio = document.querySelector('input[value="email"]');
+    const authenticatorRadio = document.querySelector('input[value="authenticator"]');
+    const emailDesc = document.getElementById('email-description');
+    const authenticatorDesc = document.getElementById('authenticator-description');
+    
+    function updateDescription() {
+        if (emailRadio.checked) {
+            emailDesc.style.display = 'inline';
+            authenticatorDesc.style.display = 'none';
+        } else {
+            emailDesc.style.display = 'none';
+            authenticatorDesc.style.display = 'inline';
+        }
+    }
+    
+    emailRadio.addEventListener('change', updateDescription);
+    authenticatorRadio.addEventListener('change', updateDescription);
+</script>
+{% endblock %}

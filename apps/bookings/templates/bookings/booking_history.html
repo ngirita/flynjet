@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking History - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-2">
+                        <i class="fas fa-history me-2 text-primary"></i>Booking History
+                    </h2>
+                    <p class="text-muted">Track all changes and status updates for your bookings</p>
+                </div>
+                <a href="{% url 'bookings:list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-alt me-2"></i>My Bookings
+                </a>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0 text-primary">{{ total_bookings }}</h3>
+                            <p class="text-muted mb-0">Total Bookings</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0 text-success">{{ completed_bookings }}</h3>
+                            <p class="text-muted mb-0">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0 text-info">{{ upcoming_bookings }}</h3>
+                            <p class="text-muted mb-0">Upcoming</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0 text-danger">{{ cancelled_bookings }}</h3>
+                            <p class="text-muted mb-0">Cancelled</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Timeline -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-timeline me-2"></i>Activity Timeline
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if histories %}
+                        <div class="timeline-container p-4">
+                            {% for booking_ref, data in history_by_booking.items %}
+                                <div class="booking-group mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <h5 class="mb-0">
+                                            <a href="{% url 'bookings:detail' data.booking.id %}" class="text-decoration-none">
+                                                {{ booking_ref }}
+                                            </a>
+                                        </h5>
+                                        <span class="badge bg-{% if data.booking.status == 'confirmed' %}success{% elif data.booking.status == 'cancelled' %}danger{% elif data.booking.status == 'completed' %}secondary{% else %}warning{% endif %} ms-2">
+                                            {{ data.booking.get_status_display }}
+                                        </span>
+                                        <span class="ms-auto text-muted small">
+                                            {{ data.booking.departure_datetime|date:"M j, Y" }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="timeline ms-3">
+                                        {% for history in data.histories %}
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker 
+                                                    {% if history.new_status == 'confirmed' %}bg-success
+                                                    {% elif history.new_status == 'paid' %}bg-primary
+                                                    {% elif history.new_status == 'cancelled' %}bg-danger
+                                                    {% elif history.new_status == 'completed' %}bg-secondary
+                                                    {% else %}bg-warning{% endif %}">
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <strong>
+                                                                {% if history.old_status %}
+                                                                    {{ history.old_status|title }} → {{ history.new_status|title }}
+                                                                {% else %}
+                                                                    {{ history.new_status|title }}
+                                                                {% endif %}
+                                                            </strong>
+                                                            {% if history.reason %}
+                                                                <p class="mb-0 small text-muted mt-1">
+                                                                    <i class="fas fa-info-circle me-1"></i>{{ history.reason }}
+                                                                </p>
+                                                            {% endif %}
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            {{ history.created_at|date:"M j, Y H:i" }}
+                                                        </small>
+                                                    </div>
+                                                    {% if history.changed_by %}
+                                                        <div class="mt-1">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-user me-1"></i>
+                                                                {% if history.changed_by == request.user %}
+                                                                    You
+                                                                {% else %}
+                                                                    {{ history.changed_by.get_full_name|default:history.changed_by.email }}
+                                                                {% endif %}
+                                                            </small>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <div class="card-footer bg-white">
+                                <nav aria-label="History pagination">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        {% endif %}
+                        
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No booking history found.</p>
+                            <a href="{% url 'bookings:create' %}" class="btn btn-primary">
+                                <i class="fas fa-plane me-2"></i>Make Your First Booking
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-container {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 25px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #6c757d;
+    z-index: 1;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 12px;
+    bottom: -8px;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item:last-child:before {
+    display: none;
+}
+
+.timeline-content {
+    padding-left: 10px;
+}
+
+.booking-group {
+    border-left: 3px solid #e9ecef;
+    padding-left: 20px;
+}
+
+.booking-group:last-child {
+    border-left-color: transparent;
+}
+</style>
+{% endblock %}

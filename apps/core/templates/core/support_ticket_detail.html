@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ticket {{ ticket.ticket_number }} - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="d-flex justify-content-between mb-4">
+                        <h1 class="display-5 fw-bold">Ticket {{ ticket.ticket_number }}</h1>
+                        <span class="badge bg-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                    </div>
+                    
+                    <h4>{{ ticket.subject }}</h4>
+                    <p>{{ ticket.description }}</p>
+                    
+                    <hr>
+                    
+                    <h5>Messages</h5>
+                    {% for msg in messages %}
+                    <div class="mb-3">
+                        <strong>{{ msg.sender.email }}</strong> - <small>{{ msg.created_at|date:"M d, Y H:i" }}</small>
+                        <p>{{ msg.message }}</p>
+                    </div>
+                    {% endfor %}
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <textarea name="message" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+                        <button type="submit" class="btn btn-primary mt-2">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% load static %}
+
+<div class="newsletter-widget card">
+    <div class="card-body text-center">
+        <i class="fas fa-envelope-open-text fa-3x text-primary mb-3"></i>
+        <h5 class="card-title">Subscribe to Our Newsletter</h5>
+        <p class="card-text text-muted small">
+            Get the latest updates, exclusive offers, and aviation news.
+        </p>
+        
+        <form id="newsletterForm" onsubmit="subscribeNewsletter(event)">
+            {% csrf_token %}
+            <div class="input-group mb-3">
+                <input type="email" class="form-control" id="newsletterEmail" 
+                       placeholder="Enter your email" required>
+                <button class="btn btn-primary" type="submit">
+                    Subscribe
+                </button>
+            </div>
+            
+            <div class="form-check text-start">
+                <input type="checkbox" class="form-check-input" id="newsletterConsent" required>
+                <label class="form-check-label small" for="newsletterConsent">
+                    I agree to receive marketing emails from FlynJet
+                </label>
+            </div>
+        </form>
+        
+        <div id="newsletterSuccess" class="alert alert-success mt-3" style="display: none;">
+            <i class="fas fa-check-circle"></i> Thank you for subscribing!
+        </div>
+        
+        <div id="newsletterError" class="alert alert-danger mt-3" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i> <span id="newsletterErrorMessage"></span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .newsletter-widget {
+        max-width: 300px;
+    }
+</style>
+
+<script>
+    function subscribeNewsletter(event) {
+        event.preventDefault();
+        
+        const email = document.getElementById('newsletterEmail').value;
+        const consent = document.getElementById('newsletterConsent').checked;
+        
+        if (!consent) {
+            showNewsletterError('You must agree to receive marketing emails');
+            return;
+        }
+        
+        fetch('/api/v1/marketing/newsletter/subscribe/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('newsletterForm').style.display = 'none';
+                document.getElementById('newsletterSuccess').style.display = 'block';
+            } else {
+                showNewsletterError(data.message || 'Subscription failed');
+            }
+        })
+        .catch(error => {
+            console.error('Newsletter error:', error);
+            showNewsletterError('An error occurred. Please try again.');
+        });
+    }
+    
+    function showNewsletterError(message) {
+        const errorDiv = document.getElementById('newsletterError');
+        const messageSpan = document.getElementById('newsletterErrorMessage');
+        messageSpan.textContent = message;
+        errorDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    function getCsrfToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return value;
+            }
+        }
+        return '';
+    }
+</script>

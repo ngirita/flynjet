@@ -1,0 +1,45 @@
+FLY N'JET - {% if is_receipt %}Payment Receipt{% else %}Invoice{% endif %}
+=====================================
+
+{% if is_receipt %}Receipt No:{% else %}Invoice No:{% endif %} {{ document.document_number }}
+Date: {{ document.created_at|date:"F j, Y" }}
+Booking Ref: {{ booking.booking_reference }}
+Status: {% if is_receipt %}PAID{% else %}{{ document.content_data.status|default:"PENDING"|upper }}{% endif %}
+
+From: FlynJet Air and Logistics
+Jomo Kenyatta International Airport
+Airport North Road, Embakasi, Nairobi Kenya
++254785651832 | WhatsApp: +447393700477
+info@flynjet.com
+
+Bill To:
+{{ user.first_name }} {{ user.last_name }}
+{{ user.email }}
+{% if user.phone_number %}{{ user.phone_number }}{% endif %}
+
+Flight: {{ booking.departure_airport }} → {{ booking.arrival_airport }}
+Date: {{ booking.departure_datetime|date:"F j, Y" }}
+
+Items:
+{% for item in document.content_data.items %}
+- {{ item.description }} ({{ item.quantity }} x ${{ item.unit_price_usd|floatformat:2 }}) = ${{ item.line_total_usd|floatformat:2 }}
+{% empty %}
+- Flight Charter Service (1 x ${{ document.content_data.total_usd|floatformat:2 }}) = ${{ document.content_data.total_usd|floatformat:2 }}
+{% endfor %}
+
+Subtotal: ${{ document.content_data.subtotal_usd|floatformat:2|default:"0.00" }}
+Tax ({{ document.content_data.tax_rate|default:10 }}%): ${{ document.content_data.tax_amount_usd|floatformat:2|default:"0.00" }}
+TOTAL: ${{ document.content_data.total_usd|floatformat:2|default:"0.00" }}
+
+{% if is_receipt %}
+Payment Confirmed:
+Method: {{ document.content_data.payment_method|default:"Admin Payment" }}
+Date: {{ document.content_data.payment_date|date:"F j, Y H:i" }}
+Amount: ${{ document.content_data.total_usd|floatformat:2|default:"0.00" }}
+Transaction ID: {{ document.content_data.payment_transaction_id|default:"N/A" }}
+{% endif %}
+
+{{ document.notes|default:"" }}
+
+This is an official {% if is_receipt %}payment receipt{% else %}invoice{% endif %} issued by FlynJet Air and Logistics.
+For questions: info@flynjet.com | +254785651832

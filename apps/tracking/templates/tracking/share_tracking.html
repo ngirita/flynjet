@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shared Flight Tracking - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    {% if valid %}
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success fa-4x"></i>
+                        </div>
+                        
+                        <h2 class="fw-bold mb-3">Flight Tracking Shared</h2>
+                        <p class="text-muted mb-4">
+                            You're viewing shared tracking for flight {{ track.flight_number }}
+                        </p>
+                        
+                        {% if requires_password %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-lock me-2"></i>
+                                This tracking link is password protected
+                            </div>
+                            
+                            <form method="post" class="mt-4">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Enter Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-unlock-alt me-2"></i>Access Tracking
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="tracking-info mt-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>From</h5>
+                                        <h3>{{ track.departure_airport }}</h3>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>To</h5>
+                                        <h3>{{ track.arrival_airport }}</h3>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <a href="{% url 'tracking:shared_view' token=token %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-plane me-2"></i>View Live Tracking
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-warning fa-4x"></i>
+                        </div>
+                        
+                        <h2 class="fw-bold mb-3">Invalid or Expired Link</h2>
+                        <p class="text-muted mb-4">
+                            This tracking link is no longer valid or has expired.
+                        </p>
+                        
+                        <a href="{% url 'core:home' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Return Home
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

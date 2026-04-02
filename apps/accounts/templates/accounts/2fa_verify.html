@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}2FA Verification - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-shield-alt fa-4x text-primary"></i>
+                    </div>
+                    
+                    <h3 class="mb-2">Two-Factor Authentication</h3>
+                    <p class="text-muted mb-4">
+                        Please enter the 6-digit code from your authenticator app
+                    </p>
+                    
+                    <form method="post" action="{% url 'accounts:2fa_verify' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <input type="text" 
+                                   name="code" 
+                                   id="id_code" 
+                                   class="form-control form-control-lg text-center"
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   autocomplete="off"
+                                   required
+                                   style="font-size: 2rem; letter-spacing: 5px;">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            Verify & Continue
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            Lost your authenticator app? 
+                            <a href="#" class="text-decoration-none">Use backup codes</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input#id_code {
+        font-family: monospace;
+        font-weight: bold;
+        letter-spacing: 5px;
+    }
+    
+    input#id_code:focus {
+        border-color: #2a5298;
+        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+    }
+</style>
+{% endblock %}

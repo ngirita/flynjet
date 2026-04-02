@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live Flight Map - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .live-map-container {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 200px);
+        min-height: 600px;
+    }
+    
+    .flight-list-panel {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        width: 300px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        max-height: calc(100% - 40px);
+        overflow-y: auto;
+    }
+    
+    .flight-list-header {
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .flight-list-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .flight-list-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f3f5;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .flight-list-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .flight-list-item.active {
+        background: #e3f2fd;
+        border-left: 3px solid #007bff;
+    }
+    
+    .flight-callsign {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .flight-route {
+        font-size: 12px;
+        color: #666;
+        margin: 2px 0;
+    }
+    
+    .flight-status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    
+    .status-in-air { background: #d4edda; color: #155724; }
+    .status-on-ground { background: #fff3cd; color: #856404; }
+    .status-scheduled { background: #e2e3e5; color: #383d41; }
+    
+    .map-controls-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        padding: 10px;
+    }
+    
+    .map-controls-panel button {
+        display: block;
+        width: 40px;
+        height: 40px;
+        margin: 5px 0;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .map-controls-panel button:hover {
+        background: #e9ecef;
+    }
+    
+    .flight-detail-panel {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        z-index: 10;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        padding: 20px;
+        display: none;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .flight-detail-panel.active {
+        display: block;
+    }
+    
+    .close-panel {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+    }
+    
+    .close-panel:hover {
+        color: #333;
+    }
+    
+    .weather-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+    
+    .weather-icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+    
+    .weather-temp {
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    .weather-detail {
+        color: #666;
+        font-size: 14px;
+        margin: 2px 0;
+    }
+    
+    .custom-plane-marker {
+        background: transparent;
+        border: none;
+    }
+    
+    .plane-icon {
+        font-size: 24px;
+        color: #28a745;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .flight-list-panel {
+            width: 250px;
+        }
+        
+        .flight-detail-panel {
+            left: 10px;
+            right: 10px;
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="live-map-container">
+    <!-- Flight List Panel -->
+    <div class="flight-list-panel">
+        <div class="flight-list-header">
+            <h5><i class="fas fa-plane me-2"></i>Active Flights</h5>
+        </div>
+        <div class="flight-list" id="flightList">
+            {% for track in active_tracks %}
+            <div class="flight-list-item" data-flight-id="{{ track.id }}" onclick="selectFlight('{{ track.id }}')">
+                <div class="flight-callsign">{{ track.flight_number }}</div>
+                <div class="flight-route">{{ track.departure_airport }} → {{ track.arrival_airport }}</div>
+                <span class="flight-status status-{{ track.status }}">{{ track.get_status_display }}</span>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <p class="text-muted">No active flights</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Map Controls -->
+    <div class="map-controls-panel">
+        <button onclick="map.zoomIn()" title="Zoom In">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button onclick="map.zoomOut()" title="Zoom Out">
+            <i class="fas fa-minus"></i>
+        </button>
+        <button onclick="fitToUSA()" title="Fit USA">
+            <i class="fas fa-globe-americas"></i>
+        </button>
+        <button onclick="centerOnFlight()" title="Center on Flight">
+            <i class="fas fa-crosshairs"></i>
+        </button>
+        <button onclick="toggleTraffic()" title="Toggle Traffic">
+            <i class="fas fa-car"></i>
+        </button>
+    </div>
+    
+    <!-- Flight Detail Panel -->
+    <div class="flight-detail-panel" id="flightDetailPanel">
+        <button class="close-panel" onclick="closeDetailPanel()">&times;</button>
+        <div id="flightDetailContent"></div>
+    </div>
+    
+    <!-- Map Container -->
+    <div id="liveMap" class="tracking-map"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map with OpenStreetMap (free)
+    const map = L.map('liveMap').setView([39.8283, -98.5795], 4);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Store markers for flights
+    const flightMarkers = new Map();
+    let currentTracker = null;
+    let currentFlightId = null;
+    
+    // Custom airplane icon
+    const createPlaneIcon = (heading = 0) => {
+        return L.divIcon({
+            className: 'custom-plane-marker',
+            html: `<i class="fas fa-plane plane-icon" style="transform: rotate(${heading}deg);"></i>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+    };
+    
+    // Load initial flights
+    {% for track in active_tracks %}
+    {% if track.latitude and track.longitude %}
+    const marker{{ track.id }} = L.marker([{{ track.latitude }}, {{ track.longitude }}], {
+        icon: createPlaneIcon({{ track.heading|default:0 }})
+    }).addTo(map);
+    
+    marker{{ track.id }}.bindPopup(`
+        <div class="map-popup">
+            <strong>{{ track.flight_number }}</strong><br>
+            {{ track.departure_airport }} → {{ track.arrival_airport }}<br>
+            Altitude: {{ track.altitude|default:"N/A" }} ft<br>
+            Speed: {{ track.speed|default:"N/A" }} kts
+        </div>
+    `);
+    
+    flightMarkers.set('{{ track.id }}', marker{{ track.id }});
+    {% endif %}
+    {% endfor %}
+    
+    function fitToUSA() {
+        map.fitBounds([[24.0, -125.0], [49.0, -66.0]]);
+    }
+    
+    function selectFlight(flightId) {
+        // Update active state in list
+        document.querySelectorAll('.flight-list-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-flight-id="${flightId}"]`).classList.add('active');
+        
+        // Show detail panel
+        const panel = document.getElementById('flightDetailPanel');
+        panel.classList.add('active');
+        
+        // Load flight details
+        loadFlightDetails(flightId);
+        
+        // Highlight the marker on map
+        const marker = flightMarkers.get(flightId);
+        if (marker) {
+            marker.openPopup();
+        }
+        
+        // Initialize tracker for real-time updates
+        if (currentTracker) {
+            currentTracker.disconnect();
+        }
+        
+        currentFlightId = flightId;
+        currentTracker = new FlightTracker({
+            flightId: flightId,
+            wsUrl: `ws://{{ request.get_host }}/ws/tracking/${flightId}/`,
+            map: map,
+            onUpdate: (position) => {
+                updateFlightDetails(position);
+                updateMarkerPosition(flightId, position);
+            }
+        });
+    }
+    
+    function updateMarkerPosition(flightId, position) {
+        const marker = flightMarkers.get(flightId);
+        if (marker) {
+            marker.setLatLng([position.latitude, position.longitude]);
+            marker.setIcon(createPlaneIcon(position.heading || 0));
+            marker.getPopup().setContent(`
+                <div class="map-popup">
+                    <strong>Flight</strong><br>
+                    Altitude: ${position.altitude || 0} ft<br>
+                    Speed: ${position.speed || 0} kts
+                </div>
+            `);
+        }
+    }
+    
+    function loadFlightDetails(flightId) {
+        fetch(`/api/v1/tracking/tracks/${flightId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const content = document.getElementById('flightDetailContent');
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Flight ${data.flight_number}</h5>
+                            <p>Aircraft: ${data.aircraft_registration}</p>
+                            <p>Route: ${data.departure_airport} → ${data.arrival_airport}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="flight-info">
+                                <p><strong>Altitude:</strong> <span id="flight-altitude">${formatAltitude(data.altitude)}</span></p>
+                                <p><strong>Speed:</strong> <span id="flight-speed">${formatSpeed(data.speed)}</span></p>
+                                <p><strong>Heading:</strong> <span id="flight-heading">${formatHeading(data.heading)}</span></p>
+                                <p><strong>ETA:</strong> <span id="flight-eta">${data.estimated_arrival ? new Date(data.estimated_arrival).toLocaleTimeString() : '--'}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3">
+                        <div id="flight-progress" class="progress-bar" role="progressbar" 
+                             style="width: ${data.progress_percentage}%" 
+                             aria-valuenow="${data.progress_percentage}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                `;
+            });
+    }
+    
+    function updateFlightDetails(position) {
+        const altEl = document.getElementById('flight-altitude');
+        if (altEl) altEl.textContent = formatAltitude(position.altitude);
+        
+        const speedEl = document.getElementById('flight-speed');
+        if (speedEl) speedEl.textContent = formatSpeed(position.speed);
+        
+        const headingEl = document.getElementById('flight-heading');
+        if (headingEl) headingEl.textContent = formatHeading(position.heading);
+        
+        const progressEl = document.getElementById('flight-progress');
+        if (progressEl && position.progress !== undefined) {
+            progressEl.style.width = `${position.progress}%`;
+            progressEl.setAttribute('aria-valuenow', position.progress);
+        }
+    }
+    
+    function centerOnFlight() {
+        if (currentTracker && currentTracker.positionHistory && currentTracker.positionHistory.length > 0) {
+            const lastPos = currentTracker.positionHistory[currentTracker.positionHistory.length - 1];
+            map.setView([lastPos.lat, lastPos.lng], 10);
+        } else {
+            const marker = flightMarkers.get(currentFlightId);
+            if (marker) {
+                const latLng = marker.getLatLng();
+                map.setView([latLng.lat, latLng.lng], 10);
+            }
+        }
+    }
+    
+    function closeDetailPanel() {
+        document.getElementById('flightDetailPanel').classList.remove('active');
+        if (currentTracker) {
+            currentTracker.disconnect();
+            currentTracker = null;
+        }
+    }
+    
+    function toggleTraffic() {
+        alert('Traffic layer coming soon!');
+    }
+    
+    function formatAltitude(alt) {
+        if (!alt) return '--';
+        if (alt > 30000) return `${(alt/1000).toFixed(0)}K ft`;
+        return `${Math.round(alt)} ft`;
+    }
+    
+    function formatSpeed(speed) {
+        if (!speed) return '--';
+        return `${Math.round(speed)} kts`;
+    }
+    
+    function formatHeading(heading) {
+        if (!heading) return '--';
+        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                           'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        const index = Math.round(heading / 22.5) % 16;
+        return `${Math.round(heading)}° ${directions[index]}`;
+    }
+    
+    // Simple FlightTracker class
+    class FlightTracker {
+        constructor(options) {
+            this.flightId = options.flightId;
+            this.wsUrl = options.wsUrl;
+            this.onUpdate = options.onUpdate || function() {};
+            this.positionHistory = [];
+            this.connect();
+        }
+        
+        connect() {
+            this.ws = new WebSocket(this.wsUrl);
+            
+            this.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'position_update') {
+                    this.positionHistory.push(data.data);
+                    if (this.positionHistory.length > 100) {
+                        this.positionHistory.shift();
+                    }
+                    this.onUpdate(data.data);
+                }
+            };
+            
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+        
+        disconnect() {
+            if (this.ws) {
+                this.ws.close();
+            }
+        }
+    }
+</script>
+{% endblock %}

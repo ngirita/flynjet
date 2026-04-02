@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FlynJet Newsletter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 30px 20px;
+            background: #f8f9fa;
+        }
+        .article {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .article h3 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .button {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #333;
+            color: white;
+            font-size: 12px;
+        }
+        .unsubscribe {
+            color: #999;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FlynJet Newsletter</h1>
+            <p>Your monthly aviation update</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.get_full_name|default:user.email }},</h2>
+            
+            <p>Here's what's new at FlynJet this month:</p>
+            
+            <div class="article">
+                <h3>New Aircraft Added to Fleet</h3>
+                <p>We're excited to announce the addition of two new Gulfstream G650ER aircraft to our fleet, offering even more luxury and range for your travels.</p>
+                <a href="{{ site_url }}{% url 'fleet:list' %}" class="button">View New Aircraft</a>
+            </div>
+            
+            <div class="article">
+                <h3>Summer Promotion</h3>
+                <p>Book your summer getaway now and enjoy 15% off all flights to Europe. Use code SUMMER15 at checkout.</p>
+                <a href="{{ site_url }}{% url 'bookings:create' %}" class="button">Book Now</a>
+            </div>
+            
+            <div class="article">
+                <h3>Loyalty Program Updates</h3>
+                <p>We've enhanced our loyalty program with new tier benefits. Check your account to see your new status!</p>
+                <a href="{{ site_url }}{% url 'marketing:loyalty' %}" class="button">View Benefits</a>
+            </div>
+            
+            <p>Thank you for being part of the FlynJet family!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {% now "Y" %} FlynJet. All rights reserved.</p>
+            <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501</p>
+            <p class="unsubscribe">
+                <a href="{{ site_url }}{% url 'marketing:unsubscribe' %}?email={{ user.email }}" style="color: #999;">
+                    Unsubscribe from this newsletter
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

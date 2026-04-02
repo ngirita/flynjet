@@ -1,0 +1,147 @@
+{% load static %}
+
+<footer class="pt-5 pb-4 mt-5" id="mainFooter">
+    <div class="container-fluid px-4">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <img src="{% static 'images/logo-white.png' %}" alt="FlynJet" 
+                     id="footerLogo"
+                     style="height: 85px; width: auto; margin-bottom: 20px;">
+                <p class="footer-text" style="line-height: 1.6;">
+                    Experience luxury air travel with FlynJet. Private jet charters, cargo logistics, and premium aviation services.
+                </p>
+                
+                <!-- Social Links - Dynamic from database -->
+                <div class="social-links mt-3">
+                    {% if social_links %}
+                        {% for social in social_links %}
+                        <a href="{{ social.tracking_url }}" 
+                           class="social-icon me-3" 
+                           target="{% if social.open_in_new_tab %}_blank{% else %}_self{% endif %}"
+                           rel="{% if social.open_in_new_tab %}noopener noreferrer{% endif %}"
+                           title="{{ social.get_display_name }}">
+                            <i class="{{ social.icon_class }} fa-lg"></i>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback social links if none in database -->
+                        <a href="#" class="social-icon me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="social-icon me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="social-icon me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="social-icon me-3"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube fa-lg"></i></a>
+                    {% endif %}
+                </div>
+            </div>  <!-- This closing tag was missing! -->
+            
+            <div class="col-lg-2 col-md-4 mb-4">
+                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'core:home' %}" class="footer-link">Home</a></li>
+                    <li class="mb-2"><a href="{% url 'fleet:list' %}" class="footer-link">Fleet</a></li>
+                    <li class="mb-2"><a href="{% url 'core:services' %}" class="footer-link">Services</a></li>
+                    <li class="mb-2"><a href="{% url 'core:about' %}" class="footer-link">About Us</a></li>
+                    <li class="mb-2"><a href="{% url 'core:contact' %}" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-2 col-md-4 mb-4">
+                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Support</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'core:faq' %}" class="footer-link">FAQ</a></li>
+                    <li class="mb-2"><a href="{% url 'core:support_tickets' %}" class="footer-link">Support Tickets</a></li>
+                    <li class="mb-2"><a href="{% url 'bookings:track' %}" class="footer-link">Track Flight</a></li>
+                    <li class="mb-2"><a href="{% url 'tracking:cargo_tracking' %}" class="footer-link">
+                        <i class="fas fa-box me-1"></i>Track Cargo
+                    </a></li>
+                    <li class="mb-2"><a href="{% url 'core:terms' %}" class="footer-link">Terms of Service</a></li>
+                    <li class="mb-2"><a href="{% url 'core:privacy' %}" class="footer-link">Privacy Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-4 col-md-4 mb-4">
+                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Contact Us</h6>
+                
+                <!-- Phone Numbers -->
+                {% if footer_phone %}
+                <ul class="list-unstyled footer-text">
+                    <li class="mb-2">
+                        <i class="fas fa-phone me-2"></i> 
+                        <strong>Phone:</strong> {{ footer_phone.value }}
+                    </li>
+                </ul>
+                {% endif %}
+                
+                <!-- WhatsApp -->
+                {% if footer_whatsapp %}
+                <ul class="list-unstyled footer-text">
+                    <li class="mb-2">
+                        <i class="fab fa-whatsapp me-2" style="color: #25D366;"></i> 
+                        <strong>WhatsApp:</strong> {{ footer_whatsapp.value }}
+                    </li>
+                </ul>
+                {% endif %}
+                
+                <!-- Email -->
+                {% if footer_email %}
+                <ul class="list-unstyled footer-text">
+                    <li class="mb-2">
+                        <i class="fas fa-envelope me-2"></i> 
+                        <strong>Email:</strong> {{ footer_email.value }}
+                    </li>
+                </ul>
+                {% endif %}
+                
+                <!-- Office Addresses -->
+                {% if footer_offices %}
+                <hr class="footer-divider my-3">
+                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Our Offices</h6>
+                {% for office in footer_offices %}
+                <ul class="list-unstyled footer-text">
+                    <li class="mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <strong>{{ office.city }}, {{ office.country }}</strong><br>
+                        <small>{{ office.address|truncatewords:20 }}</small>
+                        {% if office.phone %}
+                        <br><i class="fas fa-phone me-1"></i> {{ office.phone }}
+                        {% endif %}
+                        {% if office.working_hours %}
+                        <br><i class="far fa-clock me-1"></i> {{ office.working_hours }}
+                        {% endif %}
+                    </li>
+                </ul>
+                {% endfor %}
+                {% endif %}
+                
+                <h6 class="text-uppercase fw-bold mb-3 mt-4 footer-heading">Newsletter</h6>
+                <form action="{% url 'core:newsletter_signup' %}" method="post" class="newsletter-form">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="email" name="email" class="form-control newsletter-input" 
+                               placeholder="Your email">
+                        <button class="btn newsletter-btn" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <hr class="footer-divider mt-4">
+        
+        <div class="row">
+            <div class="col-md-6">
+                <p class="footer-text small mb-0">
+                    &copy; {{ current_year }} FlynJet. All rights reserved.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="footer-text small mb-0">
+                    <i class="fas fa-lock me-1"></i> Secure Payments
+                    <span class="mx-2">|</span>
+                    <i class="fas fa-shield-alt me-1"></i> SSL Encrypted
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

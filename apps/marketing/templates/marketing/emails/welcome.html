@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome to FlynJet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+        .content {
+            padding: 40px 20px;
+            background: #f8f9fa;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .benefits {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+        }
+        .benefit {
+            text-align: center;
+            flex: 1;
+            padding: 0 10px;
+        }
+        .benefit i {
+            font-size: 32px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #333;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to FlynJet!</h1>
+            <p>Your journey to luxury travel begins here</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.get_full_name|default:user.email }},</h2>
+            
+            <p>Thank you for joining FlynJet! We're excited to have you on board.</p>
+            
+            <p>As a new member, you'll enjoy:</p>
+            
+            <div class="benefits">
+                <div class="benefit">
+                    <i class="fas fa-gift"></i>
+                    <h4>Welcome Bonus</h4>
+                    <p>500 bonus points to start</p>
+                </div>
+                <div class="benefit">
+                    <i class="fas fa-plane"></i>
+                    <h4>Easy Booking</h4>
+                    <p>Book flights in minutes</p>
+                </div>
+                <div class="benefit">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Secure Travel</h4>
+                    <p>Your safety is our priority</p>
+                </div>
+            </div>
+            
+            <p>Ready to experience luxury travel?</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}{% url 'fleet:list' %}" class="button">
+                    Browse Our Fleet
+                </a>
+            </div>
+            
+            <p>We've also added 500 bonus points to your loyalty account. You can use them on your next booking!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {% now "Y" %} FlynJet. All rights reserved.</p>
+            <p>Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501</p>
+        </div>
+    </div>
+</body>
+</html>

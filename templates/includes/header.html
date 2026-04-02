@@ -1,0 +1,155 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg shadow-sm sticky-top" id="mainNavbar" style="background-color: #ffffff;">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="{% url 'core:home' %}" style="padding: 0; line-height: 1; margin-right: auto;">
+            <img src="{% static 'images/logo-white.png' %}" alt="FlynJet" 
+                 id="navbarLogo"
+                 style="height: 85px; width: auto; margin: -20px 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); transition: all 0.3s ease;">
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'bookings:track' %}">Track Flight</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:cargo_tracking' %}">
+                        <i class="fas fa-box me-1"></i>Track Cargo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:services' %}">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:contact' %}">Contact</a>
+                </li>
+            </ul>
+            
+            <div class="d-flex align-items-center ms-lg-3">
+                <!-- NEW: Header Chat Icon (hidden by default, appears when X is clicked) -->
+                <div id="headerChatIcon" class="header-chat-icon" onclick="restoreChatFromHeader()" style="display: none; cursor: pointer; margin-right: 15px;">
+                    <div class="chat-icon-wrapper">
+                        <i class="fas fa-comment-dots" style="font-size: 22px; color: #667eea;"></i>
+                        <span id="headerNotificationBadge" class="header-notification-badge" style="display: none; position: absolute; top: -8px; right: -8px; background: #ff4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;">1</span>
+                    </div>
+                </div>
+                
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-2"></i>{{ user.get_short_name }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user-circle me-2"></i>Profile
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'bookings:list' %}">
+                            <i class="fas fa-calendar-check me-2"></i>My Bookings
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'bookings:history' %}">
+                            <i class="fas fa-history me-2"></i>Booking History
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'tracking:dashboard' %}">
+                            <i class="fas fa-plane me-2"></i>Flight Tracking
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'tracking:cargo_tracking' %}">
+                            <i class="fas fa-box me-2"></i>Cargo Tracking
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:security_settings' %}">
+                            <i class="fas fa-shield-alt me-2"></i>Security
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                    Sign Up
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    /* Header chat icon styles */
+    .header-chat-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .header-chat-icon:hover {
+        background: rgba(102, 126, 234, 0.2);
+        transform: scale(1.05);
+    }
+    
+    .chat-icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .header-notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4444;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+</style>
+
+<script>
+    // Function to restore chat from header (called when clicking header icon)
+    function restoreChatFromHeader() {
+        // This function is defined in the chat widget script
+        if (typeof window.restoreChatFromHeader === 'function') {
+            window.restoreChatFromHeader();
+        }
+        
+        // Hide header icon
+        const headerIcon = document.getElementById('headerChatIcon');
+        if (headerIcon) {
+            headerIcon.style.display = 'none';
+        }
+        
+        // Hide notification badge
+        const headerBadge = document.getElementById('headerNotificationBadge');
+        if (headerBadge) {
+            headerBadge.style.display = 'none';
+        }
+    }
+    
+    // Make restore function globally available
+    window.restoreChatFromHeader = restoreChatFromHeader;
+</script>

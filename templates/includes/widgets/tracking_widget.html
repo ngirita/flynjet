@@ -1,0 +1,97 @@
+{% load static %}
+
+<div class="tracking-widget card">
+    <div class="card-header">
+        <h5 class="mb-0">Flight Tracker</h5>
+    </div>
+    <div class="card-body">
+        <form id="trackingWidgetForm" onsubmit="trackFlight(event)">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="trackingCode" 
+                       placeholder="Enter booking reference" required>
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search"></i> Track
+                </button>
+            </div>
+        </form>
+        
+        <div id="trackingResult" style="display: none;">
+            <hr>
+            <div class="text-center mb-3">
+                <h6 id="trackingFlightNumber"></h6>
+                <div class="flight-route">
+                    <span id="trackingFrom"></span>
+                    <i class="fas fa-arrow-right mx-2"></i>
+                    <span id="trackingTo"></span>
+                </div>
+            </div>
+            
+            <div class="progress mb-3">
+                <div id="trackingProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+            </div>
+            
+            <div class="row text-center">
+                <div class="col-6">
+                    <small class="text-muted">Status</small>
+                    <div id="trackingStatus" class="fw-bold">-</div>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted">ETA</small>
+                    <div id="trackingETA" class="fw-bold">-</div>
+                </div>
+            </div>
+            
+            <hr>
+            <a href="#" id="trackingFullLink" class="btn btn-outline-primary btn-sm w-100">
+                View Full Tracking
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-widget {
+        max-width: 300px;
+    }
+    
+    .flight-route {
+        font-size: 14px;
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    function trackFlight(event) {
+        event.preventDefault();
+        
+        const code = document.getElementById('trackingCode').value.trim();
+        
+        if (!code) {
+            alert('Please enter a booking reference');
+            return;
+        }
+        
+        fetch(`/api/v1/tracking/lookup/?reference=${code}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                document.getElementById('trackingFlightNumber').textContent = data.flight_number;
+                document.getElementById('trackingFrom').textContent = data.departure_airport;
+                document.getElementById('trackingTo').textContent = data.arrival_airport;
+                document.getElementById('trackingProgress').style.width = data.progress + '%';
+                document.getElementById('trackingStatus').textContent = data.status;
+                document.getElementById('trackingETA').textContent = data.eta || '-';
+                document.getElementById('trackingFullLink').href = `/tracking/${data.booking_id}/`;
+                
+                document.getElementById('trackingResult').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Tracking error:', error);
+                alert('Failed to track flight');
+            });
+    }
+</script>

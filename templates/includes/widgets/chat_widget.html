@@ -1,0 +1,244 @@
+{% load static %}
+
+<div class="chat-widget-container">
+    <div class="chat-widget-button" onclick="toggleChatWidget()">
+        <i class="fas fa-comment"></i>
+        <span class="chat-notification-badge" id="chatNotificationBadge" style="display: none;">0</span>
+    </div>
+    
+    <div class="chat-widget-window" id="chatWidgetWindow">
+        <div class="chat-widget-header">
+            <h5>FlynJet Support</h5>
+            <button class="chat-widget-close" onclick="toggleChatWidget()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="chat-widget-messages" id="chatWidgetMessages">
+            <div class="chat-message system">
+                <div class="message-content">
+                    Hello! How can we help you today?
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-widget-input">
+            <textarea class="chat-input" id="chatWidgetInput" placeholder="Type your message..." rows="2"></textarea>
+            <button class="chat-send-btn" onclick="sendChatMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        
+        <div class="chat-widget-footer">
+            <button class="btn btn-sm btn-link" onclick="startChat()">Start New Chat</button>
+            <button class="btn btn-sm btn-link" onclick="viewChatHistory()">View History</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-widget-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    
+    .chat-widget-button {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        position: relative;
+        transition: transform 0.3s;
+    }
+    
+    .chat-widget-button:hover {
+        transform: scale(1.1);
+    }
+    
+    .chat-widget-button i {
+        color: white;
+        font-size: 24px;
+    }
+    
+    .chat-notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+    }
+    
+    .chat-widget-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 350px;
+        height: 500px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .chat-widget-window.active {
+        display: flex;
+    }
+    
+    .chat-widget-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chat-widget-header h5 {
+        margin: 0;
+        font-size: 16px;
+    }
+    
+    .chat-widget-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 20px;
+    }
+    
+    .chat-widget-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+    
+    .chat-message {
+        margin-bottom: 15px;
+    }
+    
+    .chat-message.system .message-content {
+        background: #e9ecef;
+        color: #666;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 80%;
+        margin: 0 auto;
+        text-align: center;
+        font-size: 12px;
+    }
+    
+    .chat-widget-input {
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .chat-input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        resize: none;
+    }
+    
+    .chat-send-btn {
+        width: 40px;
+        height: 40px;
+        background: #007bff;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chat-send-btn:hover {
+        background: #0056b3;
+    }
+    
+    .chat-widget-footer {
+        padding: 10px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    .chat-widget-footer .btn-link {
+        color: #666;
+        font-size: 12px;
+        text-decoration: none;
+    }
+    
+    .chat-widget-footer .btn-link:hover {
+        color: #007bff;
+    }
+</style>
+
+<script>
+    let chatWidgetVisible = false;
+    
+    function toggleChatWidget() {
+        const widget = document.getElementById('chatWidgetWindow');
+        chatWidgetVisible = !chatWidgetVisible;
+        
+        if (chatWidgetVisible) {
+            widget.classList.add('active');
+        } else {
+            widget.classList.remove('active');
+        }
+    }
+    
+    function sendChatMessage() {
+        const input = document.getElementById('chatWidgetInput');
+        const message = input.value.trim();
+        
+        if (message) {
+            // Add message to chat
+            const messages = document.getElementById('chatWidgetMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message user';
+            msgDiv.innerHTML = `<div class="message-content">${message}</div>`;
+            messages.appendChild(msgDiv);
+            
+            // Clear input
+            input.value = '';
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+            
+            // TODO: Send via WebSocket
+        }
+    }
+    
+    function startChat() {
+        // Initialize new chat conversation
+        window.location.href = '/chat/start/';
+    }
+    
+    function viewChatHistory() {
+        window.location.href = '/chat/history/';
+    }
+</script>

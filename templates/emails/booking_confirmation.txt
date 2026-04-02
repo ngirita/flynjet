@@ -1,0 +1,21 @@
+Booking Confirmation - {{ booking.booking_reference }}
+
+Dear {{ user.get_full_name }},
+
+Your flight booking has been confirmed!
+
+Booking Details:
+- Booking Reference: {{ booking.booking_reference }}
+- Aircraft: {{ aircraft.manufacturer.name }} {{ aircraft.model }}
+- From: {{ booking.departure_airport }}
+- To: {{ booking.arrival_airport }}
+- Departure: {{ booking.departure_datetime|date:"F j, Y H:i" }}
+- Arrival: {{ booking.arrival_datetime|date:"F j, Y H:i" }}
+- Passengers: {{ booking.passenger_count }}
+
+Total Amount: ${{ booking.total_amount_usd }}
+
+Thank you for choosing FlynJet!
+
+Best regards,
+FlynJet Team

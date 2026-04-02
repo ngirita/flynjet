@@ -1,0 +1,16 @@
+<div class="position-update">
+    <div class="update-time">{{ timestamp|date:"H:i:s" }}</div>
+    <div class="update-coordinates">
+        <span class="badge bg-primary">Lat: {{ latitude|floatformat:4 }}</span>
+        <span class="badge bg-primary">Lng: {{ longitude|floatformat:4 }}</span>
+        {% if altitude %}
+        <span class="badge bg-info">Alt: {{ altitude }} ft</span>
+        {% endif %}
+        {% if speed %}
+        <span class="badge bg-success">{{ speed }} kts</span>
+        {% endif %}
+        {% if heading %}
+        <span class="badge bg-secondary">{{ heading }}°</span>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,395 @@
+{% load static %}
+
+<div class="emergency-widget">
+    <div class="emergency-header">
+        <h5>Emergency Procedures</h5>
+        <span class="emergency-type">{{ emergency_type|title }}</span>
+    </div>
+    
+    <div class="emergency-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>EMERGENCY - Follow procedures immediately</span>
+    </div>
+    
+    {% if procedures %}
+    <div class="procedure-steps">
+        <h6>{{ procedures.title }}</h6>
+        <ol class="steps-list">
+            {% for step in procedures.steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+        </ol>
+        
+        {% if procedures.checklist %}
+        <div class="checklist">
+            <h6>Checklist: {{ procedures.checklist }}</h6>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="quick-actions">
+        <h6>Quick Actions</h6>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="callMayday()">
+                <i class="fas fa-broadcast-tower"></i>
+                Declare MAYDAY
+            </button>
+            <button class="action-btn" onclick="contactATC()">
+                <i class="fas fa-headset"></i>
+                Contact ATC
+            </button>
+            <button class="action-btn" onclick="squawkEmergency()">
+                <i class="fas fa-wave-square"></i>
+                Squawk 7700
+            </button>
+        </div>
+    </div>
+    
+    <div class="emergency-contacts">
+        <h6>Emergency Contacts</h6>
+        <div class="contact-grid">
+            {% for service, number in contacts.items %}
+            <div class="contact-item">
+                <span class="service">{{ service|title }}</span>
+                <span class="number">{{ number }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="emergency-frequencies">
+        <h6>Emergency Frequencies</h6>
+        <div class="frequency-list">
+            {% for name, freq in frequencies.items %}
+            <div class="frequency-item">
+                <span class="freq-name">{{ name|title }}</span>
+                <span class="freq-value">{{ freq }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if nearest_hospital %}
+    <div class="nearest-facility">
+        <h6>Nearest Hospital</h6>
+        <div class="facility-info">
+            <div class="facility-name">{{ nearest_hospital.name }}</div>
+            <div class="facility-detail">
+                <i class="fas fa-phone"></i> {{ nearest_hospital.phone }}
+            </div>
+            <div class="facility-detail">
+                <i class="fas fa-map-marker-alt"></i> {{ nearest_hospital.address }}
+            </div>
+            <div class="facility-detail">
+                <i class="fas fa-ambulance"></i> {{ nearest_hospital.distance }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="ditching-procedures">
+        <h6>Ditching Procedures</h6>
+        <ul class="ditching-list">
+            {% for step in ditching.steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+        </ul>
+        
+        <div class="survival-equipment">
+            <strong>Survival Equipment:</strong>
+            {% for item in ditching.equipment %}
+            <span class="equipment-tag">{{ item }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .emergency-widget {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .emergency-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .emergency-header h5 {
+        margin: 0;
+        color: #dc3545;
+        font-weight: 700;
+    }
+    
+    .emergency-type {
+        background: #dc3545;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .emergency-banner {
+        background: #dc3545;
+        color: white;
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+    }
+    
+    .emergency-banner i {
+        font-size: 24px;
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    
+    .procedure-steps {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .procedure-steps h6 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+    
+    .steps-list {
+        margin: 0;
+        padding-left: 20px;
+    }
+    
+    .steps-list li {
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    .checklist {
+        margin-top: 15px;
+        padding: 10px;
+        background: #fff3cd;
+        border-left: 3px solid #ffc107;
+        font-size: 14px;
+    }
+    
+    .quick-actions {
+        margin-bottom: 20px;
+    }
+    
+    .quick-actions h6 {
+        margin: 0 0 10px 0;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .action-btn {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+    }
+    
+    .action-btn:hover {
+        background: #e9ecef;
+        border-color: #007bff;
+    }
+    
+    .action-btn i {
+        font-size: 20px;
+        color: #dc3545;
+    }
+    
+    .emergency-contacts {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .emergency-contacts h6 {
+        margin: 0 0 10px 0;
+    }
+    
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    
+    .contact-item {
+        background: white;
+        padding: 8px;
+        border-radius: 5px;
+        text-align: center;
+    }
+    
+    .service {
+        display: block;
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 3px;
+    }
+    
+    .number {
+        font-size: 16px;
+        font-weight: 700;
+        color: #dc3545;
+    }
+    
+    .emergency-frequencies {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .emergency-frequencies h6 {
+        margin: 0 0 10px 0;
+    }
+    
+    .frequency-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .frequency-item {
+        background: white;
+        padding: 8px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+    }
+    
+    .freq-name {
+        color: #666;
+    }
+    
+    .freq-value {
+        font-family: monospace;
+        font-weight: 700;
+        color: #007bff;
+    }
+    
+    .nearest-facility {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .nearest-facility h6 {
+        margin: 0 0 10px 0;
+    }
+    
+    .facility-info {
+        background: white;
+        padding: 12px;
+        border-radius: 5px;
+    }
+    
+    .facility-name {
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .facility-detail {
+        font-size: 12px;
+        color: #666;
+        margin: 3px 0;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .facility-detail i {
+        color: #007bff;
+        width: 16px;
+    }
+    
+    .ditching-procedures {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    
+    .ditching-procedures h6 {
+        margin: 0 0 10px 0;
+    }
+    
+    .ditching-list {
+        margin: 0 0 10px 0;
+        padding-left: 20px;
+    }
+    
+    .ditching-list li {
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+    
+    .survival-equipment {
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        font-size: 12px;
+    }
+    
+    .equipment-tag {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin: 2px;
+        font-size: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .frequency-list {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

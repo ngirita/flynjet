@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if aircraft and aircraft.category.category_type == 'cargo' %}
+        Cargo Booking - FlynJet
+    {% else %}
+        Passenger Details - FlynJet
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-lg-5">
+                        <h2 class="text-center mb-4">
+                            {% if aircraft and aircraft.category.category_type == 'cargo' %}
+                                <i class="fas fa-box me-2"></i>Cargo Charter Booking
+                            {% else %}
+                                <i class="fas fa-user-friends me-2"></i>Passenger Details
+                            {% endif %}
+                        </h2>
+                        
+                        <!-- Flight Summary -->
+                        {% if aircraft %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-plane me-2"></i>
+                            <strong>Selected Aircraft:</strong> {{ aircraft.manufacturer.name }} {{ aircraft.model }}
+                            <div class="small mt-2">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                                        <strong>Route:</strong><br>
+                                        {% if departure_airport %}
+                                            {{ departure_airport.city }} ({{ departure_airport.iata_code }}) 
+                                            <i class="fas fa-arrow-right mx-1"></i> 
+                                            {{ arrival_airport.city }} ({{ arrival_airport.iata_code }})
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ departure_airport.name }} → {{ arrival_airport.name }}
+                                            </small>
+                                        {% else %}
+                                            {{ booking_data.departure_airport }} → {{ booking_data.arrival_airport }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-calendar me-1 text-primary"></i>
+                                        <strong>Departure:</strong><br>
+                                        {{ booking_data.departure_datetime|date:"M d, Y H:i" }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {% if aircraft.category.category_type == 'cargo' %}
+                                            <i class="fas fa-weight-hanging me-1 text-primary"></i>
+                                            <strong>Cargo Weight:</strong><br>
+                                            {{ booking_data.cargo_weight_kg|default:"0" }} kg
+                                        {% else %}
+                                            <i class="fas fa-users me-1 text-primary"></i>
+                                            <strong>Passengers:</strong><br>
+                                            {{ booking_data.passenger_count }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if aircraft and aircraft.category.category_type == 'cargo' %}
+                            <!-- CARGO BOOKING SECTION -->
+                            <div class="alert alert-success mb-4">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Cargo Charter Request Received</strong>
+                                <p class="mb-0 mt-2">
+                                    Thank you for your cargo charter inquiry. Our cargo specialists will review your request and contact you within <strong>24 hours</strong> with a personalized quote and available options.
+                                </p>
+                            </div>
+                            
+                            <div class="cargo-details bg-light p-4 rounded mb-4">
+                                <h5 class="mb-3"><i class="fas fa-box me-2 text-primary"></i>Cargo Details Summary</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <strong>Cargo Weight:</strong> {{ booking_data.cargo_weight_kg|default:"0" }} kg
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <strong>Aircraft Capacity:</strong> 
+                                        {% if aircraft.cargo_capacity_kg %}
+                                            {{ aircraft.cargo_capacity_kg }} kg max
+                                        {% else %}
+                                            Contact for capacity details
+                                        {% endif %}
+                                    </div>
+                                    {% if booking_data.special_requests %}
+                                    <div class="col-12 mt-2">
+                                        <strong>Special Requirements:</strong>
+                                        <p class="text-muted mb-0">{{ booking_data.special_requests }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>What happens next?</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Our cargo team will review your request within 24 hours</li>
+                                    <li>You'll receive a detailed quote via email</li>
+                                    <li>Once approved, we'll finalize the charter agreement</li>
+                                    <li>Payment and flight schedule will be confirmed</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-grid gap-3 mt-4">
+                                <a href="{% url 'bookings:list' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to My Bookings
+                                </a>
+                                <a href="{% url 'fleet:list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-plane me-2"></i>Browse More Aircraft
+                                </a>
+                            </div>
+                            
+                        {% else %}
+                            <!-- PASSENGER BOOKING SECTION -->
+                            <form method="post">
+                                {% csrf_token %}
+                                {{ form.management_form }}
+                                
+                                {% for passenger_form in form %}
+                                <div class="card mb-4 border-0 bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">
+                                            <i class="fas fa-user me-2"></i>Passenger {{ forloop.counter }}
+                                        </h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Title</label>
+                                                {{ passenger_form.title }}
+                                                {% if passenger_form.title.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.title.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">First Name</label>
+                                                {{ passenger_form.first_name }}
+                                                {% if passenger_form.first_name.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.first_name.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Last Name</label>
+                                                {{ passenger_form.last_name }}
+                                                {% if passenger_form.last_name.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.last_name.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Date of Birth</label>
+                                                {{ passenger_form.date_of_birth }}
+                                                {% if passenger_form.date_of_birth.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.date_of_birth.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Nationality</label>
+                                                {{ passenger_form.nationality }}
+                                                {% if passenger_form.nationality.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.nationality.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Passport Number</label>
+                                                {{ passenger_form.passport_number }}
+                                                {% if passenger_form.passport_number.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.passport_number.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Passport Expiry</label>
+                                                {{ passenger_form.passport_expiry }}
+                                                {% if passenger_form.passport_expiry.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.passport_expiry.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Passport Country</label>
+                                                {{ passenger_form.passport_country }}
+                                                {% if passenger_form.passport_country.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.passport_country.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Email</label>
+                                                {{ passenger_form.email }}
+                                                {% if passenger_form.email.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.email.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Phone Number</label>
+                                                {{ passenger_form.phone_number }}
+                                                {% if passenger_form.phone_number.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.phone_number.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Baggage Fields -->
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Baggage Count</label>
+                                                {{ passenger_form.baggage_count }}
+                                                {% if passenger_form.baggage_count.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.baggage_count.errors.0 }}</div>
+                                                {% endif %}
+                                                <small class="text-muted">Number of checked bags (enter 0 if none)</small>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Baggage Weight (kg)</label>
+                                                {{ passenger_form.baggage_weight_kg }}
+                                                {% if passenger_form.baggage_weight_kg.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.baggage_weight_kg.errors.0 }}</div>
+                                                {% endif %}
+                                                <small class="text-muted">Total weight in kg (enter 0 if none)</small>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Seat Preference</label>
+                                                {{ passenger_form.seat_number }}
+                                                {% if passenger_form.seat_number.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.seat_number.errors.0 }}</div>
+                                                {% endif %}
+                                                <small class="text-muted">Window, aisle, or specific seat number</small>
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <div class="form-check">
+                                                    {{ passenger_form.special_assistance }}
+                                                    <label class="form-check-label" for="{{ passenger_form.special_assistance.id_for_label }}">
+                                                        <i class="fas fa-wheelchair me-1"></i>Special Assistance Required
+                                                    </label>
+                                                </div>
+                                                {% if passenger_form.special_assistance.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.special_assistance.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Dietary Requirements -->
+                                            <div class="col-md-12">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Dietary Requirements</label>
+                                                {{ passenger_form.dietary_requirements }}
+                                                {% if passenger_form.dietary_requirements.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.dietary_requirements.errors.0 }}</div>
+                                                {% endif %}
+                                                <small class="text-muted">Any food allergies or dietary restrictions?</small>
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label small text-uppercase fw-bold mb-1">Medical Requirements</label>
+                                                {{ passenger_form.medical_requirements }}
+                                                {% if passenger_form.medical_requirements.errors %}
+                                                <div class="text-danger small mt-1">{{ passenger_form.medical_requirements.errors.0 }}</div>
+                                                {% endif %}
+                                                <small class="text-muted">Any medical conditions we should be aware of?</small>
+                                            </div>
+                                            
+                                            <div class="col-md-12 mt-2">
+                                                <div class="border-top pt-3">
+                                                    <label class="form-label small text-uppercase fw-bold mb-2">
+                                                        <i class="fas fa-phone-alt me-1"></i>Emergency Contact
+                                                    </label>
+                                                    <div class="row">
+                                                        <div class="col-md-4 mb-2">
+                                                            <label class="form-label small text-muted mb-1">Full Name</label>
+                                                            {{ passenger_form.emergency_contact_name }}
+                                                            {% if passenger_form.emergency_contact_name.errors %}
+                                                            <div class="text-danger small mt-1">{{ passenger_form.emergency_contact_name.errors.0 }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="col-md-4 mb-2">
+                                                            <label class="form-label small text-muted mb-1">Phone Number</label>
+                                                            {{ passenger_form.emergency_contact_phone }}
+                                                            {% if passenger_form.emergency_contact_phone.errors %}
+                                                            <div class="text-danger small mt-1">{{ passenger_form.emergency_contact_phone.errors.0 }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="col-md-4 mb-2">
+                                                            <label class="form-label small text-muted mb-1">Relationship</label>
+                                                            {{ passenger_form.emergency_contact_relation }}
+                                                            {% if passenger_form.emergency_contact_relation.errors %}
+                                                            <div class="text-danger small mt-1">{{ passenger_form.emergency_contact_relation.errors.0 }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <!-- Important Information -->
+                                <div class="alert alert-warning mt-3 mb-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Important Information:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Passport must be valid for at least 6 months from the date of travel</li>
+                                        <li>Please ensure all passenger details match their travel documents exactly</li>
+                                        <li>Special assistance requests must be submitted at least 48 hours before departure</li>
+                                        <li>You can enter 0 for baggage count and weight if you have no checked luggage</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary w-100 py-3">
+                                        <i class="fas fa-check-circle me-2"></i>Complete Booking
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .form-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+    
+    input:not([type="checkbox"]):not([type="radio"]), 
+    select, 
+    textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #c5a059;
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
+    }
+    
+    .form-check-input {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    .cargo-details {
+        background-color: #f8f9fa !important;
+        border-left: 4px solid #c5a059;
+    }
+    
+    body.dark-mode .bg-light {
+        background-color: #1a1a1a !important;
+    }
+    
+    body.dark-mode .cargo-details {
+        background-color: #1a1a1a !important;
+        border-left-color: #c5a059;
+    }
+    
+    body.dark-mode input:not([type="checkbox"]):not([type="radio"]),
+    body.dark-mode select,
+    body.dark-mode textarea {
+        background-color: #252525;
+        border-color: #333;
+        color: white;
+    }
+    
+    body.dark-mode .card {
+        background-color: #161616;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    body.dark-mode .form-label {
+        color: rgba(255,255,255,0.7);
+    }
+    
+    body.dark-mode .text-muted {
+        color: rgba(255,255,255,0.6) !important;
+    }
+    
+    body.dark-mode .alert-info {
+        background-color: rgba(197, 160, 89, 0.1);
+        border-color: #c5a059;
+        color: #c5a059;
+    }
+    
+    body.dark-mode .alert-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+    
+    body.dark-mode .alert-success {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-color: #28a745;
+        color: #28a745;
+    }
+    
+    .alert-info {
+        background-color: #e8f0fe;
+        border-left: 4px solid #c5a059;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        border-left: 4px solid #28a745;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .border-top {
+        border-top: 1px solid #e9ecef !important;
+    }
+    
+    body.dark-mode .border-top {
+        border-top-color: #2d2d2d !important;
+    }
+    
+    .btn-primary {
+        background-color: #c5a059;
+        border-color: #c5a059;
+    }
+    
+    .btn-primary:hover {
+        background-color: #b08c42;
+        border-color: #b08c42;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: transparent;
+        border-color: #c5a059;
+        color: #c5a059;
+    }
+</style>
+{% endblock %}

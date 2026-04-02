@@ -1,0 +1,89 @@
+{% extends 'base_email.html' %}
+
+{% block email_title %}Crypto Payment Instructions - {{ booking.booking_reference }}{% endblock %}
+
+{% block email_header %}Cryptocurrency Payment Instructions{% endblock %}
+
+{% block email_content %}
+<h2>Crypto Payment Instructions</h2>
+
+<p>Dear {{ user.get_full_name|default:user.email }},</p>
+
+<p>Thank you for choosing FlynJet. Please complete your payment by sending the exact amount to one of the following cryptocurrency addresses:</p>
+
+<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <p><strong>Booking Reference:</strong> {{ booking.booking_reference }}</p>
+    <p><strong>Amount:</strong> ${{ payment.amount_usd|floatformat:2 }} USD</p>
+    <p><strong>Payment Reference:</strong> {{ payment.transaction_id }}</p>
+</div>
+
+{% if crypto_wallets %}
+    {% for wallet in crypto_wallets %}
+    <h3>{{ wallet.get_crypto_type_display|upper }} ({{ wallet.get_network_display }})</h3>
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <p><strong>Wallet Address:</strong></p>
+        <code style="word-break: break-all; background: #fff; padding: 10px; display: block; border-radius: 4px; font-family: monospace;">
+            {{ wallet.wallet_address }}
+        </code>
+        
+        <!-- Copy button -->
+        <button onclick="copyToClipboard('{{ wallet.wallet_address }}')" style="margin-top: 10px; background: #c5a059; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+            📋 Copy Address
+        </button>
+        
+        <!-- Optional link -->
+        {% if wallet.link_url %}
+        <div style="margin-top: 10px;">
+            <a href="{{ wallet.link_url }}" target="_blank" style="color: #c5a059; text-decoration: none;">
+                {% if wallet.link_text %}
+                    🔗 {{ wallet.link_text }}
+                {% else %}
+                    🔗 View Details
+                {% endif %}
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if wallet.min_deposit > 0 %}
+        <p style="margin-top: 10px;"><small>Minimum: {{ wallet.min_deposit }} {{ wallet.crypto_type|upper }}</small></p>
+        {% endif %}
+        {% if wallet.notes %}
+        <p><small>Note: {{ wallet.notes }}</small></p>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+<div style="background: #ffeeee; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <p><strong>Note:</strong> Crypto payment details will be provided upon request. Please contact support.</p>
+</div>
+{% endif %}
+
+<div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <h4 style="color: #856404; margin-top: 0;">⚠️ Important Instructions:</h4>
+    <ul>
+        <li>Send the exact amount shown above</li>
+        <li>Include your payment reference: <strong>{{ payment.transaction_id }}</strong> in the transaction memo (if supported)</li>
+        <li>Payment will be confirmed after blockchain confirmations</li>
+        <li>You will receive a confirmation email once payment is verified</li>
+    </ul>
+</div>
+
+<p>If you have any questions or need assistance, please contact our support team:</p>
+<ul>
+    <li>Email: <a href="mailto:info@flynjet.com">info@flynjet.com</a></li>
+    <li>Phone: +254785651832</li>
+    <li>WhatsApp: +447393700477</li>
+</ul>
+
+<p>Thank you for choosing FlynJet!</p>
+
+<p>Best regards,<br>
+<strong>The FlynJet Team</strong></p>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        alert('Address copied to clipboard!');
+    }
+</script>
+{% endblock %}

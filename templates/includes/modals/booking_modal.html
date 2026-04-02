@@ -1,0 +1,447 @@
+<!-- Complete fixed booking_modal.html with cargo support -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plane-departure me-2"></i>Quick Booking
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickBookingForm" action="{% url 'bookings:quick_booking' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_from_airport_display" class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt me-1 text-primary"></i>From
+                            </label>
+                            <input type="text" 
+                                   class="form-control airport-autocomplete" 
+                                   id="modal_from_airport_display"
+                                   name="from_display" 
+                                   placeholder="Search by city or airport name..."
+                                   autocomplete="off"
+                                   required>
+                            <input type="hidden" name="from" id="modal_from_airport_iata">
+                            <small class="text-muted">Start typing city or airport name (min 2 letters)</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_to_airport_display" class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt me-1 text-primary"></i>To
+                            </label>
+                            <input type="text" 
+                                   class="form-control airport-autocomplete" 
+                                   id="modal_to_airport_display"
+                                   name="to_display" 
+                                   placeholder="Search by city or airport name..."
+                                   autocomplete="off"
+                                   required>
+                            <input type="hidden" name="to" id="modal_to_airport_iata">
+                            <small class="text-muted">Start typing city or airport name (min 2 letters)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_departure_date" class="form-label fw-bold">
+                                <i class="fas fa-calendar-alt me-1 text-primary"></i>Departure Date
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   name="departure_date" 
+                                   id="modal_departure_date" 
+                                   autocomplete="off"
+                                   required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_return_date" class="form-label fw-bold">
+                                <i class="fas fa-calendar-check me-1 text-primary"></i>Return Date
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   name="return_date" 
+                                   id="modal_return_date" 
+                                   autocomplete="off"
+                                   disabled>
+                            <small class="text-muted">Only for round trips</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_passengers" class="form-label fw-bold">
+                                <i class="fas fa-users me-1 text-primary"></i>Passengers / Cargo
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   name="passengers" 
+                                   id="modal_passengers"
+                                   min="0" 
+                                   max="100" 
+                                   value="1" 
+                                   autocomplete="off"
+                                   required>
+                            <small class="text-muted" id="modal-passenger-help">0 for cargo only</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_flight_type" class="form-label fw-bold">
+                                <i class="fas fa-exchange-alt me-1 text-primary"></i>Flight Type
+                            </label>
+                            <select class="form-control" 
+                                    name="flight_type" 
+                                    id="modal_flight_type"
+                                    autocomplete="off">
+                                <option value="one_way">One Way</option>
+                                <option value="round_trip">Round Trip</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Cargo mode indicator -->
+                    <div id="modal-cargo-mode-indicator" class="alert alert-warning py-2 mb-3" style="display: none; font-size: 13px;">
+                        <i class="fas fa-box me-2"></i>
+                        <strong>Cargo Mode:</strong> You are searching for cargo aircraft. Set passengers to 0 for cargo-only aircraft.
+                    </div>
+                    
+                    <!-- Popular routes quick select -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Popular Routes:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary modal-route-btn" data-from="JFK" data-to="LHR">
+                                New York → London
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary modal-route-btn" data-from="LAX" data-to="JFK">
+                                Los Angeles → New York
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary modal-route-btn" data-from="DXB" data-to="LHR">
+                                Dubai → London
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary modal-route-btn" data-from="CDG" data-to="JFK">
+                                Paris → New York
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2" id="modal_submit_btn">
+                        <i class="fas fa-search me-2"></i>Check Availability
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    console.log('Modal script loaded');
+    
+    // Re-initialize autocomplete when modal opens (since Select2 needs to reposition)
+    $('#bookingModal').on('shown.bs.modal', function() {
+        console.log('Modal opened - reinitializing airport autocomplete');
+        
+        // Force destroy and reinitialize Select2 for modal inputs
+        $('.airport-autocomplete').each(function() {
+            var $element = $(this);
+            
+            // Check if already initialized
+            if ($element.hasClass('select2-hidden-accessible')) {
+                $element.select2('destroy');
+            }
+            
+            // Reinitialize
+            $element.select2({
+                dropdownParent: $('#bookingModal'),
+                ajax: {
+                    url: '/airports/autocomplete/',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function(params) {
+                        return { q: params.term };
+                    },
+                    processResults: function(data) {
+                        var results = [];
+                        if (data.results && Array.isArray(data.results)) {
+                            results = data.results.map(function(item) {
+                                return {
+                                    id: item.iata || item.id,
+                                    text: item.text || (item.city + ' (' + (item.iata || item.id) + ')'),
+                                    iata: item.iata,
+                                    name: item.name,
+                                    city: item.city,
+                                    country: item.country
+                                };
+                            });
+                        }
+                        return { results: results };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2,
+                placeholder: 'Search by city, airport name, or code...',
+                allowClear: true,
+                templateResult: formatAirportResult,
+                templateSelection: formatAirportSelection
+            });
+            
+            // Update hidden input when selection changes
+            $element.on('change', function() {
+                var selected = $element.select2('data')[0];
+                var hiddenInputId = $element.attr('id').replace('_display', '_iata');
+                if (selected && selected.iata) {
+                    $('#' + hiddenInputId).val(selected.iata);
+                } else {
+                    $('#' + hiddenInputId).val('');
+                }
+            });
+        });
+        
+        // Set default departure date to tomorrow
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $('#modal_departure_date').val(tomorrow.toISOString().split('T')[0]);
+        
+        // Trigger passenger change to set initial state
+        $('#modal_passengers').trigger('change');
+    });
+    
+    function formatAirportResult(airport) {
+        if (airport.loading) return airport.text;
+        if (!airport.id) return airport.text;
+        
+        var city = airport.city || '';
+        var name = airport.name || '';
+        var iata = airport.iata || airport.id;
+        var country = airport.country || '';
+        
+        return $(
+            '<div class="airport-result-modal">' +
+                '<strong>' + escapeHtml(city || name) + '</strong><br>' +
+                '<small>' + escapeHtml(name) + ' (' + escapeHtml(iata) + ')' + (country ? ' - ' + escapeHtml(country) : '') + '</small>' +
+            '</div>'
+        );
+    }
+    
+    function formatAirportSelection(airport) {
+        if (!airport.id) return airport.text;
+        var city = airport.city || '';
+        var iata = airport.iata || airport.id;
+        return city ? city + ' (' + iata + ')' : airport.text;
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+    
+    // Handle passenger input for cargo mode
+    $('#modal_passengers').on('change input', function() {
+        var val = parseInt($(this).val());
+        if (val === 0) {
+            $('#modal-passenger-help').html('<span class="text-warning"><i class="fas fa-box me-1"></i>Cargo mode - no passengers</span>');
+            $('#modal_submit_btn').html('<i class="fas fa-box me-2"></i>Check Cargo Availability');
+            $('#modal-cargo-mode-indicator').slideDown(300);
+        } else {
+            $('#modal-passenger-help').html('0 for cargo only');
+            $('#modal_submit_btn').html('<i class="fas fa-search me-2"></i>Check Availability');
+            $('#modal-cargo-mode-indicator').slideUp(300);
+        }
+    });
+    
+    // Handle flight type toggle
+    $('#modal_flight_type').on('change', function() {
+        if ($(this).val() === 'round_trip') {
+            $('#modal_return_date').prop('disabled', false);
+            var departureDate = $('#modal_departure_date').val();
+            if (departureDate) {
+                var returnDate = new Date(departureDate);
+                returnDate.setDate(returnDate.getDate() + 7);
+                $('#modal_return_date').val(returnDate.toISOString().split('T')[0]);
+            }
+        } else {
+            $('#modal_return_date').prop('disabled', true);
+            $('#modal_return_date').val('');
+        }
+    });
+    
+    // Update return date when departure changes
+    $('#modal_departure_date').on('change', function() {
+        if ($('#modal_flight_type').val() === 'round_trip') {
+            var departureDate = $(this).val();
+            if (departureDate) {
+                var returnDate = new Date(departureDate);
+                returnDate.setDate(returnDate.getDate() + 7);
+                $('#modal_return_date').val(returnDate.toISOString().split('T')[0]);
+            }
+        }
+    });
+    
+    // Handle popular route buttons
+    $('.modal-route-btn').on('click', function() {
+        var fromIata = $(this).data('from');
+        var toIata = $(this).data('to');
+        
+        function fetchAndSetAirport(iata, targetInputId, hiddenInputId) {
+            $.ajax({
+                url: '/airports/autocomplete/?q=' + iata,
+                dataType: 'json',
+                success: function(data) {
+                    var airport = data.results && data.results.length > 0 ? data.results[0] : null;
+                    if (airport) {
+                        var $input = $(targetInputId);
+                        var option = new Option(airport.text, airport.iata || airport.id, true, true);
+                        $input.empty().append(option).trigger('change');
+                        $(hiddenInputId).val(airport.iata || iata);
+                    }
+                }
+            });
+        }
+        
+        fetchAndSetAirport(fromIata, '#modal_from_airport_display', '#modal_from_airport_iata');
+        fetchAndSetAirport(toIata, '#modal_to_airport_display', '#modal_to_airport_iata');
+        
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $('#modal_departure_date').val(tomorrow.toISOString().split('T')[0]);
+    });
+    
+    // Form validation before submit
+    $('#quickBookingForm').on('submit', function(e) {
+        var fromIata = $('#modal_from_airport_iata').val();
+        var toIata = $('#modal_to_airport_iata').val();
+        var departureDate = $('#modal_departure_date').val();
+        var flightType = $('#modal_flight_type').val();
+        var passengers = $('#modal_passengers').val();
+        
+        if (!fromIata) {
+            alert('Please select a departure airport from the suggestions');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!toIata) {
+            alert('Please select an arrival airport from the suggestions');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (fromIata === toIata) {
+            alert('Departure and arrival airports must be different');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!departureDate) {
+            alert('Please select a departure date');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (flightType === 'round_trip') {
+            var returnDate = $('#modal_return_date').val();
+            if (!returnDate) {
+                alert('Please select a return date for round trip');
+                e.preventDefault();
+                return false;
+            }
+            if (new Date(returnDate) <= new Date(departureDate)) {
+                alert('Return date must be after departure date');
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        var $btn = $('#modal_submit_btn');
+        $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Checking...').prop('disabled', true);
+        return true;
+    });
+    
+    // Reset form when modal is closed
+    $('#bookingModal').on('hidden.bs.modal', function() {
+        $('#quickBookingForm')[0].reset();
+        $('#modal_from_airport_display').empty().trigger('change');
+        $('#modal_to_airport_display').empty().trigger('change');
+        $('#modal_from_airport_iata').val('');
+        $('#modal_to_airport_iata').val('');
+        $('#modal_return_date').prop('disabled', true);
+        $('#modal_submit_btn').html('<i class="fas fa-search me-2"></i>Check Availability').prop('disabled', false);
+        $('#modal_passengers').val(1).trigger('change');
+    });
+});
+</script>
+
+<style>
+/* Modal-specific styles */
+.modal .select2-container--default .select2-selection--single {
+    height: 38px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important;
+}
+
+.modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px !important;
+    padding-left: 12px !important;
+}
+
+.modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+}
+
+.modal .select2-dropdown {
+    z-index: 1060 !important;
+}
+
+.modal .airport-result-modal {
+    padding: 5px;
+}
+
+.modal .airport-result-modal strong {
+    display: block;
+    font-size: 14px;
+    color: #333;
+}
+
+.modal .airport-result-modal small {
+    font-size: 11px;
+    color: #666;
+}
+
+.modal .modal-route-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    transition: all 0.2s ease;
+}
+
+.modal .modal-route-btn:hover {
+    background-color: #c5a059;
+    border-color: #c5a059;
+    color: white;
+}
+
+body.dark-mode .modal .airport-result-modal strong {
+    color: white;
+}
+
+body.dark-mode .modal .airport-result-modal small {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .modal .select2-container--default .select2-selection--single {
+    background-color: #252525 !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: white !important;
+}
+</style>

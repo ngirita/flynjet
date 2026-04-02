@@ -1,0 +1,93 @@
+<div class="chart-container">
+    <div class="chart-header">
+        <h5 class="chart-title">{{ title|default:'Revenue Trend' }}</h5>
+        <div class="chart-actions">
+            <select class="chart-period" onchange="updateChartPeriod(this.value)">
+                <option value="7d">Last 7 Days</option>
+                <option value="30d" selected>Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
+                <option value="12m">Last 12 Months</option>
+            </select>
+        </div>
+    </div>
+    <div class="chart-wrapper">
+        <canvas id="{{ chart_id|default:'revenueChart' }}" height="{{ height|default:300 }}"></canvas>
+    </div>
+</div>
+
+<script>
+    function initRevenueChart(data) {
+        const ctx = document.getElementById('{{ chart_id|default:"revenueChart" }}').getContext('2d');
+        
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: data.revenue,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Forecast',
+                    data: data.forecast,
+                    borderColor: '#007bff',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateChartPeriod(period) {
+        fetch(`/api/v1/analytics/revenue/?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                if (window.revenueChart) {
+                    window.revenueChart.data.labels = data.labels;
+                    window.revenueChart.data.datasets[0].data = data.revenue;
+                    window.revenueChart.data.datasets[1].data = data.forecast;
+                    window.revenueChart.update();
+                }
+            });
+    }
+</script>

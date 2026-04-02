@@ -1,0 +1,261 @@
+<div class="file-upload-container">
+    <div class="file-upload-area" id="fileUploadArea">
+        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+        <p>Drag and drop files here or click to upload</p>
+        <p class="small text-muted">Maximum file size: 50MB</p>
+        <input type="file" id="fileInput" multiple style="display: none;" 
+               accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt">
+        <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-upload"></i> Select Files
+        </button>
+    </div>
+    
+    <div class="file-preview" id="filePreview" style="display: none;">
+        <h6>Files to upload:</h6>
+        <div class="file-list" id="fileList"></div>
+        <div class="upload-actions">
+            <button class="btn btn-sm btn-success" onclick="uploadFiles()">
+                <i class="fas fa-cloud-upload-alt"></i> Upload
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="clearFiles()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .file-upload-container {
+        margin: 15px 0;
+    }
+    
+    .file-upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8f9fa;
+    }
+    
+    .file-upload-area:hover,
+    .file-upload-area.dragover {
+        border-color: #007bff;
+        background: #e3f2fd;
+    }
+    
+    .file-upload-area i {
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    
+    .file-preview {
+        margin-top: 20px;
+        padding: 15px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+    }
+    
+    .file-list {
+        max-height: 200px;
+        overflow-y: auto;
+        margin: 10px 0;
+    }
+    
+    .file-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    
+    .file-item:last-child {
+        border-bottom: none;
+    }
+    
+    .file-icon {
+        width: 30px;
+        text-align: center;
+        color: #007bff;
+        margin-right: 10px;
+    }
+    
+    .file-info {
+        flex: 1;
+    }
+    
+    .file-name {
+        font-weight: 500;
+        font-size: 14px;
+    }
+    
+    .file-size {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    .file-remove {
+        color: #dc3545;
+        cursor: pointer;
+        padding: 5px;
+    }
+    
+    .upload-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 15px;
+    }
+</style>
+
+<script>
+    let selectedFiles = [];
+    
+    document.getElementById('fileUploadArea').addEventListener('click', function() {
+        document.getElementById('fileInput').click();
+    });
+    
+    document.getElementById('fileUploadArea').addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    
+    document.getElementById('fileUploadArea').addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    
+    document.getElementById('fileUploadArea').addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        const files = Array.from(e.dataTransfer.files);
+        addFiles(files);
+    });
+    
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        addFiles(files);
+    });
+    
+    function addFiles(files) {
+        // Filter by size (50MB max)
+        const maxSize = 50 * 1024 * 1024;
+        const validFiles = files.filter(file => file.size <= maxSize);
+        
+        if (validFiles.length < files.length) {
+            alert('Some files were skipped because they exceed the 50MB limit.');
+        }
+        
+        selectedFiles = [...selectedFiles, ...validFiles];
+        updateFilePreview();
+    }
+    
+    function updateFilePreview() {
+        const preview = document.getElementById('filePreview');
+        const fileList = document.getElementById('fileList');
+        
+        if (selectedFiles.length > 0) {
+            preview.style.display = 'block';
+            
+            fileList.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-icon">
+                        <i class="fas fa-${getFileIcon(file.name)}"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="file-remove" onclick="removeFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+    
+    function getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const icons = {
+            'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image',
+            'pdf': 'file-pdf',
+            'doc': 'file-word', 'docx': 'file-word',
+            'xls': 'file-excel', 'xlsx': 'file-excel',
+            'txt': 'file-alt'
+        };
+        return icons[ext] || 'file';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        updateFilePreview();
+    }
+    
+    function clearFiles() {
+        selectedFiles = [];
+        document.getElementById('fileInput').value = '';
+        updateFilePreview();
+    }
+    
+    function uploadFiles() {
+        if (selectedFiles.length === 0) return;
+        
+        const formData = new FormData();
+        selectedFiles.forEach(file => {
+            formData.append('files', file);
+        });
+        
+        // Show uploading indicator
+        const uploadBtn = document.querySelector('.upload-actions .btn-success');
+        const originalText = uploadBtn.innerHTML;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        uploadBtn.disabled = true;
+        
+        fetch('/api/v1/chat/upload/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Add file messages to chat
+                data.files.forEach(file => {
+                    addFileMessage(file);
+                });
+                clearFiles();
+            } else {
+                alert('Upload failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            alert('Upload failed. Please try again.');
+        })
+        .finally(() => {
+            uploadBtn.innerHTML = originalText;
+            uploadBtn.disabled = false;
+        });
+    }
+    
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+</script>

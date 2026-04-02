@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #c5a059; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; }
+        .details { margin: 15px 0; padding: 15px; background: white; border-left: 4px solid #c5a059; }
+        .button { display: inline-block; padding: 10px 20px; background: #c5a059; color: white; text-decoration: none; border-radius: 5px; }
+        .airport-name { font-weight: bold; color: #c5a059; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Enquiry Received</h2>
+        </div>
+        <div class="content">
+            <p><strong>Enquiry Number:</strong> {{ enquiry.enquiry_number }}</p>
+            
+            <div class="details">
+                <h3>Client Details</h3>
+                <p><strong>Name:</strong> {{ enquiry.get_full_name }}<br>
+                <strong>Email:</strong> {{ enquiry.email }}<br>
+                <strong>Phone:</strong> {{ enquiry.phone }}<br>
+                <strong>Country:</strong> {{ enquiry.country|default:"Not specified" }}</p>
+            </div>
+            
+            <div class="details">
+                <h3>Flight Details</h3>
+                <p><strong>Aircraft:</strong> {{ enquiry.aircraft.manufacturer.name }} {{ enquiry.aircraft.model }}{% if not enquiry.aircraft %} (Any){% endif %}<br>
+                
+                <strong>Route:</strong><br>
+                {% if departure_airport_obj %}
+                    From: <span class="airport-name">{{ departure_airport_obj.name }}</span> ({{ departure_airport_obj.iata_code }})<br>
+                    City: {{ departure_airport_obj.city }}, {{ departure_airport_obj.country }}
+                {% elif enquiry.departure_airport %}
+                    From: {{ enquiry.departure_airport }} (IATA Code)
+                {% else %}
+                    From: Any
+                {% endif %}
+                <br>
+                {% if arrival_airport_obj %}
+                    To: <span class="airport-name">{{ arrival_airport_obj.name }}</span> ({{ arrival_airport_obj.iata_code }})<br>
+                    City: {{ arrival_airport_obj.city }}, {{ arrival_airport_obj.country }}
+                {% elif enquiry.arrival_airport %}
+                    To: {{ enquiry.arrival_airport }} (IATA Code)
+                {% else %}
+                    To: Any
+                {% endif %}
+                <br>
+                <strong>Preferred Date:</strong> {{ enquiry.preferred_departure_date|date:"F j, Y"|default:"Flexible" }}<br>
+                <strong>Flexible:</strong> {{ enquiry.flexible_dates|yesno:"Yes,No" }}
+                </p>
+            </div>
+            
+            <div class="details">
+                <h3>Passenger & Luggage</h3>
+                <p><strong>Passengers:</strong> {{ enquiry.passenger_count }}<br>
+                <strong>Luggage:</strong> {{ enquiry.luggage_count }} pieces ({{ enquiry.luggage_weight_kg }} kg)<br>
+                <strong>Special Luggage:</strong> {{ enquiry.special_luggage|default:"None" }}</p>
+            </div>
+            
+            <div class="details">
+                <h3>Amenities & Requirements</h3>
+                <p><strong>Amenities:</strong> {{ enquiry.amenities|join:", "|default:"None" }}<br>
+                <strong>Catering:</strong> {{ enquiry.catering_requirements|default:"None" }}<br>
+                <strong>Special Requests:</strong> {{ enquiry.special_requests|default:"None" }}</p>
+                <p><strong>Additional Services:</strong><br>
+                {% if enquiry.ground_transportation %}Ground Transportation<br>{% endif %}
+                {% if enquiry.hotel_accommodation %}Hotel Accommodation<br>{% endif %}
+                {% if enquiry.pet_travel %}Pet Travel<br>{% endif %}</p>
+            </div>
+            
+            <p style="text-align: center; margin-top: 30px;">
+                <a href="{{ admin_url }}" class="button">View & Respond to Enquiry</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

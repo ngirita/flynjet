@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms of Service - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 fw-bold mb-4">Terms of Service</h1>
+            <p class="text-muted mb-4">Last Updated: {% now "F j, Y" %}</p>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">1. Agreement to Terms</h3>
+                    <p class="text-muted">
+                        By accessing or using FlynJet's services, website, or applications (collectively, the "Services"), 
+                        you agree to be bound by these Terms of Service. If you do not agree to all of these terms, 
+                        you may not access or use the Services.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">2. Booking and Payment</h3>
+                    <p class="text-muted">
+                        When you make a booking through FlynJet, you agree to pay all charges associated with your 
+                        booking, including the base price, taxes, fees, and any additional services you select. 
+                        Payments are processed securely through our payment partners.
+                    </p>
+                    <ul class="text-muted">
+                        <li>All prices are in USD unless otherwise specified</li>
+                        <li>Bookings are confirmed only after payment is processed</li>
+                        <li>You are responsible for providing accurate booking information</li>
+                        <li>Additional charges may apply for changes or cancellations</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">3. Cancellation and Refunds</h3>
+                    <p class="text-muted">
+                        Cancellation policies vary based on the type of booking and timing of cancellation:
+                    </p>
+                    <ul class="text-muted">
+                        <li><strong>More than 48 hours before departure:</strong> Full refund minus processing fees</li>
+                        <li><strong>Within 48 hours of departure:</strong> 50% refund</li>
+                        <li><strong>Within 24 hours of departure:</strong> No refund</li>
+                        <li><strong>No-show:</strong> No refund</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">4. User Responsibilities</h3>
+                    <p class="text-muted">As a user of FlynJet, you agree to:</p>
+                    <ul class="text-muted">
+                        <li>Provide accurate and complete information</li>
+                        <li>Maintain the security of your account</li>
+                        <li>Comply with all applicable laws and regulations</li>
+                        <li>Not use the Services for any illegal or unauthorized purpose</li>
+                        <li>Not interfere with or disrupt the Services</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">5. Limitation of Liability</h3>
+                    <p class="text-muted">
+                        To the maximum extent permitted by law, FlynJet shall not be liable for any indirect, 
+                        incidental, special, consequential, or punitive damages, or any loss of profits or revenues, 
+                        whether incurred directly or indirectly, or any loss of data, use, goodwill, or other 
+                        intangible losses, resulting from:
+                    </p>
+                    <ul class="text-muted">
+                        <li>Your use or inability to use the Services</li>
+                        <li>Any conduct or content of any third party on the Services</li>
+                        <li>Any content obtained from the Services</li>
+                        <li>Unauthorized access, use, or alteration of your transmissions or content</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">6. Changes to Terms</h3>
+                    <p class="text-muted">
+                        We reserve the right to modify these terms at any time. We will provide notice of significant 
+                        changes by posting the updated terms on our website and updating the "Last Updated" date. 
+                        Your continued use of the Services after such changes constitutes your acceptance of the 
+                        new terms.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">7. Contact Information</h3>
+                    <p class="text-muted">
+                        If you have any questions about these Terms, please contact us at:
+                    </p>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-envelope me-2 text-primary"></i> info@flynjet.com</li>
+                        <li><i class="fas fa-phone me-2 text-primary"></i> +254785651832</li>
+                        <li><i class="fab fa-whatsapp me-2 text-success"></i> +447393700477</li>
+                        <li><i class="fas fa-map-marker-alt me-2 text-primary"></i> Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya P.O. Box 19087-00501</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Flight History - {{ track.flight_number }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #historyMap {
+        height: 400px;
+        border-radius: 10px;
+        width: 100%;
+    }
+    .flight-path {
+        stroke: #007bff;
+        stroke-width: 3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'tracking:dashboard' %}">Tracking</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'tracking:flight_track' track.booking.id %}">{{ track.flight_number }}</a></li>
+                    <li class="breadcrumb-item active">History</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Position History</h5>
+                </div>
+                <div class="card-body">
+                    <div id="historyMap"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Position Log</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportData()">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Latitude</th>
+                                    <th>Longitude</th>
+                                    <th>Altitude</th>
+                                    <th>Speed</th>
+                                    <th>Heading</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for position in positions %}
+                                <tr>
+                                    <td>{{ position.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ position.latitude|floatformat:4 }}</td>
+                                    <td>{{ position.longitude|floatformat:4 }}</td>
+                                    <td>{{ position.altitude|default:"--" }} ft</td>
+                                    <td>{{ position.speed|default:"--" }} kts</td>
+                                    <td>{{ position.heading|default:"--" }}°</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <p class="text-muted">No position history available</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map with OpenStreetMap
+    const map = L.map('historyMap').setView([39.8283, -98.5795], 4);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Coordinates for route
+    const coordinates = [
+        {% for position in positions reversed %}
+        [{{ position.latitude }}, {{ position.longitude }}],
+        {% endfor %}
+    ];
+    
+    // Add route line
+    if (coordinates.length > 0) {
+        const routeLine = L.polyline(coordinates, {
+            color: '#007bff',
+            weight: 3,
+            opacity: 0.8
+        }).addTo(map);
+        
+        // Add start marker (green)
+        L.marker(coordinates[0], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: '<i class="fas fa-play" style="color: #28a745; font-size: 16px;"></i>',
+                iconSize: [16, 16]
+            })
+        }).bindPopup('<strong>Departure</strong><br>Start of journey').addTo(map);
+        
+        // Add end marker (red)
+        L.marker(coordinates[coordinates.length - 1], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: '<i class="fas fa-flag-checkered" style="color: #dc3545; font-size: 16px;"></i>',
+                iconSize: [16, 16]
+            })
+        }).bindPopup('<strong>Arrival</strong><br>End of journey').addTo(map);
+        
+        // Add markers for intermediate points (optional)
+        if (coordinates.length > 2) {
+            const step = Math.floor(coordinates.length / 5);
+            for (let i = step; i < coordinates.length - 1; i += step) {
+                L.circleMarker(coordinates[i], {
+                    radius: 3,
+                    color: '#ffc107',
+                    fillColor: '#ffc107',
+                    fillOpacity: 1
+                }).bindPopup(`Position at ${i}th waypoint`).addTo(map);
+            }
+        }
+        
+        // Fit bounds to show entire route
+        const bounds = L.latLngBounds(coordinates);
+        map.fitBounds(bounds, { padding: [50, 50] });
+    } else {
+        map.setView([39.8283, -98.5795], 4);
+    }
+    
+    function exportData() {
+        // Create CSV
+        let csv = 'Timestamp,Latitude,Longitude,Altitude,Speed,Heading\n';
+        
+        {% for position in positions %}
+        csv += '{{ position.timestamp|date:"Y-m-d H:i:s" }},{{ position.latitude }},{{ position.longitude }},{{ position.altitude|default:"" }},{{ position.speed|default:"" }},{{ position.heading|default:"" }}\n';
+        {% endfor %}
+        
+        // Download
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flight_history.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+{% endblock %}

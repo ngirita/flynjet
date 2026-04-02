@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loyalty Program - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'marketing/css/campaigns.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="loyalty-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold">FlynJet Loyalty</h1>
+                <p class="lead mb-0">Earn points on every flight and enjoy exclusive benefits</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="points-badge bg-white text-primary p-3 rounded">
+                    <span class="h2 mb-0">{{ account.points_balance }}</span>
+                    <span class="d-block">Points Balance</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Tier Card -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="tier-card current">
+                <div class="tier-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h2 class="tier-name">{{ account.get_current_tier_display }}</h2>
+                <p class="text-muted">Current Tier</p>
+                
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: {{ account.tier_progress }}%;" 
+                         aria-valuenow="{{ account.tier_progress }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"></div>
+                </div>
+                
+                <p class="mb-0">
+                    <strong>{{ account.lifetime_points }}</strong> lifetime points
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tier Benefits -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-4">Tier Benefits</h3>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Bronze</h5>
+                    <ul class="tier-benefits">
+                        <li><i class="fas fa-check text-success"></i> 1 point per $1 spent</li>
+                        <li><i class="fas fa-check text-success"></i> Priority check-in</li>
+                        <li><i class="fas fa-times text-muted"></i> Lounge access</li>
+                        <li><i class="fas fa-times text-muted"></i> Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Gold</h5>
+                    <ul class="tier-benefits">
+                        <li><i class="fas fa-check text-success"></i> 1.5 points per $1 spent</li>
+                        <li><i class="fas fa-check text-success"></i> Priority check-in</li>
+                        <li><i class="fas fa-check text-success"></i> Lounge access</li>
+                        <li><i class="fas fa-times text-muted"></i> Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Platinum</h5>
+                    <ul class="tier-benefits">
+                        <li><i class="fas fa-check text-success"></i> 2 points per $1 spent</li>
+                        <li><i class="fas fa-check text-success"></i> Priority check-in</li>
+                        <li><i class="fas fa-check text-success"></i> Lounge access</li>
+                        <li><i class="fas fa-check text-success"></i> Free upgrades</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Points History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Points History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="points-history" id="pointsHistory">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'marketing/js/campaigns.js' %}"></script>
+<script>
+    const loyaltyManager = new LoyaltyManager({
+        userId: '{{ user.id }}',
+        csrfToken: '{{ csrf_token }}'
+    });
+    loyaltyManager.loadPointsHistory();
+</script>
+{% endblock %}

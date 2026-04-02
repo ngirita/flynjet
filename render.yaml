@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: flynjet
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn flynjet.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: SITE_URL
+        value: https://flynjet.com

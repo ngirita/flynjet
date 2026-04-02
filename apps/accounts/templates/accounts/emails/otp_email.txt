@@ -1,0 +1,31 @@
+{% load i18n %}{% autoescape off %}
+Hello {{ user.get_full_name|default:user.email }},
+
+You requested to log in to your FlynJet account. Please use the following One-Time Password (OTP) to complete your login:
+
+{{ otp_code }}
+
+This code will expire in {{ expires_in|default:"10" }} minutes.
+
+For security reasons, do not share this code with anyone.
+
+Didn't request this login?
+If you did not attempt to log in to your FlynJet account, please ignore this email. Your account is secure.
+
+If you suspect unauthorized activity, please contact our support team immediately at info@flynjet.com.
+
+Having trouble? You can try logging in again at:
+{{ site_url }}/auth/login/
+
+Thank you for choosing FlynJet for your luxury travel needs!
+
+Safe travels,
+The FlynJet Team
+
+---
+FlynJet - Luxury Private Aviation
+Jomo Kenyatta International Airport. Airport Nort Road, Embakasi, Nairobi Kenya
+P.O. Box 19087-00501
+© {% now "Y" %} FlynJet. All rights reserved.
+This is an automated message, please do not reply.
+{% endautoescape %}

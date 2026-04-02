@@ -1,0 +1,47 @@
+<!-- templates/admin/tracking/update_cargo.html -->
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Update Cargo Status for {{ tracks|length }} Flight(s)</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="module">
+            <h2>Flights</h2>
+            {% for track in tracks %}
+            <p>
+                <strong>{{ track.flight_number }}</strong> - 
+                Current Cargo: {{ track.get_cargo_status_display }}
+                {% if track.cargo_weight %} ({{ track.cargo_weight }} kg){% endif %}
+            </p>
+            {% endfor %}
+        </div>
+        
+        <div class="module">
+            <h2>Cargo Status</h2>
+            
+            <div class="form-row">
+                <label for="cargo_status">Status:</label>
+                <select name="cargo_status" id="cargo_status">
+                    {% for value, label in cargo_status_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <label for="cargo_notes">Notes:</label>
+                <textarea name="cargo_notes" id="cargo_notes" rows="3" cols="50"></textarea>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Update Cargo Status" class="default">
+            <a href="{% url 'admin:tracking_flighttrack_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,731 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - FlynJet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Clean, minimal form styling */
+    .profile-avatar {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .profile-avatar:hover .avatar-overlay {
+        opacity: 1;
+    }
+    
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .avatar-overlay i {
+        color: white;
+        font-size: 24px;
+    }
+    
+    /* Clean form styling - no icons inside inputs */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+        display: block;
+    }
+    
+    .form-control, .form-select, textarea.form-control {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .form-control:focus, .form-select:focus, textarea.form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .form-control:hover, .form-select:hover, textarea.form-control:hover {
+        border-color: #cbd5e0;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    select.form-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        appearance: none;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        padding: 0.5rem 0;
+    }
+    
+    .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        margin: 0;
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid #cbd5e0;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: #4a5568;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 1.75rem 0 1.25rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        font-size: 1.1rem;
+        color: #667eea;
+    }
+    
+    .section-title:first-of-type {
+        margin-top: 0;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 24px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-outline-secondary {
+        border-radius: 10px;
+        padding: 10px 24px;
+        font-weight: 500;
+        border-color: #cbd5e0;
+        color: #4a5568;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #f7fafc;
+        border-color: #a0aec0;
+        transform: translateY(-1px);
+    }
+    
+    .invalid-feedback {
+        font-size: 0.75rem;
+        color: #e53e3e;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .valid-feedback {
+        font-size: 0.75rem;
+        color: #38a169;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .text-muted {
+        color: #718096 !important;
+    }
+    
+    /* Card styling */
+    .card {
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        border: none;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    /* Hide the file input but keep it functional */
+    #id_profile_image {
+        position: absolute;
+        width: 0;
+        height: 0;
+        opacity: 0;
+        overflow: hidden;
+        z-index: -1;
+    }
+    
+    /* Image preview animation */
+    #profile-preview {
+        transition: transform 0.3s ease;
+    }
+    
+    #profile-preview:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Loading spinner */
+    .upload-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+    
+    /* Dark mode */
+    body.dark-mode .form-control,
+    body.dark-mode .form-select,
+    body.dark-mode textarea.form-control {
+        background-color: #1a202c;
+        border-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    body.dark-mode .form-control:focus,
+    body.dark-mode .form-select:focus,
+    body.dark-mode textarea.form-control:focus {
+        border-color: #667eea;
+        background-color: #1a202c;
+    }
+    
+    body.dark-mode .form-label {
+        color: #a0aec0;
+    }
+    
+    body.dark-mode .section-title {
+        color: #e2e8f0;
+        border-bottom-color: #2d3748;
+    }
+    
+    body.dark-mode .form-check-label {
+        color: #a0aec0;
+    }
+    
+    body.dark-mode .btn-outline-secondary {
+        border-color: #4a5568;
+        color: #a0aec0;
+    }
+    
+    body.dark-mode .btn-outline-secondary:hover {
+        background: #2d3748;
+        border-color: #718096;
+    }
+    
+    body.dark-mode .card {
+        background: #171923;
+    }
+    
+    body.dark-mode .text-muted {
+        color: #718096 !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header py-4 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </h4>
+                    <p class="mb-0 mt-1 small opacity-75">Update your personal information</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data" id="profile-form" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            {{ form.non_field_errors }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Profile Image Section - IMPROVED -->
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar" id="avatar-container">
+                                {% if user.profile.profile_image and user.profile.profile_image.url %}
+                                    <img id="profile-preview" src="{{ user.profile.profile_image.url }}" class="rounded-circle shadow-sm" width="120" height="120" style="object-fit: cover; border: 3px solid #667eea;">
+                                {% else %}
+                                    <div id="profile-preview" class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 120px; height: 120px; border: 3px solid #667eea;">
+                                        <i class="fas fa-user fa-3x text-secondary"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="avatar-overlay" id="avatar-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="change-photo-btn">
+                                    <i class="fas fa-camera me-2"></i>Change Photo
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="remove-photo-btn" style="display: {% if user.profile.profile_image %}inline-block{% else %}none{% endif %};">
+                                    <i class="fas fa-trash-alt me-2"></i>Remove
+                                </button>
+                                <div id="file-info" class="mt-2 small text-muted"></div>
+                                <p class="text-muted small mt-1">Square image, JPG/PNG, max 5MB</p>
+                                {{ form.profile_image }}
+                                {% if form.profile_image.errors %}
+                                <div class="text-danger small mt-1">{{ form.profile_image.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Basic Information -->
+                        <div class="section-title">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Basic Information</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Gender</label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                    <div class="invalid-feedback">{{ form.gender.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Nationality</label>
+                                    {{ form.nationality }}
+                                    {% if form.nationality.errors %}
+                                    <div class="invalid-feedback">{{ form.nationality.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Passport Information -->
+                        <div class="section-title">
+                            <i class="fas fa-passport"></i>
+                            <span>Passport Information</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Passport Number</label>
+                                    {{ form.passport_number }}
+                                    {% if form.passport_number.errors %}
+                                    <div class="invalid-feedback">{{ form.passport_number.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Passport Expiry Date</label>
+                                    {{ form.passport_expiry }}
+                                    {% if form.passport_expiry.errors %}
+                                    <div class="invalid-feedback">{{ form.passport_expiry.errors.0 }}</div>
+                                    {% endif %}
+                                    <div class="text-muted small mt-1">Must be valid for travel</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Travel Preferences -->
+                        <div class="section-title">
+                            <i class="fas fa-plane-departure"></i>
+                            <span>Travel Preferences</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Frequent Flyer Number</label>
+                                    {{ form.frequent_flyer_number }}
+                                    {% if form.frequent_flyer_number.errors %}
+                                    <div class="invalid-feedback">{{ form.frequent_flyer_number.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Preferred Airport</label>
+                                    {{ form.preferred_airport }}
+                                    {% if form.preferred_airport.errors %}
+                                    <div class="invalid-feedback">{{ form.preferred_airport.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emergency Contact -->
+                        <div class="section-title">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>Emergency Contact</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Contact Name</label>
+                                    {{ form.emergency_contact_name }}
+                                    {% if form.emergency_contact_name.errors %}
+                                    <div class="invalid-feedback">{{ form.emergency_contact_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Contact Phone</label>
+                                    {{ form.emergency_contact_phone }}
+                                    {% if form.emergency_contact_phone.errors %}
+                                    <div class="invalid-feedback">{{ form.emergency_contact_phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Relationship</label>
+                                    {{ form.emergency_contact_relation }}
+                                    {% if form.emergency_contact_relation.errors %}
+                                    <div class="invalid-feedback">{{ form.emergency_contact_relation.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preferences -->
+                        <div class="section-title">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Preferences & Requirements</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Seat Preference</label>
+                                    {{ form.seat_preference }}
+                                    {% if form.seat_preference.errors %}
+                                    <div class="invalid-feedback">{{ form.seat_preference.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Meal Preference</label>
+                                    {{ form.meal_preference }}
+                                    {% if form.meal_preference.errors %}
+                                    <div class="invalid-feedback">{{ form.meal_preference.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mt-md-4 pt-md-1">
+                                    <div class="form-check">
+                                        {{ form.special_assistance_required }}
+                                        <label class="form-check-label">Special Assistance Required</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Dietary Restrictions</label>
+                                    {{ form.dietary_restrictions }}
+                                    {% if form.dietary_restrictions.errors %}
+                                    <div class="invalid-feedback">{{ form.dietary_restrictions.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Medical Conditions</label>
+                                    {{ form.medical_conditions }}
+                                    {% if form.medical_conditions.errors %}
+                                    <div class="invalid-feedback">{{ form.medical_conditions.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between gap-3 mt-5 pt-3 border-top">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5" id="submit-btn">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="upload-spinner" id="upload-spinner">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date picker for passport expiry
+        const passportExpiry = document.getElementById('id_passport_expiry');
+        if (passportExpiry) {
+            flatpickr(passportExpiry, {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                altInput: true,
+                altFormat: "F j, Y",
+                placeholder: "Select expiry date",
+                allowInput: true,
+                disableMobile: true
+            });
+        }
+        
+        // Profile image upload handling - IMPROVED
+        const fileInput = document.getElementById('id_profile_image');
+        const changePhotoBtn = document.getElementById('change-photo-btn');
+        const removePhotoBtn = document.getElementById('remove-photo-btn');
+        const avatarContainer = document.getElementById('avatar-container');
+        const fileInfo = document.getElementById('file-info');
+        const submitBtn = document.getElementById('submit-btn');
+        const spinner = document.getElementById('upload-spinner');
+        
+        // Store original image URL for reset if needed
+        let originalImageUrl = null;
+        const previewElement = document.getElementById('profile-preview');
+        if (previewElement && previewElement.tagName === 'IMG') {
+            originalImageUrl = previewElement.src;
+        }
+        
+        if (fileInput && changePhotoBtn) {
+            // Trigger file input when button is clicked
+            changePhotoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+            
+            // Also allow clicking on the avatar container
+            if (avatarContainer) {
+                avatarContainer.addEventListener('click', function(e) {
+                    if (e.target !== avatarContainer && !avatarContainer.contains(e.target)) return;
+                    fileInput.click();
+                });
+            }
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    
+                    // Check file size
+                    if (file.size > maxSize) {
+                        alert('File is too large! Maximum size is 5MB.');
+                        fileInput.value = '';
+                        fileInfo.innerHTML = '<span class="text-danger">File too large (max 5MB)</span>';
+                        return;
+                    }
+                    
+                    // Check file type
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Please select an image file (JPEG, PNG, GIF, or WebP)');
+                        fileInput.value = '';
+                        fileInfo.innerHTML = '<span class="text-danger">Invalid file type. Please select an image.</span>';
+                        return;
+                    }
+                    
+                    // Show file info
+                    const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+                    fileInfo.innerHTML = `<span class="text-success"><i class="fas fa-check-circle me-1"></i>Selected: ${file.name} (${fileSizeMB} MB)</span>`;
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewElement = document.getElementById('profile-preview');
+                        if (previewElement) {
+                            if (previewElement.tagName === 'IMG') {
+                                previewElement.src = e.target.result;
+                            } else {
+                                // Replace div with img
+                                const newImg = document.createElement('img');
+                                newImg.id = 'profile-preview';
+                                newImg.src = e.target.result;
+                                newImg.className = 'rounded-circle shadow-sm';
+                                newImg.style.width = '120px';
+                                newImg.style.height = '120px';
+                                newImg.style.objectFit = 'cover';
+                                newImg.style.border = '3px solid #667eea';
+                                previewElement.parentNode.replaceChild(newImg, previewElement);
+                            }
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Show remove button
+                    if (removePhotoBtn) {
+                        removePhotoBtn.style.display = 'inline-block';
+                    }
+                    
+                    // Update button style
+                    changePhotoBtn.innerHTML = '<i class="fas fa-check me-2"></i>Photo Selected';
+                    changePhotoBtn.classList.add('btn-success');
+                    changePhotoBtn.classList.remove('btn-outline-primary');
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        if (fileInput.value) {
+                            changePhotoBtn.innerHTML = '<i class="fas fa-camera me-2"></i>Change Photo';
+                            changePhotoBtn.classList.remove('btn-success');
+                            changePhotoBtn.classList.add('btn-outline-primary');
+                            fileInfo.innerHTML = '';
+                        }
+                    }, 3000);
+                } else {
+                    fileInfo.innerHTML = '';
+                    changePhotoBtn.innerHTML = '<i class="fas fa-camera me-2"></i>Change Photo';
+                    changePhotoBtn.classList.remove('btn-success');
+                    changePhotoBtn.classList.add('btn-outline-primary');
+                }
+            });
+        }
+        
+        // Handle remove photo
+        if (removePhotoBtn) {
+            removePhotoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (confirm('Are you sure you want to remove your profile photo?')) {
+                    // Clear the file input
+                    fileInput.value = '';
+                    
+                    // Reset preview to default
+                    const previewElement = document.getElementById('profile-preview');
+                    if (previewElement) {
+                        if (previewElement.tagName === 'IMG') {
+                            // Create default placeholder
+                            const newDiv = document.createElement('div');
+                            newDiv.id = 'profile-preview';
+                            newDiv.className = 'bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm';
+                            newDiv.style.width = '120px';
+                            newDiv.style.height = '120px';
+                            newDiv.style.border = '3px solid #667eea';
+                            newDiv.innerHTML = '<i class="fas fa-user fa-3x text-secondary"></i>';
+                            previewElement.parentNode.replaceChild(newDiv, previewElement);
+                        } else {
+                            previewElement.innerHTML = '<i class="fas fa-user fa-3x text-secondary"></i>';
+                        }
+                    }
+                    
+                    // Hide remove button
+                    removePhotoBtn.style.display = 'none';
+                    
+                    // Show file info
+                    fileInfo.innerHTML = '<span class="text-info"><i class="fas fa-info-circle me-1"></i>Photo will be removed when you save</span>';
+                    
+                    // Create a hidden input to indicate removal
+                    const removeField = document.createElement('input');
+                    removeField.type = 'hidden';
+                    removeField.name = 'remove_profile_image';
+                    removeField.value = 'true';
+                    document.getElementById('profile-form').appendChild(removeField);
+                }
+            });
+        }
+        
+        // Form submission handling
+        const form = document.getElementById('profile-form');
+        form.addEventListener('submit', function(e) {
+            // Show spinner
+            if (spinner) {
+                spinner.style.display = 'block';
+            }
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            }
+            
+            // Allow form to submit normally
+            return true;
+        });
+        
+        // Form validation styling
+        const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value && this.checkValidity()) {
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                } else if (this.value) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

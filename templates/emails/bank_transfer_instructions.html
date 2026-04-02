@@ -1,0 +1,53 @@
+{% extends 'base_email.html' %}
+
+{% block email_content %}  <!-- CHANGE THIS from 'content' to 'email_content' -->
+<h2>Bank Transfer Instructions</h2>
+
+<p>Dear {{ user.get_full_name }},</p>
+
+<p>Please transfer the amount of <strong>${{ payment.amount_usd|floatformat:2 }}</strong> to the following bank account:</p>
+
+<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <p><strong>Booking Reference:</strong> {{ booking.booking_reference }}</p>
+    <p><strong>Payment Reference:</strong> {{ payment.transaction_id }}</p>
+</div>
+
+{% if bank_detail %}
+<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+    <p><strong>Bank Name:</strong> {{ bank_detail.bank_name }}</p>
+    <p><strong>Account Name:</strong> {{ bank_detail.account_name }}</p>
+    <p><strong>Account Number:</strong> {{ bank_detail.account_number }}</p>
+    {% if bank_detail.swift_code %}
+    <p><strong>SWIFT Code:</strong> {{ bank_detail.swift_code }}</p>
+    {% endif %}
+    {% if bank_detail.iban %}
+    <p><strong>IBAN:</strong> {{ bank_detail.iban }}</p>
+    {% endif %}
+    {% if bank_detail.routing_number %}
+    <p><strong>Routing Number:</strong> {{ bank_detail.routing_number }}</p>
+    {% endif %}
+    <p><strong>Currency:</strong> {{ bank_detail.currency }}</p>
+    {% if bank_detail.branch_address %}
+    <p><strong>Branch Address:</strong> {{ bank_detail.branch_address }}</p>
+    {% endif %}
+</div>
+{% else %}
+<div style="background: #ffeeee; padding: 15px; border-radius: 8px; margin: 15px 0;">
+    <p><strong>Note:</strong> Bank transfer details will be provided upon request. Please contact support.</p>
+</div>
+{% endif %}
+
+<div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <h4 style="color: #856404; margin-top: 0;">Important:</h4>
+    <ul>
+        <li>Please include your payment reference: <strong>{{ payment.transaction_id }}</strong> in the transfer notes</li>
+        <li>Bank transfers typically take 1-2 business days to process</li>
+        <li>Your booking will be confirmed once we receive the funds</li>
+        <li>You will receive a confirmation email once payment is verified</li>
+    </ul>
+</div>
+
+<p>If you have any questions, please contact our support team.</p>
+
+<p>Best regards,<br>FlynJet Team</p>
+{% endblock %}

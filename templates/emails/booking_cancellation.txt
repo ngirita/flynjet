@@ -1,0 +1,17 @@
+Booking Cancellation - {{ booking.booking_reference }}
+
+Dear {{ user.get_full_name }},
+
+Your booking has been cancelled.
+
+Booking Details:
+- Booking Reference: {{ booking.booking_reference }}
+- Aircraft: {{ aircraft.manufacturer.name }} {{ aircraft.model }}
+- From: {{ booking.departure_airport }}
+- To: {{ booking.arrival_airport }}
+- Departure: {{ booking.departure_datetime|date:"F j, Y H:i" }}
+
+If you have any questions, please contact our support team.
+
+Best regards,
+FlynJet Team

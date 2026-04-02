@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Status Update - FlynJet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status-pending { background: #ffc107; color: #856404; }
+        .status-investigating { background: #17a2b8; color: white; }
+        .status-approved { background: #28a745; color: white; }
+        .status-rejected { background: #dc3545; color: white; }
+        .status-resolved { background: #28a745; color: white; }
+        .status-escalated { background: #fd7e14; color: white; }
+        
+        .dispute-details {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dispute Status Update</h1>
+            <p>Your dispute has been updated</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ dispute.user.get_full_name|default:dispute.user.email }},</h2>
+            
+            <p>We wanted to inform you that the status of your dispute has been updated.</p>
+            
+            <div class="dispute-details">
+                <p><strong>Dispute Number:</strong> {{ dispute.dispute_number }}</p>
+                <p><strong>Booking Reference:</strong> {{ dispute.booking.booking_reference }}</p>
+                <p><strong>Previous Status:</strong> {{ old_status }}</p>
+                <p><strong>New Status:</strong> {{ new_status }}</p>
+                {% if dispute.assigned_to %}
+                <p><strong>Assigned To:</strong> {{ dispute.assigned_to.get_full_name|default:dispute.assigned_to.email }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="status-badge status-{{ new_status|lower }}">
+                {{ dispute.get_status_display }}
+            </div>
+            
+            <p>Our team is working diligently to resolve your issue. You can check the latest updates and respond to messages through your dispute dashboard.</p>
+            
+            <a href="{{ site_url }}{% url 'disputes:detail' dispute.id %}" class="button">
+                View Dispute Details
+            </a>
+            
+            <hr>
+            
+            <p><strong>What happens next?</strong></p>
+            {% if new_status == 'investigating' %}
+            <p>Your dispute is now under investigation. Our team will review all details and may contact you for additional information.</p>
+            {% elif new_status == 'approved' %}
+            <p>Your dispute has been approved! We'll process the resolution shortly.</p>
+            {% elif new_status == 'rejected' %}
+            <p>We've reviewed your dispute and unfortunately cannot approve it at this time. You can view the detailed explanation in your dispute dashboard.</p>
+            {% elif new_status == 'resolved' %}
+            <p>Great news! Your dispute has been resolved. The agreed resolution will be processed within 2-3 business days.</p>
+            {% elif new_status == 'escalated' %}
+            <p>Your dispute has been escalated to our management team for further review. This ensures your case receives the highest level of attention.</p>
+            {% endif %}
+            
+            <p>If you have any questions or need to provide additional information, please reply to this email or log in to your account to add a message to the dispute thread.</p>
+            
+            <p>Thank you for your patience and cooperation.</p>
+            
+            <p>Best regards,<br>
+            <strong>FlynJet Support Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>FlynJet - Luxury Private Jet Charter</p>
+            <p>This is an automated message. Please do not reply directly to this email.</p>
+            <p><a href="{{ site_url }}/privacy/">Privacy Policy</a> | <a href="{{ site_url }}/terms/">Terms of Service</a></p>
+        </div>
+    </div>
+</body>
+</html>

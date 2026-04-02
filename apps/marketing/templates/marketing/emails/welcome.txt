@@ -1,0 +1,17 @@
+Welcome to FlynJet!
+
+Hello {{ user.get_full_name|default:user.email }},
+
+Thank you for joining FlynJet! We're excited to have you on board.
+
+As a new member, you'll enjoy:
+- 500 bonus points to start
+- Easy booking in minutes
+- Secure travel experience
+
+We've added 500 bonus points to your loyalty account. You can use them on your next booking!
+
+Browse our fleet: {{ site_url }}{% url 'fleet:list' %}
+
+Best regards,
+The FlynJet Team

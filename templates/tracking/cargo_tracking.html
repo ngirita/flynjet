@@ -1,0 +1,149 @@
+<!-- templates/tracking/cargo_tracking.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cargo Tracking - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Cargo Tracking</h2>
+            <p class="text-muted">Track your cargo shipments in real-time</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for track in cargo_tracks %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">{{ track.flight_number }}</h5>
+                        <span class="badge bg-{% if track.cargo_status == 'delivered' %}success{% elif track.cargo_status == 'in_transit' %}info{% elif track.cargo_status == 'loaded' %}primary{% else %}secondary{% endif %}">
+                            {{ track.get_cargo_status_display }}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text">
+                        <small class="text-muted">Route:</small><br>
+                        <strong>{{ track.departure_airport }}</strong> → <strong>{{ track.arrival_airport }}</strong>
+                    </p>
+                    
+                    {% if track.cargo_weight %}
+                    <p class="card-text">
+                        <small class="text-muted">Weight:</small><br>
+                        {{ track.cargo_weight }} kg
+                    </p>
+                    {% endif %}
+                    
+                    {% if track.cargo_manifest %}
+                    <p class="card-text">
+                        <small class="text-muted">Manifest Items:</small><br>
+                        {{ track.cargo_manifest|length }} item(s)
+                    </p>
+                    {% endif %}
+                    
+                    <div class="progress mt-3" style="height: 5px;">
+                        <div class="progress-bar bg-{% if track.cargo_status == 'delivered' %}success{% elif track.cargo_status == 'in_transit' %}info{% else %}warning{% endif %}" 
+                             style="width: {% if track.cargo_status == 'delivered' %}100{% elif track.cargo_status == 'unloaded' %}75{% elif track.cargo_status == 'in_transit' %}50{% elif track.cargo_status == 'loaded' %}25{% else %}0{% endif %}%"></div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'tracking:flight_track' track.booking.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plane me-1"></i> Track Flight
+                        </a>
+                        <button class="btn btn-sm btn-outline-info" onclick="showCargoDetails('{{ track.id }}')">
+                            <i class="fas fa-box me-1"></i> Cargo Details
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <small class="text-muted">
+                        Last Update: {{ track.last_update|timesince|default:"Never" }} ago
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-box-open fa-3x mb-3"></i>
+                <h5>No cargo shipments found</h5>
+                <p>You don't have any cargo shipments to track at the moment.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Cargo Details Modal -->
+<div class="modal fade" id="cargoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cargo Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="cargoModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading cargo details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showCargoDetails(trackId) {
+    const modal = new bootstrap.Modal(document.getElementById('cargoModal'));
+    const modalBody = document.getElementById('cargoModalBody');
+    
+    modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Loading cargo details...</p></div>';
+    modal.show();
+    
+    fetch(`/tracking/api/cargo/${trackId}/`)
+        .then(response => response.json())
+        .then(data => {
+            let manifestHtml = '';
+            if (data.cargo_manifest && data.cargo_manifest.length > 0) {
+                manifestHtml = `
+                    <h6>Manifest Items:</h6>
+                    <ul class="list-group mb-3">
+                        ${data.cargo_manifest.map(item => `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                ${item.description || 'Item'}
+                                <span class="badge bg-primary rounded-pill">${item.quantity || 1}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            }
+            
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Flight Information</h6>
+                        <p><strong>Flight Number:</strong> ${data.flight_number}</p>
+                        <p><strong>Status:</strong> ${data.status_display}</p>
+                        <p><strong>Route:</strong> ${data.departure_airport} → ${data.arrival_airport}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Cargo Information</h6>
+                        <p><strong>Cargo Status:</strong> ${data.cargo_status_display}</p>
+                        ${data.cargo_weight ? `<p><strong>Weight:</strong> ${data.cargo_weight} kg</p>` : ''}
+                        <p><strong>Last Update:</strong> ${data.last_update ? new Date(data.last_update).toLocaleString() : 'N/A'}</p>
+                    </div>
+                </div>
+                ${manifestHtml}
+                ${data.remarks ? `<div class="alert alert-info mt-3">${data.remarks}</div>` : ''}
+            `;
+        })
+        .catch(error => {
+            modalBody.innerHTML = '<div class="alert alert-danger">Error loading cargo details</div>';
+        });
+}
+</script>
+{% endblock %}

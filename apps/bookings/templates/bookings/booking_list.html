@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bookings - FlynJet{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="display-5 fw-bold">My Enquiries & Bookings</h1>
+                    <p class="text-muted">View and manage your flight enquiries and confirmed bookings</p>
+                </div>
+                <a href="{% url 'fleet:list' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Enquiry
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if bookings %}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Bookings</h6>
+                    <h2 class="mb-0">{{ total_bookings|default:bookings.count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Upcoming</h6>
+                    <h2 class="mb-0">{{ upcoming_bookings|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Completed</h6>
+                    <h2 class="mb-0">{{ completed_bookings|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Total Spent</h6>
+                    <h2 class="mb-0">${{ total_spent|default:0|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if bookings %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Route</th>
+                                        <th>Departure</th>
+                                        <th>Aircraft</th>
+                                        <th>Passengers</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in bookings %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ booking.booking_reference }}</strong>
+                                            {% if booking.status == 'pending' %}
+                                                <br>
+                                                <small class="text-warning">Payment Required</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="route-info">
+                                                {% if booking.departure_airport_obj %}
+                                                    <div><strong>{{ booking.departure_airport_obj.city }}</strong></div>
+                                                    <div class="small text-muted">{{ booking.departure_airport_obj.iata_code }}</div>
+                                                {% else %}
+                                                    <div><strong>{{ booking.departure_airport }}</strong></div>
+                                                {% endif %}
+                                                
+                                                <i class="fas fa-arrow-right text-muted mx-1 my-1 d-block"></i>
+                                                
+                                                {% if booking.arrival_airport_obj %}
+                                                    <div><strong>{{ booking.arrival_airport_obj.city }}</strong></div>
+                                                    <div class="small text-muted">{{ booking.arrival_airport_obj.iata_code }}</div>
+                                                {% else %}
+                                                    <div><strong>{{ booking.arrival_airport }}</strong></div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <div>{{ booking.departure_datetime|date:"M d, Y" }}</div>
+                                            <small class="text-muted">{{ booking.departure_datetime|date:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ booking.aircraft.model }}</div>
+                                            <small class="text-muted">{{ booking.aircraft.manufacturer.name }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">
+                                                {{ booking.passenger_count }}
+                                            </span>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <strong>${{ booking.total_amount_usd|floatformat:2 }}</strong>
+                                            {% if booking.amount_paid > 0 %}
+                                                <br>
+                                                <small class="text-success">Paid: ${{ booking.amount_paid|floatformat:2 }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'paid' %}success{% elif booking.status == 'in_progress' %}info{% elif booking.status == 'completed' %}secondary{% elif booking.status == 'cancelled' %}danger{% else %}warning{% endif %} p-2" style="font-size: 12px;">
+                                                {{ booking.get_status_display }}
+                                            </span>
+                                            {% if booking.payment_status == 'partial' %}
+                                                <br>
+                                                <span class="badge bg-warning text-dark mt-1">Partial Payment</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group-vertical btn-group-sm" role="group">
+                                                <a href="{% url 'bookings:detail' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye me-1"></i> View
+                                                </a>
+                                                
+                                                {% if booking.status == 'confirmed' or booking.status == 'paid' %}
+                                                <a href="{% url 'tracking:flight_track' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-info" title="Track Flight">
+                                                    <i class="fas fa-map-marker-alt me-1"></i> Track
+                                                </a>
+                                                {% endif %}
+                                                
+                                                {% if booking.status == 'draft' %}
+                                                <a href="{% url 'bookings:update' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-secondary" title="Edit">
+                                                    <i class="fas fa-edit me-1"></i> Edit
+                                                </a>
+                                                <a href="{% url 'bookings:cancel' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-danger" title="Cancel">
+                                                    <i class="fas fa-times me-1"></i> Cancel
+                                                </a>
+                                                {% endif %}
+                                                
+                                                {% if booking.status == 'pending' or booking.amount_due > 0 %}
+                                                <a href="{% url 'bookings:review' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Make Payment">
+                                                    <i class="fas fa-credit-card me-1"></i> Pay
+                                                </a>
+                                                {% endif %}
+
+                                                {# UPDATED: Show Review button for any booking that has departure date in the past OR is completed #}
+                                                {% if booking.departure_datetime < now or booking.status == 'completed' %}
+                                                <a href="{% url 'reviews:create' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-dark" title="Write a Review">
+                                                    <i class="fas fa-star me-1"></i> Review
+                                                </a>
+                                                {% endif %}
+                                                
+                                                {% if booking.status == 'confirmed' and booking.departure_datetime > now %}
+                                                <a href="{% url 'bookings:invoice' booking.id %}" 
+                                                   class="btn btn-sm btn-outline-secondary" title="Download Invoice">
+                                                    <i class="fas fa-file-invoice me-1"></i> Invoice
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if is_paginated %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="row">
+            <div class="col-12 text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt fa-4x text-muted mb-3"></i>
+                    <h3>No Enquiries Yet</h3>
+                    <p class="text-muted">You haven't made any enquiries yet. Start your luxury journey with us!</p>
+                    <a href="{% url 'fleet:list' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus me-2"></i>Make Your First Enquiry
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .btn-group-vertical {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .btn-group-vertical .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 12px;
+        border-radius: 4px;
+        width: 80px;
+        text-align: left;
+    }
+    
+    .btn-group-vertical .btn i {
+        font-size: 12px;
+        width: 16px;
+    }
+    
+    .empty-state {
+        padding: 60px 20px;
+    }
+    
+    .badge {
+        padding: 5px 10px;
+        font-weight: 500;
+    }
+    
+    .route-info {
+        min-width: 120px;
+    }
+    
+    /* Statistics Cards */
+    .card.bg-primary, .card.bg-success, .card.bg-info, .card.bg-warning {
+        transition: transform 0.2s;
+    }
+    
+    .card.bg-primary:hover, .card.bg-success:hover, .card.bg-info:hover, .card.bg-warning:hover {
+        transform: translateY(-3px);
+    }
+    
+    @media (max-width: 768px) {
+        .table {
+            font-size: 13px;
+        }
+        
+        .btn-group-vertical .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 11px;
+            width: 70px;
+        }
+        
+        .btn-group-vertical .btn i {
+            font-size: 11px;
+            width: 14px;
+        }
+        
+        .table th, .table td {
+            white-space: nowrap;
+        }
+        
+        .route-info {
+            min-width: 100px;
+        }
+    }
+    
+    /* Dark mode support */
+    body.dark-mode .table-light {
+        background-color: #2d2d2d;
+        color: white;
+    }
+    
+    body.dark-mode .table {
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .table-hover tbody tr:hover {
+        background-color: rgba(197, 160, 89, 0.1);
+    }
+    
+    /* Tooltip styles for better UX */
+    .btn-group-vertical .btn:hover {
+        transform: translateX(2px);
+        transition: transform 0.2s;
+    }
+    
+    /* Review button highlight for eligible bookings */
+    .btn-outline-dark {
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+    
+    .btn-outline-dark:hover {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+    
+    body.dark-mode .btn-outline-dark {
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+    
+    body.dark-mode .btn-outline-dark:hover {
+        background-color: #ffc107;
+        color: #000;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conversation - FlynJet Chat{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'chat/css/widget.css' %}">
+<style>
+    .conversation-container {
+        max-width: 800px;
+        margin: 0 auto;
+        height: calc(100vh - 200px);
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .conversation-header {
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .conversation-header h5 {
+        margin: 0;
+    }
+    
+    .conversation-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+    
+    .rating-section {
+        padding: 20px;
+        border-top: 1px solid #dee2e6;
+        background: white;
+    }
+    
+    .rating-stars {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 10px 0;
+    }
+    
+    .rating-star {
+        font-size: 30px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+    
+    .rating-star:hover,
+    .rating-star.active {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="conversation-container">
+        <div class="conversation-header">
+            <h5>Conversation with FlynJet Support</h5>
+            <p class="mb-0 small">Started: {{ conversation.started_at|date:"F j, Y H:i" }}</p>
+        </div>
+        
+        <div class="conversation-messages" id="conversationMessages">
+            {% for message in messages %}
+            <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+                {% if message.sender != user %}
+                <div class="message-avatar">
+                    {{ message.sender_name|first|default:"S" }}
+                </div>
+                {% endif %}
+                <div class="message-content">
+                    <div class="message-sender">
+                        {{ message.sender_name|default:message.sender.email }}
+                    </div>
+                    <div>{{ message.message }}</div>
+                    <div class="message-time">{{ message.created_at|date:"H:i" }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if conversation.status == 'resolved' and not conversation.satisfaction_rating %}
+        <div class="rating-section">
+            <h6 class="text-center mb-3">How would you rate this support experience?</h6>
+            <div class="rating-stars" id="ratingStars">
+                <i class="far fa-star rating-star" data-rating="1"></i>
+                <i class="far fa-star rating-star" data-rating="2"></i>
+                <i class="far fa-star rating-star" data-rating="3"></i>
+                <i class="far fa-star rating-star" data-rating="4"></i>
+                <i class="far fa-star rating-star" data-rating="5"></i>
+            </div>
+            <textarea class="form-control mt-3" id="ratingFeedback" 
+                      placeholder="Additional feedback (optional)" rows="2"></textarea>
+            <button class="btn btn-primary mt-3 w-100" onclick="submitRating()">
+                Submit Rating
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedRating = 0;
+    
+    // Initialize rating stars
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('mouseover', function() {
+            const rating = this.dataset.rating;
+            highlightStars(rating);
+        });
+        
+        star.addEventListener('mouseout', function() {
+            highlightStars(selectedRating);
+        });
+        
+        star.addEventListener('click', function() {
+            selectedRating = this.dataset.rating;
+            highlightStars(selectedRating);
+        });
+    });
+    
+    function highlightStars(rating) {
+        document.querySelectorAll('.rating-star').forEach((star, index) => {
+            if (index < rating) {
+                star.className = 'fas fa-star rating-star active';
+            } else {
+                star.className = 'far fa-star rating-star';
+            }
+        });
+    }
+    
+    function submitRating() {
+        if (selectedRating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+        
+        const feedback = document.getElementById('ratingFeedback').value;
+        
+        fetch('/api/v1/chat/conversations/{{ conversation.id }}/feedback/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                rating: selectedRating,
+                feedback: feedback
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Thank you for your feedback!');
+            location.reload();
+        });
+    }
+</script>
+{% endblock %}

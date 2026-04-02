@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Details - {{ payment.transaction_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'payments:list' %}">My Payments</a></li>
+                    <li class="breadcrumb-item active">{{ payment.transaction_id|truncatechars:12 }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        {% if payment.status == 'completed' %}
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h2 class="text-success">Payment Successful</h2>
+                        {% elif payment.status == 'pending' %}
+                            <i class="fas fa-clock fa-4x text-warning mb-3"></i>
+                            <h2 class="text-warning">Payment Pending</h2>
+                        {% elif payment.status == 'failed' %}
+                            <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                            <h2 class="text-danger">Payment Failed</h2>
+                        {% elif payment.status == 'refunded' %}
+                            <i class="fas fa-money-bill-wave fa-4x text-info mb-3"></i>
+                            <h2 class="text-info">Refunded</h2>
+                        {% else %}
+                            <i class="fas fa-credit-card fa-4x text-primary mb-3"></i>
+                            <h2>{{ payment.status|title }}</h2>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Payment Information</h6>
+                                    <p><strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code></p>
+                                    <p><strong>Amount:</strong> <strong class="text-primary">${{ payment.amount_usd|floatformat:2 }}</strong></p>
+                                    <p><strong>Payment Method:</strong> {{ payment.get_payment_method_display }}</p>
+                                    <p><strong>Status:</strong> 
+                                        {% if payment.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif payment.status == 'failed' %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% elif payment.status == 'refunded' %}
+                                            <span class="badge bg-info">Refunded</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ payment.status|title }}</span>
+                                        {% endif %}
+                                    </p>
+                                    {% if payment.payment_date %}
+                                    <p><strong>Payment Date:</strong> {{ payment.payment_date|date:"F j, Y H:i" }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Booking Information</h6>
+                                    {% if payment.booking %}
+                                    <p><strong>Booking Reference:</strong> 
+                                        <a href="{% url 'bookings:detail' payment.booking.id %}">
+                                            {{ payment.booking.booking_reference }}
+                                        </a>
+                                    </p>
+                                    <p><strong>Route:</strong> {{ payment.booking.departure_airport }} → {{ payment.booking.arrival_airport }}</p>
+                                    <p><strong>Departure:</strong> {{ payment.booking.departure_datetime|date:"F j, Y H:i" }}</p>
+                                    <p><strong>Passengers:</strong> {{ payment.booking.passenger_count }}</p>
+                                    {% else %}
+                                    <p class="text-muted">No booking associated</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if payment.status == 'failed' and payment.failure_reason %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Failure Reason:</strong> {{ payment.failure_reason }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if payment.status == 'refunded' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Refund Information:</strong><br>
+                        Amount Refunded: ${{ payment.refund_amount_usd|floatformat:2 }}<br>
+                        {% if payment.refund_reason %}Reason: {{ payment.refund_reason }}{% endif %}
+                        {% if payment.refund_date %}Refund Date: {{ payment.refund_date|date:"F j, Y H:i" }}{% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        {% if payment.status == 'pending' and payment.booking %}
+                        <a href="{% url 'bookings:review' payment.booking.id %}" class="btn btn-primary">
+                            <i class="fas fa-credit-card me-2"></i>Retry Payment
+                        </a>
+                        {% endif %}
+                        {% if payment.booking %}
+                        <a href="{% url 'bookings:detail' payment.booking.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-eye me-2"></i>View Booking
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'payments:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Payments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

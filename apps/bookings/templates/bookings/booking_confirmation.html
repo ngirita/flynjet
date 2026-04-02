@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmed - FlynJet{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-check-circle fa-4x text-success mb-4"></i>
+                        <h2 class="mb-3">Booking Confirmed!</h2>
+                        <p class="lead mb-4">Your flight has been successfully booked. We're excited to have you on board!</p>
+                        
+                        <div class="alert alert-info">
+                            <strong>Booking Reference:</strong> {{ booking.booking_reference }}<br>
+                            <strong>Status:</strong> {{ booking.get_status_display }}
+                        </div>
+                        
+                        <div class="text-start mt-4">
+                            <h5>Flight Details:</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><strong>Aircraft:</strong> {{ booking.aircraft.manufacturer.name }} {{ booking.aircraft.model }}</li>
+                                <li class="mb-2">
+                                    <strong>From:</strong> 
+                                    {% if departure_airport %}
+                                        {{ departure_airport.name }} ({{ departure_airport.iata_code }})<br>
+                                        <small class="text-muted">{{ departure_airport.city }}, {{ departure_airport.country }}</small>
+                                    {% else %}
+                                        {{ booking.departure_airport }}
+                                    {% endif %}
+                                </li>
+                                <li class="mb-2">
+                                    <strong>To:</strong> 
+                                    {% if arrival_airport %}
+                                        {{ arrival_airport.name }} ({{ arrival_airport.iata_code }})<br>
+                                        <small class="text-muted">{{ arrival_airport.city }}, {{ arrival_airport.country }}</small>
+                                    {% else %}
+                                        {{ booking.arrival_airport }}
+                                    {% endif %}
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Departure:</strong> 
+                                    {{ booking.departure_datetime|date:"l, F j, Y" }} at 
+                                    {{ booking.departure_datetime|date:"g:i A" }}
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Arrival:</strong> 
+                                    {{ booking.arrival_datetime|date:"l, F j, Y" }} at 
+                                    {{ booking.arrival_datetime|date:"g:i A" }}
+                                </li>
+                                <li class="mb-2"><strong>Passengers:</strong> {{ booking.passenger_count }}</li>
+                                <li class="mb-2"><strong>Flight Duration:</strong> {{ booking.flight_duration_hours|floatformat:1 }} hours</li>
+                                <li class="mb-2"><strong>Total Amount:</strong> ${{ booking.total_amount_usd|floatformat:2 }}</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Route Map Visualization -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-center flex-grow-1">
+                                    <i class="fas fa-plane-departure fa-2x text-primary"></i>
+                                    <div class="fw-bold mt-1">
+                                        {% if departure_airport %}
+                                            {{ departure_airport.city }}
+                                        {% else %}
+                                            {{ booking.departure_airport }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if departure_airport %}
+                                            {{ departure_airport.iata_code }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="text-center px-3">
+                                    <i class="fas fa-arrow-right fa-2x text-muted"></i>
+                                    <div class="small">{{ booking.flight_duration_hours|floatformat:1 }} hrs</div>
+                                </div>
+                                <div class="text-center flex-grow-1">
+                                    <i class="fas fa-plane-arrival fa-2x text-success"></i>
+                                    <div class="fw-bold mt-1">
+                                        {% if arrival_airport %}
+                                            {{ arrival_airport.city }}
+                                        {% else %}
+                                            {{ booking.arrival_airport }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if arrival_airport %}
+                                            {{ arrival_airport.iata_code }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Important Information -->
+                        <div class="alert alert-warning mt-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Important Information:</strong>
+                            <ul class="mb-0 mt-2 text-start">
+                                <li>Please arrive at the airport at least 2 hours before departure</li>
+                                <li>Valid government-issued ID and passport are required for travel</li>
+                                <li>Check-in opens 3 hours before departure</li>
+                                <li>A confirmation email has been sent to {{ booking.user.email }}</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Next Steps -->
+                        <div class="mt-4">
+                            <h5>What's Next?</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-4 mb-2">
+                                    <a href="{% url 'bookings:invoice' booking.id %}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-file-invoice me-2"></i>View Invoice
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <a href="{% url 'bookings:list' %}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-calendar-alt me-2"></i>My Bookings
+                                    </a>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <a href="{% url 'core:home' %}" class="btn btn-luxury-dark w-100">
+                                        <i class="fas fa-home me-2"></i>Back to Home
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Share Option -->
+                        <div class="mt-4 pt-3">
+                            <p class="text-muted small mb-2">Share your booking confirmation</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="shareViaEmail()">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard()">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.btn-luxury-dark {
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+}
+.btn-luxury-dark:hover {
+    background-color: #0f0f1f;
+    color: white;
+}
+</style>
+
+<script>
+function shareViaEmail() {
+    const subject = encodeURIComponent('My FlynJet Booking - {{ booking.booking_reference }}');
+    const body = encodeURIComponent(
+        'I have booked a flight with FlynJet!\n\n' +
+        'Booking Reference: {{ booking.booking_reference }}\n' +
+        'From: {% if departure_airport %}{{ departure_airport.name }} ({{ departure_airport.iata_code }}){% else %}{{ booking.departure_airport }}{% endif %}\n' +
+        'To: {% if arrival_airport %}{{ arrival_airport.name }} ({{ arrival_airport.iata_code }}){% else %}{{ booking.arrival_airport }}{% endif %}\n' +
+        'Departure: {{ booking.departure_datetime|date:"M j, Y g:i A" }}\n\n' +
+        'View my booking: {{ request.build_absolute_uri }}{% url "bookings:detail" booking.id %}'
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function copyToClipboard() {
+    const text = `Booking Confirmation - FlynJet\n\n` +
+        `Booking Reference: {{ booking.booking_reference }}\n` +
+        `From: {% if departure_airport %}{{ departure_airport.name }} ({{ departure_airport.iata_code }}){% else %}{{ booking.departure_airport }}{% endif %}\n` +
+        `To: {% if arrival_airport %}{{ arrival_airport.name }} ({{ arrival_airport.iata_code }}){% else %}{{ booking.arrival_airport }}{% endif %}\n` +
+        `Departure: {{ booking.departure_datetime|date:"M j, Y g:i A" }}\n` +
+        `Passengers: {{ booking.passenger_count }}\n` +
+        `Total: ${{ booking.total_amount_usd|floatformat:2 }}`;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Booking details copied to clipboard!');
+    }).catch(() => {
+        alert('Could not copy to clipboard. Please select and copy manually.');
+    });
+}
+</script>
+{% endblock %}

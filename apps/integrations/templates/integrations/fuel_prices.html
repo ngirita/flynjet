@@ -1,0 +1,258 @@
+{% load static %}
+
+<div class="fuel-widget">
+    <div class="fuel-header">
+        <h5>Fuel Prices at {{ location }}</h5>
+        <span class="fuel-updated">Updated {{ fuel.last_updated|timesince }} ago</span>
+    </div>
+    
+    <div class="fuel-prices">
+        <div class="price-card">
+            <div class="fuel-type">Jet A</div>
+            <div class="price-value">${{ fuel.jet_a|floatformat:2 }}</div>
+            <div class="price-unit">per gallon</div>
+        </div>
+        
+        <div class="price-card">
+            <div class="fuel-type">Jet A-1</div>
+            <div class="price-value">${{ fuel.jet_a1|floatformat:2 }}</div>
+            <div class="price-unit">per gallon</div>
+        </div>
+        
+        <div class="price-card">
+            <div class="fuel-type">Avgas 100LL</div>
+            <div class="price-value">${{ fuel.avgas|floatformat:2 }}</div>
+            <div class="price-unit">per gallon</div>
+        </div>
+    </div>
+    
+    <div class="fuel-details">
+        <div class="detail-row">
+            <span>Currency:</span>
+            <span class="fw-bold">{{ fuel.currency }}</span>
+        </div>
+        <div class="detail-row">
+            <span>Source:</span>
+            <span class="fw-bold">{{ fuel.source|title }}</span>
+        </div>
+    </div>
+    
+    <div class="fuel-trend">
+        <h6>Price Trend (30 days)</h6>
+        <div class="trend-indicator">
+            {% if fuel.trend == 'up' %}
+            <i class="fas fa-arrow-up text-danger"></i>
+            <span class="text-danger">Increasing</span>
+            {% elif fuel.trend == 'down' %}
+            <i class="fas fa-arrow-down text-success"></i>
+            <span class="text-success">Decreasing</span>
+            {% else %}
+            <i class="fas fa-minus text-warning"></i>
+            <span class="text-warning">Stable</span>
+            {% endif %}
+        </div>
+        <div class="trend-stats">
+            <div class="stat">
+                <span class="stat-label">30d Avg</span>
+                <span class="stat-value">${{ fuel.avg_30d|floatformat:2 }}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">30d Low</span>
+                <span class="stat-value">${{ fuel.min_30d|floatformat:2 }}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">30d High</span>
+                <span class="stat-value">${{ fuel.max_30d|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+    
+    {% if nearby_airports %}
+    <div class="nearby-airports">
+        <h6>Nearby Airports</h6>
+        <div class="airport-list">
+            {% for airport in nearby_airports %}
+            <div class="airport-item">
+                <div class="airport-code">{{ airport.code }}</div>
+                <div class="airport-name">{{ airport.name }}</div>
+                <div class="airport-price">${{ airport.price|floatformat:2 }}</div>
+                <div class="airport-distance">{{ airport.distance }} nm</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .fuel-widget {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .fuel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .fuel-header h5 {
+        margin: 0;
+        font-size: 16px;
+    }
+    
+    .fuel-updated {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    .fuel-prices {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .price-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .fuel-type {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    
+    .price-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .price-unit {
+        font-size: 11px;
+        color: #999;
+    }
+    
+    .fuel-details {
+        background: #e9ecef;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+    }
+    
+    .fuel-trend {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .fuel-trend h6 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+    }
+    
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .trend-indicator i {
+        font-size: 20px;
+    }
+    
+    .trend-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .stat {
+        text-align: center;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 3px;
+    }
+    
+    .stat-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .nearby-airports h6 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+    }
+    
+    .airport-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .airport-item {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        padding: 8px;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 12px;
+    }
+    
+    .airport-item:last-child {
+        border-bottom: none;
+    }
+    
+    .airport-code {
+        font-weight: 600;
+        color: #007bff;
+    }
+    
+    .airport-name {
+        color: #666;
+    }
+    
+    .airport-price {
+        font-weight: 600;
+        color: #28a745;
+    }
+    
+    .airport-distance {
+        color: #999;
+        font-size: 11px;
+    }
+    
+    @media (max-width: 768px) {
+        .fuel-prices {
+            grid-template-columns: 1fr;
+        }
+        
+        .trend-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
