@@ -34,6 +34,9 @@ RUN python manage.py migrate --noinput
 RUN python manage.py createcachetable
 RUN python manage.py collectstatic --noinput
 
+# Import airport data
+RUN python import_airports.py
+
 # Expose port
 EXPOSE 10000
 
