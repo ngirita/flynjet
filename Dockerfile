@@ -34,6 +34,10 @@ RUN python manage.py migrate --noinput
 RUN python manage.py createcachetable
 RUN python manage.py collectstatic --noinput
 
+# Create superuser (add this section)
+COPY create_superuser.py .
+RUN python create_superuser.py
+
 # Expose port
 EXPOSE 10000
 
