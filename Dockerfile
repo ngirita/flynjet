@@ -34,9 +34,8 @@ RUN python manage.py migrate --noinput
 RUN python manage.py createcachetable
 RUN python manage.py collectstatic --noinput
 
-# Create superuser (add this section)
-COPY create_superuser.py .
-RUN python create_superuser.py
+# Create superuser using Django's shell command
+RUN echo "from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='admin', defaults={'email': 'flynjetair@gmail.com', 'is_superuser': True, 'is_staff': True}); user.set_password('MyAdminFlynjetCompanyBusiness1$'); user.save(); print('✅ Superuser created' if created else 'ℹ️ Superuser already exists')" | python manage.py shell
 
 # Expose port
 EXPOSE 10000
