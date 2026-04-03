@@ -338,3 +338,54 @@ body {
         padding: 25px;
     }
 }
+
+
+/* ========== MOBILE HERO FIX - BRINGS EXCLUSIVE ACCESS HIGHER ========== */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: auto;
+        padding-top: 20px;
+        padding-bottom: 40px;
+    }
+    
+    .hero-jet-img {
+        transform: translateY(5vh);
+        opacity: 0.25;
+        width: 100%;
+    }
+    
+    .hero-content {
+        margin-top: -60px;
+        padding: 0 15px;
+    }
+    
+    .hero-content span.category {
+        font-size: 0.55rem;
+        letter-spacing: 3px;
+        margin-bottom: 5px;
+    }
+    
+    .hero-content h1 {
+        font-size: clamp(2rem, 6vw, 2.8rem);
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+    }
+    
+    .hero-content p.lead {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    .hero-actions .btn {
+        width: 70%;
+        padding: 10px 20px;
+        font-size: 0.75rem;
+    }
+}
