@@ -370,3 +370,11 @@ body {
         background: rgba(255, 255, 255, 0.5);
     }
 }
+
+/* Navbar hide/show on scroll */
+#mainNavbar {
+    transition: transform 0.3s ease;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+}

@@ -153,3 +153,24 @@
     // Make restore function globally available
     window.restoreChatFromHeader = restoreChatFromHeader;
 </script>
+
+<script>
+    // Hide navbar on scroll down, show on scroll up
+    let lastScrollTop = 0;
+    const navbar = document.getElementById('mainNavbar');
+    const scrollThreshold = 50;
+    
+    window.addEventListener('scroll', function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (Math.abs(lastScrollTop - scrollTop) <= scrollThreshold) return;
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            navbar.style.transform = 'translateY(-100%)';
+            navbar.style.transition = 'transform 0.3s ease';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
+        lastScrollTop = scrollTop;
+    });
+</script>
