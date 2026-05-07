@@ -3,7 +3,12 @@ services:
     name: flynjet
     runtime: python
     runtimeVersion: 3.11.9
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate --noinput
+      python manage.py createcachetable
+      python manage.py collectstatic --noinput
+      python import_airports.py
     startCommand: gunicorn flynjet.wsgi:application --bind 0.0.0.0:10000
     envVars:
       - key: DEBUG
