@@ -35,7 +35,7 @@ python manage.py migrate --noinput\n\
 python manage.py createcachetable\n\
 python manage.py collectstatic --noinput\n\
 python import_airports.py\n\
-gunicorn flynjet.wsgi:application --bind 0.0.0.0:10000' > /start.sh && chmod +x /start.sh
+gunicorn flynjet.wsgi:application --bind 0.0.0.0:${PORT:-10000}' > /start.sh && chmod +x /start.sh
 
 # Expose port
 EXPOSE 10000
