@@ -149,7 +149,7 @@ import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://flynjet_db_user:T7tSdJ0A41atTJuZa5hyUn2J4Gwh56Jf@dpg-d776hpma2pns7392sn40-a/flynjet_db',
+        default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
     )
