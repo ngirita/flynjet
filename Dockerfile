@@ -8,6 +8,9 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
+# Hardcode database URL for build (required for Docker builds on free tier)
+ENV DATABASE_URL=postgresql://neondb_owner:npg_1UCtjIi9fZDW@ep-falling-term-aktjxj41-pooler.c-3.us-west-2.aws.neon.tech/neondb?sslmode=require
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
