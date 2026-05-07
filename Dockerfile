@@ -29,16 +29,16 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Create startup script
-RUN echo '#!/bin/bash\n\
-python manage.py migrate --noinput\n\
-python manage.py createcachetable\n\
-python manage.py collectstatic --noinput\n\
-python import_airports.py\n\
-gunicorn flynjet.wsgi:application --bind 0.0.0.0:${PORT:-10000}' > /start.sh && chmod +x /start.sh
+# Run migrations, create cache table, and collect static files
+RUN python manage.py migrate --noinput
+RUN python manage.py createcachetable
+RUN python manage.py collectstatic --noinput
+
+# Import airport data
+RUN python import_airports.py
 
 # Expose port
 EXPOSE 10000
 
-# Run startup script
-CMD ["/start.sh"]
+# Run gunicorn
+CMD ["gunicorn", "flynjet.wsgi:application", "--bind", "0.0.0.0:10000"]
