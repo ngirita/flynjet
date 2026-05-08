@@ -16,21 +16,21 @@ from .models import (
 from apps.airports.models import Airport
 
 
-class AircraftImageInline(admin.TabularInline):
-    """Inline for multiple aircraft images with preview"""
-    model = AircraftImage
-    extra = 3
-    fields = ['image', 'image_preview', 'caption', 'is_primary', 'sort_order']
-    readonly_fields = ['image_preview']
+#class AircraftImageInline(admin.TabularInline):
+ #   """Inline for multiple aircraft images with preview"""
+  #  model = AircraftImage
+   # extra = 3
+    #fields = ['image', 'image_preview', 'caption', 'is_primary', 'sort_order']
+    #readonly_fields = ['image_preview']
     
-    def image_preview(self, obj):
-        if obj.id and obj.image:
-            return format_html(
-                '<img src="{}" style="max-height: 100px; max-width: 150px; object-fit: cover; border-radius: 4px;" />',
-                obj.image.url
-            )
-        return "No image"
-    image_preview.short_description = "Preview"
+    #def image_preview(self, obj):
+     #   if obj.id and obj.image:
+      #      return format_html(
+       #         '<img src="{}" style="max-height: 100px; max-width: 150px; object-fit: cover; border-radius: 4px;" />',
+        #        obj.image.url
+         #   )
+        #return "No image"
+    #image_preview.short_description = "Preview"
 
 
 class AircraftSpecificationInline(admin.TabularInline):
