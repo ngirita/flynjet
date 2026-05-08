@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
     'two_factor',
+    'cloudinary',
+    'cloudinary_storage',
     'storages',
     'prometheus_client',
     #'defender',
@@ -456,3 +458,14 @@ LOGOUT_REDIRECT_URL = '/'
 # Debug toolbar settings (only in development)
 if DEBUG:
     INTERNAL_IPS = ['127.0.0.1', 'localhost']
+
+# At the bottom of settings.py
+import cloudinary
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
