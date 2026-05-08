@@ -424,48 +424,31 @@ class AircraftAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': (
-                'registration_number', 'manufacturer', 'category', 'model',
-                'variant', 'year_of_manufacture'
-            )
+            'fields': ('registration_number', 'manufacturer', 'category', 'model', 'variant', 'year_of_manufacture')
         }),
         ('Capacity', {
-            'fields': (
-                'passenger_capacity', 'crew_required', 'cargo_capacity_kg',
-                'baggage_capacity_kg'
-            )
+            'fields': ('passenger_capacity', 'crew_required', 'cargo_capacity_kg', 'baggage_capacity_kg')
         }),
         ('Performance', {
             'fields': ('max_range_nm', 'cruise_speed_knots')
         }),
         ('Dimensions', {
-            'fields': (
-                'length_m', 'wingspan_m', 'height_m', 'cabin_length_m',
-                'cabin_width_m', 'cabin_height_m'
-            )
+            'fields': ('length_m', 'wingspan_m', 'height_m', 'cabin_length_m', 'cabin_width_m', 'cabin_height_m')
         }),
         ('Amenities', {
-            'fields': (
-                'wifi_available', 'satellite_phone', 'entertainment_system',
-                'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'
-            ),
+            'fields': ('wifi_available', 'satellite_phone', 'entertainment_system', 'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'),
             'classes': ('wide',)
         }),
         ('Images', {
             'fields': ('thumbnail',),
-            'description': 'Main image for the aircraft. Additional images can be added below in the "Images" section.',
             'classes': ('wide',)
         }),
-        ('Status & Location', {
-            'fields': ('status', 'base_airport_display', 'current_location_display'),
-            'description': 'Enter city name or airport name to search (e.g., "New York" will show JFK, LGA, EWR)'
+        ('Location', {
+            'fields': ('base_airport', 'current_location'),
+            'help_text': 'Enter IATA code (e.g., JFK, LHR) or airport name'
         }),
-        ('Operational', {
-            'fields': ('total_flight_hours',),
-            'classes': ('collapse',)
-        }),
-        ('Metadata', {
-            'fields': ('is_active', 'is_featured', 'notes'),
+        ('Status & Metadata', {
+            'fields': ('status', 'is_active', 'is_featured', 'notes', 'total_flight_hours'),
             'classes': ('collapse',)
         }),
         ('Timestamps', {
