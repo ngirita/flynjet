@@ -56,226 +56,223 @@ class AircraftInteriorInline(admin.TabularInline):
     thumbnail_preview.short_description = "Preview"
 
 
-#class AircraftForm(forms.ModelForm):
- #   """Simplified form for aircraft with airport autocomplete"""
+class AircraftForm(forms.ModelForm):
+    """Simplified form for aircraft with airport autocomplete"""
     
     # Add display fields as CharField with datalist
-  #  base_airport_display = forms.CharField(
-#        label='Base Airport',
- #       required=False,
-  #      widget=forms.TextInput(attrs={
-   #         'class': 'vTextField',
-    #        'placeholder': 'Search by city or airport name (e.g., New York or JFK)',
-     #       'autocomplete': 'off',
-      #      'list': 'airport-list',
-       #     'style': 'width: 300px;'
-#        }),
- #       help_text="Enter city name or airport name to search (e.g., 'New York' will show JFK, LGA, EWR)"
-  #  )
+    base_airport_display = forms.CharField(
+        label='Base Airport',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'vTextField',
+            'placeholder': 'Search by city or airport name (e.g., New York or JFK)',
+            'autocomplete': 'off',
+            'list': 'airport-list',
+            'style': 'width: 300px;'
+        }),
+        help_text="Enter city name or airport name to search (e.g., 'New York' will show JFK, LGA, EWR)"
+    )
     
-   # current_location_display = forms.CharField(
-    #    label='Current Location',
-     #   required=False,
-      #  widget=forms.TextInput(attrs={
-       #     'class': 'vTextField',
-        #    'placeholder': 'Search by city or airport name (e.g., London or LHR)',
-         #   'autocomplete': 'off',
-          #  'list': 'airport-list',
-           # 'style': 'width: 300px;'
-      #  }),
-     #   help_text="Enter city name or airport name to search (e.g., 'London' will show LHR, LGW, LCY)"
-  #  )
+    current_location_display = forms.CharField(
+        label='Current Location',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'vTextField',
+            'placeholder': 'Search by city or airport name (e.g., London or LHR)',
+            'autocomplete': 'off',
+            'list': 'airport-list',
+            'style': 'width: 300px;'
+        }),
+        help_text="Enter city name or airport name to search (e.g., 'London' will show LHR, LGW, LCY)"
+    )
     
     # Add these hidden fields to store IATA codes
-    #base_airport = forms.CharField(
-    #    widget=forms.HiddenInput(),
-     #   required=False
-    #)
+    base_airport = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=False
+    )
     
-    #current_location = forms.CharField(
-     #   widget=forms.HiddenInput(),
-      #  required=False
-    #)
+    current_location = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=False
+    )
     
-#    class Meta:
- #       model = Aircraft
-  #      fields = [
-   #         'registration_number', 'manufacturer', 'category', 'model', 'variant',
- #           'year_of_manufacture', 'passenger_capacity', 'crew_required',
-  #          'cargo_capacity_kg', 'baggage_capacity_kg', 'max_range_nm',
-   #         'cruise_speed_knots', 'length_m', 'wingspan_m', 'height_m',
-    #        'cabin_height_m', 'cabin_width_m', 'cabin_length_m',
-     #       'wifi_available', 'satellite_phone', 'entertainment_system',
-      #      'galley', 'lavatory', 'shower', 'bedroom', 'conference_table',
-       #     'status', 'thumbnail', 'total_flight_hours', 'is_active', 'is_featured', 'notes'
-      #  ]
-      #  widgets = {
-       #     'registration_number': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., N123AB'}),
- #           'manufacturer': forms.Select(attrs={'class': 'vTextField'}),
- #           'category': forms.Select(attrs={'class': 'vTextField'}),
-  ##          'model': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., 737-800'}),
-   #         'variant': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., BBJ'}),
-    #        'year_of_manufacture': forms.NumberInput(attrs={'class': 'vTextField'}),
-     #       'passenger_capacity': forms.NumberInput(attrs={'class': 'vTextField', 'min': '0'}),
-      #      'crew_required': forms.NumberInput(attrs={'class': 'vTextField'}),
-       #     'cargo_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
-        #    'baggage_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
-         #   'max_range_nm': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Nautical miles'}),
-          #  'cruise_speed_knots': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Knots'}),
-           # 'length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-#            'wingspan_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
- #           'height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-  #          'cabin_height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-   #         'cabin_width_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-    #        'cabin_length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-     #       'status': forms.Select(attrs={'class': 'vTextField'}),
-      #      'thumbnail': forms.ClearableFileInput(attrs={'class': 'vTextField'}),
-       #     'total_flight_hours': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.1'}),
-        #    'notes': forms.Textarea(attrs={'class': 'vLargeTextField', 'rows': 3}),
- #       }
+    class Meta:
+        model = Aircraft
+        fields = [
+            'registration_number', 'manufacturer', 'category', 'model', 'variant',
+            'year_of_manufacture', 'passenger_capacity', 'crew_required',
+            'cargo_capacity_kg', 'baggage_capacity_kg', 'max_range_nm',
+            'cruise_speed_knots', 'length_m', 'wingspan_m', 'height_m',
+            'cabin_height_m', 'cabin_width_m', 'cabin_length_m',
+            'wifi_available', 'satellite_phone', 'entertainment_system',
+            'galley', 'lavatory', 'shower', 'bedroom', 'conference_table',
+            'status', 'thumbnail', 'total_flight_hours', 'is_active', 'is_featured', 'notes'
+        ]
+        widgets = {
+            'registration_number': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., N123AB'}),
+            'manufacturer': forms.Select(attrs={'class': 'vTextField'}),
+            'category': forms.Select(attrs={'class': 'vTextField'}),
+            'model': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., 737-800'}),
+            'variant': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., BBJ'}),
+            'year_of_manufacture': forms.NumberInput(attrs={'class': 'vTextField'}),
+            'passenger_capacity': forms.NumberInput(attrs={'class': 'vTextField', 'min': '0'}),
+            'crew_required': forms.NumberInput(attrs={'class': 'vTextField'}),
+            'cargo_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
+            'baggage_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
+            'max_range_nm': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Nautical miles'}),
+            'cruise_speed_knots': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Knots'}),
+            'length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'wingspan_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'cabin_height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'cabin_width_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'cabin_length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
+            'status': forms.Select(attrs={'class': 'vTextField'}),
+            'thumbnail': forms.ClearableFileInput(attrs={'class': 'vTextField'}),
+            'total_flight_hours': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.1'}),
+            'notes': forms.Textarea(attrs={'class': 'vLargeTextField', 'rows': 3}),
+        }
     
-  #  def __init__(self, *args, **kwargs):
-  #      super().__init__(*args, **kwargs)
-   #     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
         # Add CSS class for better styling
- #       for field in self.fields:
-  #          if not self.fields[field].widget.attrs.get('class'):
-   #             self.fields[field].widget.attrs['class'] = 'vTextField'
-    #    
-     #   # If editing existing aircraft, populate display fields from stored IATA codes
-      #  if self.instance and self.instance.pk:
-       #     if self.instance.base_airport:
-        #        try:
-         #           airport = Airport.objects.get(iata_code=self.instance.base_airport)
-          #          self.initial['base_airport_display'] = f"{airport.city} ({airport.iata_code})" if airport.city else f"{airport.name} ({airport.iata_code})"
-           #     except Airport.DoesNotExist:
-            #        self.initial['base_airport_display'] = self.instance.base_airport
-             #   self.initial['base_airport'] = self.instance.base_airport
+        for field in self.fields:
+            if not self.fields[field].widget.attrs.get('class'):
+                self.fields[field].widget.attrs['class'] = 'vTextField'
+        
+        # If editing existing aircraft, populate display fields from stored IATA codes
+        if self.instance and self.instance.pk:
+            if self.instance.base_airport:
+                try:
+                    airport = Airport.objects.get(iata_code=self.instance.base_airport)
+                    self.initial['base_airport_display'] = f"{airport.city} ({airport.iata_code})" if airport.city else f"{airport.name} ({airport.iata_code})"
+                except Airport.DoesNotExist:
+                    self.initial['base_airport_display'] = self.instance.base_airport
+                self.initial['base_airport'] = self.instance.base_airport
             
-            #if self.instance.current_location:
-             #   try:
-              #      airport = Airport.objects.get(iata_code=self.instance.current_location)
-               #     self.initial['current_location_display'] = f"{airport.city} ({airport.iata_code})" if airport.city else f"{airport.name} ({airport.iata_code})"
-                #except Airport.DoesNotExist:
-                 #   self.initial['current_location_display'] = self.instance.current_location
-#                self.initial['current_location'] = self.instance.current_location
- #       
+            if self.instance.current_location:
+                try:
+                    airport = Airport.objects.get(iata_code=self.instance.current_location)
+                    self.initial['current_location_display'] = f"{airport.city} ({airport.iata_code})" if airport.city else f"{airport.name} ({airport.iata_code})"
+                except Airport.DoesNotExist:
+                    self.initial['current_location_display'] = self.instance.current_location
+                self.initial['current_location'] = self.instance.current_location
+        
         # Hide aircraft field if pre-selected
-  #      if 'initial' in kwargs and 'aircraft' in kwargs['initial']:
-   #         self.fields['aircraft'].widget = forms.HiddenInput()
+        if 'initial' in kwargs and 'aircraft' in kwargs['initial']:
+            self.fields['aircraft'].widget = forms.HiddenInput()
         
         # Dynamic field behavior based on category - FIXED
-    #    category = None
-     #   if self.instance and self.instance.pk:
-      #      try:
-       #         category = self.instance.category
-        #    except AircraftCategory.DoesNotExist:
-         #       category = None
+        category = None
+        if self.instance and self.instance.pk:
+            try:
+                category = self.instance.category
+            except AircraftCategory.DoesNotExist:
+                category = None
         
-#        category_id = self.data.get('category') if self.data else None
- #       
-  #      if category_id:
-   #         try:
-    #            cat = AircraftCategory.objects.get(id=category_id)
-     #       except AircraftCategory.DoesNotExist:
-      #          cat = None
-#        else:
- #           cat = category
-  #      
-    #    if cat and cat.category_type == 'cargo':
-     #       # For cargo aircraft
-      #      self.fields['passenger_capacity'].required = False
-       #     self.fields['passenger_capacity'].widget.attrs['placeholder'] = '0 for cargo only'
-        #    self.fields['passenger_capacity'].help_text = 'Set to 0 for cargo aircraft (can carry passengers if configured)'
-         #   self.fields['passenger_capacity'].initial = 0
+        category_id = self.data.get('category') if self.data else None
+        
+        if category_id:
+            try:
+                cat = AircraftCategory.objects.get(id=category_id)
+            except AircraftCategory.DoesNotExist:
+                cat = None
+        else:
+            cat = category
+        
+        if cat and cat.category_type == 'cargo':
+            # For cargo aircraft
+            self.fields['passenger_capacity'].required = False
+            self.fields['passenger_capacity'].widget.attrs['placeholder'] = '0 for cargo only'
+            self.fields['passenger_capacity'].help_text = 'Set to 0 for cargo aircraft (can carry passengers if configured)'
+            self.fields['passenger_capacity'].initial = 0
             
             # Cargo capacity is helpful but not required
-         #   self.fields['cargo_capacity_kg'].required = False
-        #    self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo capacity in kg (optional)'
+            self.fields['cargo_capacity_kg'].required = False
+            self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo capacity in kg (optional)'
             
-       # else:
+        else:
             # For passenger aircraft
-      #      self.fields['passenger_capacity'].required = True
-     #       self.fields['passenger_capacity'].widget.attrs['min'] = '1'
-    #        self.fields['passenger_capacity'].help_text = 'Maximum number of passengers'
-   #         self.fields['cargo_capacity_kg'].required = False
-  #          self.fields['cargo_capacity_kg'].help_text = 'For cargo aircraft only'
+            self.fields['passenger_capacity'].required = True
+            self.fields['passenger_capacity'].widget.attrs['min'] = '1'
+            self.fields['passenger_capacity'].help_text = 'Maximum number of passengers'
+            self.fields['cargo_capacity_kg'].required = False
+            self.fields['cargo_capacity_kg'].help_text = 'For cargo aircraft only'
     
-    #def clean(self):
-     #   cleaned_data = super().clean()
-    #    category = cleaned_data.get('category')
-   #     passenger_capacity = cleaned_data.get('passenger_capacity')
-  #      cargo_capacity_kg = cleaned_data.get('cargo_capacity_kg')
+    def clean(self):
+        cleaned_data = super().clean()
+        category = cleaned_data.get('category')
+        passenger_capacity = cleaned_data.get('passenger_capacity')
+        cargo_capacity_kg = cleaned_data.get('cargo_capacity_kg')
         
- #       if category:
-#            if category.category_type == 'cargo':
+        if category:
+            if category.category_type == 'cargo':
                 # For cargo aircraft
                 # Allow passenger_capacity to be 0 or positive
-              #  if passenger_capacity is None:
-             #       passenger_capacity = 0
-            #        cleaned_data['passenger_capacity'] = 0
+                if passenger_capacity is None:
+                    passenger_capacity = 0
+                    cleaned_data['passenger_capacity'] = 0
                 
                 # Cargo capacity is recommended but not required
-           #     if not cargo_capacity_kg:
+                if not cargo_capacity_kg:
                     # Add a warning instead of error (optional)
-          #          pass
+                    pass
                     
-         #   else:
-        #        # For passenger aircraft (private_jet or helicopter)
-       #         if not passenger_capacity or passenger_capacity <= 0:
-      #              self.add_error('passenger_capacity', 
-     #                   'Passenger capacity must be at least 1 for passenger aircraft.')
+            else:
+                # For passenger aircraft (private_jet or helicopter)
+                if not passenger_capacity or passenger_capacity <= 0:
+                    self.add_error('passenger_capacity', 
+                        'Passenger capacity must be at least 1 for passenger aircraft.')
         
-    #    return cleaned_data
+        return cleaned_data
     
-   # def clean_base_airport(self):
-  #      """Extract IATA code from display field"""
- #       value = self.cleaned_data.get('base_airport')
-       # if not value:
-     #       return ''
+    def clean_base_airport(self):
+        """Extract IATA code from display field"""
+        value = self.cleaned_data.get('base_airport')
+        if not value:
+            return ''
         
-    #    # If it's already a 3-letter code
-   #     if len(value) == 3 and value.isalpha():
-  #          return value.upper()
+        # If it's already a 3-letter code
+        if len(value) == 3 and value.isalpha():
+            return value.upper()
         
         # Try to find by name or city
- #       try:
-      #      airport = Airport.objects.filter(
-     #           django_models.Q(name__icontains=value) |
-       #         django_models.Q(city__icontains=value) |
-    #            django_models.Q(iata_code__iexact=value)
-   #             django_models.Q(iata_code__iexact=value)
-  #              django_models.Q(iata_code__iexact=value)
- #               django_models.Q(iata_code__iexact=value)
-      #      ).first()
-     #       if airport:
-    #            return airport.iata_code
-   #     except:
-  #          pass
- #       
-#        return value
+        try:
+            airport = Airport.objects.filter(
+                django_models.Q(name__icontains=value) |
+                django_models.Q(city__icontains=value) |
+                django_models.Q(iata_code__iexact=value)
+            ).first()
+            if airport:
+                return airport.iata_code
+        except:
+            pass
+        
+        return value
     
-   # def clean_current_location(self):
-  #      """Extract IATA code from display field"""
- #       value = self.cleaned_data.get('current_location')
-      #  if not value:
-     #       return ''
-    #    
-   #     if len(value) == 3 and value.isalpha():
-  #          return value.upper()
- #       
-#        try:
-          #  airport = Airport.objects.filter(
-         #       django_models.Q(name__icontains=value) |
-        #        django_models.Q(city__icontains=value) |
-       #         django_models.Q(iata_code__iexact=value)
-      #      ).first()
-     #       if airport:
-    #            return airport.iata_code
-   #     except:
-  #          pass
- #       
-#        return value
+    def clean_current_location(self):
+        """Extract IATA code from display field"""
+        value = self.cleaned_data.get('current_location')
+        if not value:
+            return ''
+        
+        if len(value) == 3 and value.isalpha():
+            return value.upper()
+        
+        try:
+            airport = Airport.objects.filter(
+                django_models.Q(name__icontains=value) |
+                django_models.Q(city__icontains=value) |
+                django_models.Q(iata_code__iexact=value)
+            ).first()
+            if airport:
+                return airport.iata_code
+        except:
+            pass
+        
+        return value
 
 @admin.register(AircraftCategory)
 class AircraftCategoryAdmin(admin.ModelAdmin):
@@ -321,98 +318,11 @@ class AircraftManufacturerAdmin(admin.ModelAdmin):
     aircraft_count.short_description = "Aircraft"
 
 
-# fleet/admin.py - Add this class before AircraftAdmin
-
-class DynamicAircraftForm(forms.ModelForm):
-    """Dynamic form that shows/hides fields based on aircraft category"""
-    
-    class Meta:
-        model = Aircraft
-        fields = '__all__'
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Get the current category - SAFELY handle new objects
-        category = None
-        
-        # For existing objects, try to get the category
-        if self.instance and self.instance.pk:
-            try:
-                category = self.instance.category
-            except (Aircraft.category.RelatedObjectDoesNotExist, AttributeError):
-                category = None
-        
-        # For new objects, check POST data
-        elif self.data.get('category'):
-            try:
-                category = AircraftCategory.objects.get(id=self.data.get('category'))
-            except (AircraftCategory.DoesNotExist, ValueError, TypeError):
-                category = None
-        
-        # Check initial data
-        elif self.initial.get('category'):
-            try:
-                if isinstance(self.initial.get('category'), AircraftCategory):
-                    category = self.initial.get('category')
-                else:
-                    category = AircraftCategory.objects.get(id=self.initial.get('category'))
-            except (AircraftCategory.DoesNotExist, ValueError, TypeError):
-                category = None
-        
-        # Define which fields to show for each category
-        common_fields = [
-            'registration_number', 'manufacturer', 'category', 'model', 'variant',
-            'year_of_manufacture', 'status', 'base_airport', 'current_location',
-            'thumbnail', 'is_active', 'is_featured', 'notes', 'total_flight_hours'
-        ]
-        
-        # Private Jet / Helicopter fields
-        passenger_fields = [
-            'passenger_capacity', 'crew_required', 'baggage_capacity_kg',
-            'max_range_nm', 'cruise_speed_knots', 'length_m', 'wingspan_m',
-            'height_m', 'cabin_height_m', 'cabin_width_m', 'cabin_length_m',
-            'wifi_available', 'satellite_phone', 'entertainment_system',
-            'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'
-        ]
-        
-        # Cargo specific fields
-        cargo_fields = [
-            'passenger_capacity', 'cargo_capacity_kg', 'baggage_capacity_kg',
-            'max_range_nm', 'cruise_speed_knots', 'length_m', 'wingspan_m', 'height_m'
-        ]
-        
-        # Hide all fields first
-        for field in self.fields:
-            self.fields[field].widget = forms.HiddenInput()
-            self.fields[field].required = False
-        
-        # Show common fields for all
-        for field in common_fields:
-            if field in self.fields:
-                self.fields[field].widget = self.fields[field].__class__()
-                self.fields[field].required = field in ['registration_number', 'manufacturer', 'category', 'model', 'year_of_manufacture']
-        
-        # Show category-specific fields
-        if category:
-            cat_type = getattr(category, 'category_type', None)
-            if cat_type == 'cargo':
-                for field in cargo_fields:
-                    if field in self.fields:
-                        self.fields[field].widget = self.fields[field].__class__()
-                # Help text for cargo
-                self.fields['passenger_capacity'].help_text = "Set to 0 for cargo-only aircraft"
-                self.fields['passenger_capacity'].initial = 0
-                self.fields['cargo_capacity_kg'].help_text = "Maximum cargo capacity in kg"
-            elif cat_type in ['helicopter', 'private_jet']:
-                for field in passenger_fields:
-                    if field in self.fields:
-                        self.fields[field].widget = self.fields[field].__class__()
-                        
 @admin.register(Aircraft)
 class AircraftAdmin(admin.ModelAdmin):
     """Simplified Aircraft Admin with multiple images support"""
-    form = DynamicAircraftForm  # Add this line
+    
+    form = AircraftForm
     
     list_display = [
         'registration_number', 'manufacturer', 'model', 'category',
@@ -439,31 +349,48 @@ class AircraftAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('registration_number', 'manufacturer', 'category', 'model', 'variant', 'year_of_manufacture')
+            'fields': (
+                'registration_number', 'manufacturer', 'category', 'model',
+                'variant', 'year_of_manufacture'
+            )
         }),
         ('Capacity', {
-            'fields': ('passenger_capacity', 'crew_required', 'cargo_capacity_kg', 'baggage_capacity_kg')
+            'fields': (
+                'passenger_capacity', 'crew_required', 'cargo_capacity_kg',
+                'baggage_capacity_kg'
+            )
         }),
         ('Performance', {
             'fields': ('max_range_nm', 'cruise_speed_knots')
         }),
         ('Dimensions', {
-            'fields': ('length_m', 'wingspan_m', 'height_m', 'cabin_length_m', 'cabin_width_m', 'cabin_height_m')
+            'fields': (
+                'length_m', 'wingspan_m', 'height_m', 'cabin_length_m',
+                'cabin_width_m', 'cabin_height_m'
+            )
         }),
         ('Amenities', {
-            'fields': ('wifi_available', 'satellite_phone', 'entertainment_system', 'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'),
+            'fields': (
+                'wifi_available', 'satellite_phone', 'entertainment_system',
+                'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'
+            ),
             'classes': ('wide',)
         }),
         ('Images', {
             'fields': ('thumbnail',),
+            'description': 'Main image for the aircraft. Additional images can be added below in the "Images" section.',
             'classes': ('wide',)
         }),
-        ('Location', {
-            'fields': ('base_airport', 'current_location'),
-            'help_text': 'Enter IATA code (e.g., JFK, LHR) or airport name'
+        ('Status & Location', {
+            'fields': ('status', 'base_airport_display', 'current_location_display'),
+            'description': 'Enter city name or airport name to search (e.g., "New York" will show JFK, LGA, EWR)'
         }),
-        ('Status & Metadata', {
-            'fields': ('status', 'is_active', 'is_featured', 'notes', 'total_flight_hours'),
+        ('Operational', {
+            'fields': ('total_flight_hours',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('is_active', 'is_featured', 'notes'),
             'classes': ('collapse',)
         }),
         ('Timestamps', {
