@@ -17,3 +17,9 @@ services:
         value: false
       - key: SITE_URL
         value: https://flynjet.com
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
