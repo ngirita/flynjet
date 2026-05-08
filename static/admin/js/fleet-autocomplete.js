@@ -1,5 +1,3 @@
-// static/admin/js/fleet-autocomplete.js
-
 (function($) {
     'use strict';
     
@@ -70,6 +68,41 @@
                 console.log('Selected IATA:', iataCode);
             }
         });
+
+        // ── NEW: Hide/show fields based on aircraft category ──────────
+        function toggleCategoryFields(categorySelect) {
+            var selectedText = categorySelect.find('option:selected').text().toLowerCase();
+            var isCargo = selectedText.indexOf('cargo') !== -1;
+
+            if (isCargo) {
+                // Hide passenger capacity row, show cargo capacity row
+                $('#id_passenger_capacity').closest('.form-row').hide();
+                $('#id_cargo_capacity_kg').closest('.form-row').show();
+                $('#id_cargo_capacity_kg').prop('required', true);
+                // Set passenger capacity to 0 silently
+                $('#id_passenger_capacity').val('0');
+            } else {
+                // Show passenger capacity, hide cargo capacity
+                $('#id_passenger_capacity').closest('.form-row').show();
+                $('#id_cargo_capacity_kg').closest('.form-row').hide();
+                $('#id_cargo_capacity_kg').prop('required', false);
+                $('#id_cargo_capacity_kg').val('');
+            }
+        }
+
+        var $categorySelect = $('#id_category');
+
+        // Run on page load (handles editing existing aircraft)
+        if ($categorySelect.length) {
+            toggleCategoryFields($categorySelect);
+        }
+
+        // Run on change (handles selecting category when adding new aircraft)
+        $categorySelect.on('change', function() {
+            toggleCategoryFields($(this));
+        });
+        // ── END NEW ───────────────────────────────────────────────────
+
     });
     
 })(jQuery);
