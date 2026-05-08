@@ -43,5 +43,5 @@ RUN python import_airports.py
 # Expose port
 EXPOSE 10000
 
-# Run gunicorn
-CMD ["gunicorn", "flynjet.wsgi:application", "--bind", "0.0.0.0:10000"]
+# Run gunicorn with optimized settings for 512MB RAM (4 concurrent users)
+CMD ["gunicorn", "flynjet.wsgi:application", "--bind", "0.0.0.0:10000", "--workers=1", "--threads=4", "--timeout=30", "--max-requests=200"]
