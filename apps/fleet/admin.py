@@ -737,9 +737,35 @@ class AircraftStatusHistoryAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
+class EnquiryAdminForm(forms.ModelForm):
+    class Meta:
+        model = Enquiry
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+
+        is_cargo = False
+        if instance:
+            is_cargo = instance.aircraft_category == 'cargo' or bool(instance.cargo_weight_kg)
+
+        if is_cargo:
+            # Hide passenger fields for cargo
+            for field in ['passenger_count', 'luggage_count', 'luggage_weight_kg']:
+                self.fields[field].widget = forms.HiddenInput()
+                self.fields[field].required = False
+            self.fields['cargo_weight_kg'].required = True
+            self.fields['cargo_weight_kg'].label = 'Cargo Weight (kg) *'
+        else:
+            # Hide cargo field for passenger
+            self.fields['cargo_weight_kg'].widget = forms.HiddenInput()
+            self.fields['cargo_weight_kg'].required = False
+            self.fields['passenger_count'].required = True
 
 @admin.register(Enquiry)
 class EnquiryAdmin(admin.ModelAdmin):
+    form = EnquiryAdminForm 
     list_display = ['enquiry_number', 'get_full_name', 'email', 'aircraft', 'passenger_count', 'status', 'created_at']
     list_filter = ['status', 'created_at', 'aircraft_category']
     search_fields = ['enquiry_number', 'first_name', 'last_name', 'email', 'phone']
@@ -756,9 +782,18 @@ class EnquiryAdmin(admin.ModelAdmin):
             'fields': ('departure_airport', 'arrival_airport', 'preferred_departure_date', 
                       'preferred_return_date', 'flexible_dates')
         }),
-        ('Passenger & Luggage', {
-            'fields': ('passenger_count', 'luggage_count', 'luggage_weight_kg', 'special_luggage')
+
+        ('Passenger Details', {
+            'fields': ('passenger_count', 'luggage_count', 'luggage_weight_kg', 'special_luggage'),
+            'description': 'For passenger/private jet enquiries only.',
+            'classes': ('collapse',),
         }),
+        ('Cargo Details', {
+            'fields': ('cargo_weight_kg', 'special_luggage'),
+            'description': 'For cargo enquiries only.',
+            'classes': ('collapse',),
+        }),
+
         ('Amenities & Requirements', {
             'fields': ('amenities', 'catering_requirements', 'special_requests')
         }),
