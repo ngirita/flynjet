@@ -136,13 +136,15 @@ class Aircraft(models.Model):
     cruise_speed_knots = models.IntegerField(help_text="Cruising speed in knots")
     
     # Dimensions (Simplified)
-    length_m = models.DecimalField(max_digits=5, decimal_places=2, help_text="Aircraft length in meters")
-    wingspan_m = models.DecimalField(max_digits=5, decimal_places=2, help_text="Wingspan in meters")
-    height_m = models.DecimalField(max_digits=5, decimal_places=2, help_text="Aircraft height in meters")
-    cabin_height_m = models.DecimalField(max_digits=4, decimal_places=2, help_text="Cabin height in meters")
-    cabin_width_m = models.DecimalField(max_digits=4, decimal_places=2, help_text="Cabin width in meters")
-    cabin_length_m = models.DecimalField(max_digits=5, decimal_places=2, help_text="Cabin length in meters")
     
+    # AFTER:
+    length_m = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Aircraft length in meters")
+    wingspan_m = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Wingspan in meters")
+    height_m = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Aircraft height in meters")
+    cabin_height_m = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, help_text="Cabin height in meters")
+    cabin_width_m = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, help_text="Cabin width in meters")
+    cabin_length_m = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Cabin length in meters")
+
     # Amenities (Checkboxes - Quick selection)
     wifi_available = models.BooleanField(default=True)
     satellite_phone = models.BooleanField(default=False)
