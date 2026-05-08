@@ -789,7 +789,7 @@ class EnquiryAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
         ('Cargo Details', {
-            'fields': ('cargo_weight_kg', 'special_luggage'),
+            'fields': ('cargo_weight_kg',),
             'description': 'For cargo enquiries only.',
             'classes': ('collapse',),
         }),
