@@ -318,11 +318,86 @@ class AircraftManufacturerAdmin(admin.ModelAdmin):
     aircraft_count.short_description = "Aircraft"
 
 
+# fleet/admin.py - Add this class before AircraftAdmin
+
+class DynamicAircraftForm(forms.ModelForm):
+    """Dynamic form that shows/hides fields based on aircraft category"""
+    
+    class Meta:
+        model = Aircraft
+        fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Get the current category
+        category = None
+        if self.instance and self.instance.pk:
+            category = self.instance.category
+        elif self.data.get('category'):
+            try:
+                category = AircraftCategory.objects.get(id=self.data.get('category'))
+            except:
+                pass
+        
+        # Define which fields to show for each category
+        common_fields = [
+            'registration_number', 'manufacturer', 'category', 'model', 'variant',
+            'year_of_manufacture', 'status', 'base_airport', 'current_location',
+            'thumbnail', 'is_active', 'is_featured', 'notes', 'total_flight_hours'
+        ]
+        
+        # Private Jet / Helicopter fields
+        passenger_fields = [
+            'passenger_capacity', 'crew_required', 'baggage_capacity_kg',
+            'max_range_nm', 'cruise_speed_knots', 'length_m', 'wingspan_m',
+            'height_m', 'cabin_height_m', 'cabin_width_m', 'cabin_length_m',
+            'wifi_available', 'satellite_phone', 'entertainment_system',
+            'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'
+        ]
+        
+        # Cargo specific fields
+        cargo_fields = [
+            'passenger_capacity', 'cargo_capacity_kg', 'baggage_capacity_kg',
+            'max_range_nm', 'cruise_speed_knots', 'length_m', 'wingspan_m', 'height_m'
+        ]
+        
+        # Hide all fields first
+        for field in self.fields:
+            self.fields[field].widget = forms.HiddenInput()
+            self.fields[field].required = False
+        
+        # Show common fields for all
+        for field in common_fields:
+            if field in self.fields:
+                self.fields[field].widget = self.fields[field].__class__()
+                self.fields[field].required = field in ['registration_number', 'manufacturer', 'category', 'model', 'year_of_manufacture']
+        
+        # Show category-specific fields
+        if category:
+            if category.category_type == 'cargo':
+                for field in cargo_fields:
+                    if field in self.fields:
+                        self.fields[field].widget = self.fields[field].__class__()
+                # Help text for cargo
+                self.fields['passenger_capacity'].help_text = "Set to 0 for cargo-only aircraft"
+                self.fields['passenger_capacity'].initial = 0
+                self.fields['cargo_capacity_kg'].help_text = "Maximum cargo capacity in kg"
+                
+            elif category.category_type == 'helicopter':
+                for field in passenger_fields:
+                    if field in self.fields:
+                        self.fields[field].widget = self.fields[field].__class__()
+                        
+            else:  # private_jet
+                for field in passenger_fields:
+                    if field in self.fields:
+                        self.fields[field].widget = self.fields[field].__class__()
+
 @admin.register(Aircraft)
 class AircraftAdmin(admin.ModelAdmin):
     """Simplified Aircraft Admin with multiple images support"""
-    
-    form = AircraftForm
+    form = DynamicAircraftForm  # Add this line
     
     list_display = [
         'registration_number', 'manufacturer', 'model', 'category',
