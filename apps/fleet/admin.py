@@ -333,15 +333,32 @@ class DynamicAircraftForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Get the current category
+        # Get the current category - SAFELY handle new objects
         category = None
+        
+        # For existing objects, try to get the category
         if self.instance and self.instance.pk:
-            category = self.instance.category
+            try:
+                category = self.instance.category
+            except (Aircraft.category.RelatedObjectDoesNotExist, AttributeError):
+                category = None
+        
+        # For new objects, check POST data
         elif self.data.get('category'):
             try:
                 category = AircraftCategory.objects.get(id=self.data.get('category'))
-            except:
-                pass
+            except (AircraftCategory.DoesNotExist, ValueError, TypeError):
+                category = None
+        
+        # Check initial data
+        elif self.initial.get('category'):
+            try:
+                if isinstance(self.initial.get('category'), AircraftCategory):
+                    category = self.initial.get('category')
+                else:
+                    category = AircraftCategory.objects.get(id=self.initial.get('category'))
+            except (AircraftCategory.DoesNotExist, ValueError, TypeError):
+                category = None
         
         # Define which fields to show for each category
         common_fields = [
@@ -378,7 +395,8 @@ class DynamicAircraftForm(forms.ModelForm):
         
         # Show category-specific fields
         if category:
-            if category.category_type == 'cargo':
+            cat_type = getattr(category, 'category_type', None)
+            if cat_type == 'cargo':
                 for field in cargo_fields:
                     if field in self.fields:
                         self.fields[field].widget = self.fields[field].__class__()
@@ -386,17 +404,11 @@ class DynamicAircraftForm(forms.ModelForm):
                 self.fields['passenger_capacity'].help_text = "Set to 0 for cargo-only aircraft"
                 self.fields['passenger_capacity'].initial = 0
                 self.fields['cargo_capacity_kg'].help_text = "Maximum cargo capacity in kg"
-                
-            elif category.category_type == 'helicopter':
+            elif cat_type in ['helicopter', 'private_jet']:
                 for field in passenger_fields:
                     if field in self.fields:
                         self.fields[field].widget = self.fields[field].__class__()
                         
-            else:  # private_jet
-                for field in passenger_fields:
-                    if field in self.fields:
-                        self.fields[field].widget = self.fields[field].__class__()
-
 @admin.register(Aircraft)
 class AircraftAdmin(admin.ModelAdmin):
     """Simplified Aircraft Admin with multiple images support"""
