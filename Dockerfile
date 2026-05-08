@@ -29,6 +29,10 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
+# Use build argument for database URL (passed from Render)
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
 # Run migrations, create cache table, and collect static files
 RUN python manage.py migrate --noinput
 RUN python manage.py createcachetable
@@ -36,6 +40,9 @@ RUN python manage.py collectstatic --noinput
 
 # Import airport data
 RUN python import_airports.py
+
+# Unset the environment variable for runtime (security)
+RUN unset DATABASE_URL
 
 # Expose port
 EXPOSE 10000
