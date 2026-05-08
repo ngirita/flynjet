@@ -100,38 +100,28 @@ class AircraftForm(forms.ModelForm):
     class Meta:
         model = Aircraft
         fields = [
-            'registration_number', 'manufacturer', 'category', 'model', 'variant',
-            'year_of_manufacture', 'passenger_capacity', 'crew_required',
-            'cargo_capacity_kg', 'baggage_capacity_kg', 'max_range_nm',
-            'cruise_speed_knots', 'length_m', 'wingspan_m', 'height_m',
-            'cabin_height_m', 'cabin_width_m', 'cabin_length_m',
+            'registration_number', 'manufacturer', 'category', 'model',
+            'year_of_manufacture',
+            'passenger_capacity', 'cargo_capacity_kg',
+            'max_range_nm', 'cruise_speed_knots',
             'wifi_available', 'satellite_phone', 'entertainment_system',
             'galley', 'lavatory', 'shower', 'bedroom', 'conference_table',
-            'status', 'thumbnail', 'total_flight_hours', 'is_active', 'is_featured', 'notes'
+            'status', 'thumbnail', 'is_active', 'is_featured', 'notes'
         ]
         widgets = {
             'registration_number': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., N123AB'}),
             'manufacturer': forms.Select(attrs={'class': 'vTextField'}),
             'category': forms.Select(attrs={'class': 'vTextField'}),
-            'model': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., 737-800'}),
-            'variant': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., BBJ'}),
+            'model': forms.TextInput(attrs={'class': 'vTextField', 'placeholder': 'e.g., Falcon 7X'}),
             'year_of_manufacture': forms.NumberInput(attrs={'class': 'vTextField'}),
             'passenger_capacity': forms.NumberInput(attrs={'class': 'vTextField', 'min': '0'}),
-            'crew_required': forms.NumberInput(attrs={'class': 'vTextField'}),
             'cargo_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
-            'baggage_capacity_kg': forms.NumberInput(attrs={'class': 'vTextField'}),
             'max_range_nm': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Nautical miles'}),
             'cruise_speed_knots': forms.NumberInput(attrs={'class': 'vTextField', 'placeholder': 'Knots'}),
-            'length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-            'wingspan_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-            'height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-            'cabin_height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-            'cabin_width_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
-            'cabin_length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01'}),
             'status': forms.Select(attrs={'class': 'vTextField'}),
             'thumbnail': forms.ClearableFileInput(attrs={'class': 'vTextField'}),
-            'total_flight_hours': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.1'}),
-            'notes': forms.Textarea(attrs={'class': 'vLargeTextField', 'rows': 3}),
+            'notes': forms.Textarea(attrs={'class': 'vLargeTextField', 'rows': 3,
+                'placeholder': 'e.g. The Falcon 7X transforms each journey into an effortless experience.'}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -183,24 +173,28 @@ class AircraftForm(forms.ModelForm):
             cat = category
         
         if cat and cat.category_type == 'cargo':
-            # For cargo aircraft
+            # Already there - keep these:
             self.fields['passenger_capacity'].required = False
             self.fields['passenger_capacity'].widget.attrs['placeholder'] = '0 for cargo only'
-            self.fields['passenger_capacity'].help_text = 'Set to 0 for cargo aircraft (can carry passengers if configured)'
             self.fields['passenger_capacity'].initial = 0
             
-            # Cargo capacity is helpful but not required
-            self.fields['cargo_capacity_kg'].required = False
-            self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo capacity in kg (optional)'
+            # ADD THESE - hide passenger field for cargo:
+            self.fields['passenger_capacity'].widget = forms.HiddenInput()
+            self.fields['passenger_capacity'].initial = 0
             
+            # ADD THESE - make cargo capacity prominent:
+            self.fields['cargo_capacity_kg'].required = True
+            self.fields['cargo_capacity_kg'].label = 'Cargo Capacity (kg)'
+            self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo weight this aircraft can carry'
+
         else:
-            # For passenger aircraft
+            # Already there - keep these:
             self.fields['passenger_capacity'].required = True
-            self.fields['passenger_capacity'].widget.attrs['min'] = '1'
-            self.fields['passenger_capacity'].help_text = 'Maximum number of passengers'
+            
+            # ADD THIS - hide cargo field for passenger/helicopter:
+            self.fields['cargo_capacity_kg'].widget = forms.HiddenInput()
             self.fields['cargo_capacity_kg'].required = False
-            self.fields['cargo_capacity_kg'].help_text = 'For cargo aircraft only'
-    
+                
     def clean(self):
         cleaned_data = super().clean()
         category = cleaned_data.get('category')
@@ -348,54 +342,42 @@ class AircraftAdmin(admin.ModelAdmin):
     passenger_capacity_display.short_description = "Capacity"
 
     fieldsets = (
-        ('Basic Information', {
+        ('Aircraft Identity', {
             'fields': (
-                'registration_number', 'manufacturer', 'category', 'model',
-                'variant', 'year_of_manufacture'
-            )
+                'manufacturer', 'category', 'model',
+                'registration_number', 'year_of_manufacture',
+            ),
         }),
-        ('Capacity', {
+        ('Key Specs', {
             'fields': (
-                'passenger_capacity', 'crew_required', 'cargo_capacity_kg',
-                'baggage_capacity_kg'
-            )
-        }),
-        ('Performance', {
-            'fields': ('max_range_nm', 'cruise_speed_knots')
-        }),
-        ('Dimensions', {
-            'fields': (
-                'length_m', 'wingspan_m', 'height_m', 'cabin_length_m',
-                'cabin_width_m', 'cabin_height_m'
-            )
+                'passenger_capacity',
+                'cargo_capacity_kg',
+                'max_range_nm',
+                'cruise_speed_knots',
+            ),
+            'description': 'Private jet → seats + range + speed. Cargo → cargo capacity + range. Helicopter → seats + range.',
         }),
         ('Amenities', {
             'fields': (
-                'wifi_available', 'satellite_phone', 'entertainment_system',
-                'galley', 'lavatory', 'shower', 'bedroom', 'conference_table'
+                ('wifi_available', 'satellite_phone', 'entertainment_system'),
+                ('galley', 'lavatory', 'shower'),
+                ('bedroom', 'conference_table'),
             ),
-            'classes': ('wide',)
         }),
-        ('Images', {
+        ('Main Image', {
             'fields': ('thumbnail',),
-            'description': 'Main image for the aircraft. Additional images can be added below in the "Images" section.',
-            'classes': ('wide',)
+            'description': 'Upload the hero photo. Add more images in the Images section below.',
         }),
-        ('Status & Location', {
-            'fields': ('status', 'base_airport_display', 'current_location_display'),
-            'description': 'Enter city name or airport name to search (e.g., "New York" will show JFK, LGA, EWR)'
+        ('Location & Status', {
+            'fields': (
+                'base_airport_display', 'base_airport',
+                'current_location_display', 'current_location',
+                'status',
+            ),
         }),
-        ('Operational', {
-            'fields': ('total_flight_hours',),
-            'classes': ('collapse',)
-        }),
-        ('Metadata', {
+        ('Settings', {
             'fields': ('is_active', 'is_featured', 'notes'),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
         }),
     )
     
