@@ -395,7 +395,19 @@ class LoginView(FormView):
     
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))                   
-     
+
+class CancelLoginView(View):
+    def get(self, request):
+        # Clear all OTP/2FA session state
+        keys_to_clear = [
+            'otp_user_id', 'otp_code', 'otp_expires',
+            'otp_method', '2fa_user_id', 'pre_2fa_user_id'
+        ]
+        for key in keys_to_clear:
+            request.session.pop(key, None)
+        
+        return redirect('accounts:login')
+
 class ResendOTPView(View):
     """View to resend OTP code during login."""
     

@@ -8,6 +8,7 @@ urlpatterns = [
     # Authentication
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', views.LoginView.as_view(), name='login'),
+    path('login/cancel/', views.CancelLoginView.as_view(), name='cancel_login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('admin-dashboard/', lambda request: redirect('admin:index'), name='admin_dashboard'),
     
