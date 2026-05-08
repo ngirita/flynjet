@@ -173,26 +173,22 @@ class AircraftForm(forms.ModelForm):
             cat = category
         
         if cat and cat.category_type == 'cargo':
-            # Already there - keep these:
             self.fields['passenger_capacity'].required = False
-            self.fields['passenger_capacity'].widget.attrs['placeholder'] = '0 for cargo only'
-            self.fields['passenger_capacity'].initial = 0
-            
-            # ADD THESE - hide passenger field for cargo:
             self.fields['passenger_capacity'].widget = forms.HiddenInput()
             self.fields['passenger_capacity'].initial = 0
-            
-            # ADD THESE - make cargo capacity prominent:
             self.fields['cargo_capacity_kg'].required = True
             self.fields['cargo_capacity_kg'].label = 'Cargo Capacity (kg)'
             self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo weight this aircraft can carry'
 
-        else:
-            # Already there - keep these:
+        elif cat and cat.category_type in ('private_jet', 'helicopter'):
+            # Only hide cargo for known passenger types
             self.fields['passenger_capacity'].required = True
-            
-            # ADD THIS - hide cargo field for passenger/helicopter:
             self.fields['cargo_capacity_kg'].widget = forms.HiddenInput()
+            self.fields['cargo_capacity_kg'].required = False
+
+        else:
+            # No category selected yet — show both fields so nothing is lost
+            self.fields['passenger_capacity'].required = False
             self.fields['cargo_capacity_kg'].required = False
                 
     def clean(self):
