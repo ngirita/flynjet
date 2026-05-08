@@ -7,11 +7,13 @@ services:
     dockerfilePath: ./Dockerfile
     buildArgs:
       - key: DATABASE_URL
-        value: postgresql://flynjet_db_user:T7tSdJ0A41atTJuZa5hyUn2J4Gwh56Jf@dpg-d776hpma2pns7392sn40-a:5432/flynjet_db?sslmode=require
+        fromDatabase:
+          name: flynjet-db
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: flynjet-db
       - key: DEBUG
         value: false
       - key: SITE_URL
         value: https://flynjet.com
-      - key: DATABASE_URL
-        value: postgresql://flynjet_db_user:T7tSdJ0A41atTJuZa5hyUn2J4Gwh56Jf@dpg-d776hpma2pns7392sn40-a:5432/flynjet_db?sslmode=require
