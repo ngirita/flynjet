@@ -611,10 +611,11 @@ function openImageModal(imageUrl, caption) {
 function goToSlide(carouselId, slideIndex) {
     const carouselElement = document.getElementById(`carousel-${carouselId}`);
     if (carouselElement) {
-        const carousel = bootstrap.Carousel.getInstance(carouselElement);
-        if (carousel) {
-            carousel.to(slideIndex);
+        let carousel = bootstrap.Carousel.getInstance(carouselElement);
+        if (!carousel) {
+            carousel = new bootstrap.Carousel(carouselElement, { interval: false, wrap: true });
         }
+        carousel.to(slideIndex);
     }
 }
 
