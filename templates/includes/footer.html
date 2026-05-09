@@ -2,21 +2,24 @@
 
 <footer class="pt-5 pb-4 mt-5" id="mainFooter">
     <div class="container-fluid px-4">
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <img src="{% static 'images/logo-white.png' %}" alt="FlynJet" 
+
+        <!-- Top Row -->
+        <div class="row g-4">
+
+            <!-- Brand Column -->
+            <div class="col-lg-3 mb-4">
+                <img src="{% static 'images/logo-white.png' %}" alt="FlynJet"
                      id="footerLogo"
                      style="height: 85px; width: auto; margin-bottom: 20px;">
-                <p class="footer-text" style="line-height: 1.6;">
-                    Experience luxury air travel with FlynJet. Private jet charters, cargo logistics, and premium aviation services.
+                <p class="footer-text" style="line-height: 1.8; font-size: 0.9rem;">
+                    Experience luxury air travel with FlynJet. Private jet charters, 
+                    cargo logistics, and premium aviation services worldwide.
                 </p>
-                
-                <!-- Social Links - Dynamic from database -->
                 <div class="social-links mt-3">
                     {% if social_links %}
                         {% for social in social_links %}
-                        <a href="{{ social.tracking_url }}" 
-                           class="social-icon me-3" 
+                        <a href="{{ social.tracking_url }}"
+                           class="social-icon me-3"
                            target="{% if social.open_in_new_tab %}_blank{% else %}_self{% endif %}"
                            rel="{% if social.open_in_new_tab %}noopener noreferrer{% endif %}"
                            title="{{ social.get_display_name }}">
@@ -24,7 +27,6 @@
                         </a>
                         {% endfor %}
                     {% else %}
-                        <!-- Fallback social links if none in database -->
                         <a href="#" class="social-icon me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
                         <a href="#" class="social-icon me-3"><i class="fab fa-twitter fa-lg"></i></a>
                         <a href="#" class="social-icon me-3"><i class="fab fa-instagram fa-lg"></i></a>
@@ -32,116 +34,150 @@
                         <a href="#" class="social-icon"><i class="fab fa-youtube fa-lg"></i></a>
                     {% endif %}
                 </div>
-            </div>  <!-- This closing tag was missing! -->
-            
+            </div>
+
+            <!-- Quick Links -->
             <div class="col-lg-2 col-md-4 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Quick Links</h6>
+                <h6 class="text-uppercase fw-bold mb-4 footer-heading" style="letter-spacing: 1px;">
+                    Quick Links
+                </h6>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="{% url 'core:home' %}" class="footer-link">Home</a></li>
-                    <li class="mb-2"><a href="{% url 'fleet:list' %}" class="footer-link">Fleet</a></li>
+                    <li class="mb-2"><a href="{% url 'fleet:list' %}" class="footer-link">Our Fleet</a></li>
                     <li class="mb-2"><a href="{% url 'core:services' %}" class="footer-link">Services</a></li>
                     <li class="mb-2"><a href="{% url 'core:about' %}" class="footer-link">About Us</a></li>
                     <li class="mb-2"><a href="{% url 'core:contact' %}" class="footer-link">Contact</a></li>
                 </ul>
             </div>
-            
+
+            <!-- Support -->
             <div class="col-lg-2 col-md-4 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Support</h6>
+                <h6 class="text-uppercase fw-bold mb-4 footer-heading" style="letter-spacing: 1px;">
+                    Support
+                </h6>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="{% url 'core:faq' %}" class="footer-link">FAQ</a></li>
                     <li class="mb-2"><a href="{% url 'core:support_tickets' %}" class="footer-link">Support Tickets</a></li>
                     <li class="mb-2"><a href="{% url 'bookings:track' %}" class="footer-link">Track Flight</a></li>
-                    <li class="mb-2"><a href="{% url 'tracking:cargo_tracking' %}" class="footer-link">
-                        <i class="fas fa-box me-1"></i>Track Cargo
-                    </a></li>
+                    <li class="mb-2">
+                        <a href="{% url 'tracking:cargo_tracking' %}" class="footer-link">
+                            <i class="fas fa-box me-1"></i>Track Cargo
+                        </a>
+                    </li>
                     <li class="mb-2"><a href="{% url 'core:terms' %}" class="footer-link">Terms of Service</a></li>
                     <li class="mb-2"><a href="{% url 'core:privacy' %}" class="footer-link">Privacy Policy</a></li>
                 </ul>
             </div>
-            
-            <div class="col-lg-4 col-md-4 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Contact Us</h6>
-                
-                <!-- Phone Numbers -->
-                {% if footer_phone %}
+
+            <!-- Contact & Offices -->
+            <div class="col-lg-2 col-md-4 mb-4">
+                <h6 class="text-uppercase fw-bold mb-4 footer-heading" style="letter-spacing: 1px;">
+                    Contact Us
+                </h6>
                 <ul class="list-unstyled footer-text">
-                    <li class="mb-2">
-                        <i class="fas fa-phone me-2"></i> 
-                        <strong>Phone:</strong> {{ footer_phone.value }}
+                    {% if footer_phone %}
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-phone mt-1 me-2" style="min-width: 14px;"></i>
+                        <span>{{ footer_phone.value }}</span>
                     </li>
-                </ul>
-                {% endif %}
-                
-                <!-- WhatsApp -->
-                {% if footer_whatsapp %}
-                <ul class="list-unstyled footer-text">
-                    <li class="mb-2">
-                        <i class="fab fa-whatsapp me-2" style="color: #25D366;"></i> 
-                        <strong>WhatsApp:</strong> {{ footer_whatsapp.value }}
+                    {% endif %}
+
+                    {% if footer_whatsapp %}
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fab fa-whatsapp mt-1 me-2" style="min-width: 14px; color: #25D366;"></i>
+                        <span>{{ footer_whatsapp.value }}</span>
                     </li>
-                </ul>
-                {% endif %}
-                
-                <!-- Email -->
-                {% if footer_email %}
-                <ul class="list-unstyled footer-text">
-                    <li class="mb-2">
-                        <i class="fas fa-envelope me-2"></i> 
-                        <strong>Email:</strong> {{ footer_email.value }}
+                    {% endif %}
+
+                    {% if footer_email %}
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-envelope mt-1 me-2" style="min-width: 14px;"></i>
+                        <span>{{ footer_email.value }}</span>
                     </li>
+                    {% endif %}
                 </ul>
-                {% endif %}
-                
-                <!-- Office Addresses -->
+
                 {% if footer_offices %}
-                <hr class="footer-divider my-3">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading">Our Offices</h6>
+                <h6 class="text-uppercase fw-bold mb-3 mt-4 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
+                    Our Offices
+                </h6>
                 {% for office in footer_offices %}
-                <ul class="list-unstyled footer-text">
-                    <li class="mb-2">
+                <div class="mb-3 footer-text" style="font-size: 0.85rem;">
+                    <p class="mb-1 fw-semibold">
                         <i class="fas fa-map-marker-alt me-2"></i>
-                        <strong>{{ office.city }}, {{ office.country }}</strong><br>
-                        <small>{{ office.address|truncatewords:20 }}</small>
-                        {% if office.phone %}
-                        <br><i class="fas fa-phone me-1"></i> {{ office.phone }}
-                        {% endif %}
-                        {% if office.working_hours %}
-                        <br><i class="far fa-clock me-1"></i> {{ office.working_hours }}
-                        {% endif %}
-                    </li>
-                </ul>
+                        {{ office.city }}, {{ office.country }}
+                    </p>
+                    <p class="mb-1 ps-3 text-muted small">{{ office.address|truncatewords:15 }}</p>
+                    {% if office.phone %}
+                    <p class="mb-1 ps-3 small">
+                        <i class="fas fa-phone me-1"></i> {{ office.phone }}
+                    </p>
+                    {% endif %}
+                    {% if office.working_hours %}
+                    <p class="mb-0 ps-3 small">
+                        <i class="far fa-clock me-1"></i> {{ office.working_hours }}
+                    </p>
+                    {% endif %}
+                </div>
                 {% endfor %}
                 {% endif %}
-                
-                <h6 class="text-uppercase fw-bold mb-3 mt-4 footer-heading">Newsletter</h6>
-                <form action="{% url 'core:newsletter_signup' %}" method="post" class="newsletter-form">
+            </div>
+
+            <!-- Newsletter -->
+            <div class="col-lg-3 col-md-12 mb-4">
+                <h6 class="text-uppercase fw-bold mb-4 footer-heading" style="letter-spacing: 1px;">
+                    Stay Connected
+                </h6>
+                <p class="footer-text small mb-3" style="line-height: 1.7;">
+                    Subscribe to receive exclusive offers, fleet updates, and aviation news 
+                    delivered directly to your inbox.
+                </p>
+                <form action="{% url 'core:newsletter_signup' %}" method="post" class="newsletter-form mb-4">
                     {% csrf_token %}
                     <div class="input-group">
-                        <input type="email" name="email" class="form-control newsletter-input" 
-                               placeholder="Your email">
+                        <input type="email" name="email" class="form-control newsletter-input"
+                               placeholder="Your email address">
                         <button class="btn newsletter-btn" type="submit">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
+                    <small class="footer-text opacity-75 mt-2 d-block">
+                        No spam. Unsubscribe anytime.
+                    </small>
                 </form>
+
+                <!-- Trust Badges -->
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <span class="footer-text small d-flex align-items-center gap-1">
+                        <i class="fas fa-lock" style="color: #c5a059;"></i> Secure Payments
+                    </span>
+                    <span class="footer-text small d-flex align-items-center gap-1">
+                        <i class="fas fa-shield-alt" style="color: #c5a059;"></i> SSL Encrypted
+                    </span>
+                    <span class="footer-text small d-flex align-items-center gap-1">
+                        <i class="fas fa-headset" style="color: #c5a059;"></i> 24/7 Support
+                    </span>
+                </div>
             </div>
+
         </div>
-        
-        <hr class="footer-divider mt-4">
-        
-        <div class="row">
-            <div class="col-md-6">
+
+        <!-- Divider -->
+        <hr class="footer-divider mt-4 mb-3">
+
+        <!-- Bottom Bar -->
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
                 <p class="footer-text small mb-0">
-                    &copy; {{ current_year }} FlynJet. All rights reserved.
+                    &copy; {{ current_year }} <strong>FlynJet</strong>. All rights reserved.
                 </p>
             </div>
-            <div class="col-md-6 text-md-end">
+            <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
                 <p class="footer-text small mb-0">
-                    <i class="fas fa-lock me-1"></i> Secure Payments
-                    <span class="mx-2">|</span>
-                    <i class="fas fa-shield-alt me-1"></i> SSL Encrypted
+                    Crafted with <i class="fas fa-heart" style="color: #c5a059;"></i> for exceptional travel experiences.
                 </p>
             </div>
         </div>
+
     </div>
 </footer>

@@ -104,6 +104,7 @@ class AircraftForm(forms.ModelForm):
             'year_of_manufacture',
             'passenger_capacity', 'cargo_capacity_kg',
             'max_range_nm', 'cruise_speed_knots',
+            'length_m', 'wingspan_m', 'height_m',
             'wifi_available', 'satellite_phone', 'entertainment_system',
             'galley', 'lavatory', 'shower', 'bedroom', 'conference_table',
             'status', 'thumbnail', 'is_active', 'is_featured', 'notes'
@@ -122,6 +123,9 @@ class AircraftForm(forms.ModelForm):
             'thumbnail': forms.ClearableFileInput(attrs={'class': 'vTextField'}),
             'notes': forms.Textarea(attrs={'class': 'vLargeTextField', 'rows': 3,
                 'placeholder': 'e.g. The Falcon 7X transforms each journey into an effortless experience.'}),
+            'length_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01', 'placeholder': 'Length in metres'}),
+            'wingspan_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01', 'placeholder': 'Wingspan in metres'}),
+            'height_m': forms.NumberInput(attrs={'class': 'vTextField', 'step': '0.01', 'placeholder': 'Height in metres'}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -179,17 +183,25 @@ class AircraftForm(forms.ModelForm):
             self.fields['cargo_capacity_kg'].required = True
             self.fields['cargo_capacity_kg'].label = 'Cargo Capacity (kg)'
             self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo weight this aircraft can carry'
+            # Show dimensions for cargo
+            for dim in ['length_m', 'wingspan_m', 'height_m']:
+                self.fields[dim].required = False
 
         elif cat and cat.category_type in ('private_jet', 'helicopter'):
-            # Only hide cargo for known passenger types
             self.fields['passenger_capacity'].required = True
             self.fields['cargo_capacity_kg'].widget = forms.HiddenInput()
             self.fields['cargo_capacity_kg'].required = False
+            # Hide dimensions for passenger aircraft
+            for dim in ['length_m', 'wingspan_m', 'height_m']:
+                self.fields[dim].widget = forms.HiddenInput()
+                self.fields[dim].required = False
 
         else:
-            # No category selected yet — show both fields so nothing is lost
             self.fields['passenger_capacity'].required = False
             self.fields['cargo_capacity_kg'].required = False
+            for dim in ['length_m', 'wingspan_m', 'height_m']:
+                self.fields[dim].widget = forms.HiddenInput()
+                self.fields[dim].required = False
                 
     def clean(self):
         cleaned_data = super().clean()
@@ -344,15 +356,20 @@ class AircraftAdmin(admin.ModelAdmin):
                 'registration_number', 'year_of_manufacture',
             ),
         }),
+
         ('Key Specs', {
             'fields': (
                 'passenger_capacity',
                 'cargo_capacity_kg',
                 'max_range_nm',
                 'cruise_speed_knots',
+                'length_m',
+                'wingspan_m',
+                'height_m',
             ),
-            'description': 'Private jet → seats + range + speed. Cargo → cargo capacity + range. Helicopter → seats + range.',
+            'description': 'Private jet → seats + range + speed. Cargo → capacity + range + dimensions. Helicopter → seats + range.',
         }),
+
         ('Amenities', {
             'fields': (
                 ('wifi_available', 'satellite_phone', 'entertainment_system'),

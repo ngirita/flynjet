@@ -239,15 +239,27 @@
                 
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">{{ aircraft.manufacturer.name }} {{ aircraft.model }}</h5>
+                        <h5 class="card-title mb-0">{{ aircraft.model }}</h5>
                         <span class="badge bg-{% if aircraft.status == 'available' %}success{% else %}warning{% endif %}">
                             {{ aircraft.get_status_display }}
                         </span>
                     </div>
                     
                     <p class="card-text text-muted small mb-3">
-                        <i class="fas fa-users me-1"></i> {{ aircraft.passenger_capacity }} passengers |
-                        <i class="fas fa-tachometer-alt me-1"></i> {{ aircraft.max_range_nm }} nm range
+                        {% if aircraft.category.category_type == 'cargo' %}
+                            <i class="fas fa-box me-1"></i>
+                            {% if aircraft.cargo_capacity_kg %}{{ aircraft.cargo_capacity_kg|floatformat:0 }} kg capacity{% else %}Cargo{% endif %} |
+                            <i class="fas fa-route me-1"></i> {{ aircraft.max_range_nm }} nm range
+                            {% if aircraft.length_m %}
+                            <br><i class="fas fa-ruler-horizontal me-1"></i> {{ aircraft.length_m }}m L
+                            {% if aircraft.wingspan_m %}&times; {{ aircraft.wingspan_m }}m W{% endif %}
+                            {% if aircraft.height_m %}&times; {{ aircraft.height_m }}m H{% endif %}
+                            {% endif %}
+                        {% else %}
+                            <i class="fas fa-users me-1"></i> {{ aircraft.passenger_capacity }} passengers |
+                            <i class="fas fa-route me-1"></i> {{ aircraft.max_range_nm }} nm range |
+                            <i class="fas fa-tachometer-alt me-1"></i> {{ aircraft.cruise_speed_knots }} kts
+                        {% endif %}
                     </p>
                     
                     <!-- Key Features -->
@@ -280,8 +292,9 @@
                     <button type="button" 
                             class="btn btn-primary w-100 enquire-btn" 
                             data-aircraft-id="{{ aircraft.id }}"
-                            data-aircraft-name="{{ aircraft.manufacturer.name }} {{ aircraft.model }}"
-                            data-passenger-capacity="{{ aircraft.passenger_capacity }}">
+                            data-aircraft-name="{{ aircraft.model }}"
+                            data-passenger-capacity="{{ aircraft.passenger_capacity }}"
+                            data-category="{{ aircraft.category.category_type }}">
                         <i class="fas fa-envelope me-2"></i>Enquire Now
                     </button>
                 </div>
