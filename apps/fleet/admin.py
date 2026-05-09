@@ -184,9 +184,14 @@ class AircraftForm(forms.ModelForm):
             self.fields['cargo_capacity_kg'].label = 'Cargo Capacity (kg)'
             self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo weight this aircraft can carry'
             
-            # SHOW dimensions for cargo (remove hidden, make visible)
+            # SHOW dimensions for cargo - FIXED VERSION
             for dim in ['length_m', 'wingspan_m', 'height_m']:
-                self.fields[dim].widget = self.fields[dim].__class__()  # Make visible
+                # Recreate the widget properly instead of using __class__
+                self.fields[dim].widget = forms.NumberInput(attrs={
+                    'class': 'vTextField', 
+                    'step': '0.01', 
+                    'placeholder': f'{dim.replace("_", " ").title()} in meters'
+                })
                 self.fields[dim].required = False
                 self.fields[dim].help_text = f'{dim.replace("_", " ").title()} in meters (optional)'
 
@@ -207,7 +212,7 @@ class AircraftForm(forms.ModelForm):
             for dim in ['length_m', 'wingspan_m', 'height_m']:
                 self.fields[dim].widget = forms.HiddenInput()
                 self.fields[dim].required = False
-                
+                                
     def clean(self):
         cleaned_data = super().clean()
         category = cleaned_data.get('category')
