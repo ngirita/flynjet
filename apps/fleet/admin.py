@@ -183,20 +183,25 @@ class AircraftForm(forms.ModelForm):
             self.fields['cargo_capacity_kg'].required = True
             self.fields['cargo_capacity_kg'].label = 'Cargo Capacity (kg)'
             self.fields['cargo_capacity_kg'].help_text = 'Maximum cargo weight this aircraft can carry'
-            # Show dimensions for cargo
+            
+            # SHOW dimensions for cargo (remove hidden, make visible)
             for dim in ['length_m', 'wingspan_m', 'height_m']:
+                self.fields[dim].widget = self.fields[dim].__class__()  # Make visible
                 self.fields[dim].required = False
+                self.fields[dim].help_text = f'{dim.replace("_", " ").title()} in meters (optional)'
 
         elif cat and cat.category_type in ('private_jet', 'helicopter'):
             self.fields['passenger_capacity'].required = True
             self.fields['cargo_capacity_kg'].widget = forms.HiddenInput()
             self.fields['cargo_capacity_kg'].required = False
-            # Hide dimensions for passenger aircraft
+            
+            # HIDE dimensions for passenger aircraft
             for dim in ['length_m', 'wingspan_m', 'height_m']:
                 self.fields[dim].widget = forms.HiddenInput()
                 self.fields[dim].required = False
 
         else:
+            # No category selected yet - hide everything
             self.fields['passenger_capacity'].required = False
             self.fields['cargo_capacity_kg'].required = False
             for dim in ['length_m', 'wingspan_m', 'height_m']:
