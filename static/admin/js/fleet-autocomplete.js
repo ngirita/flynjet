@@ -75,18 +75,23 @@
             var isCargo = selectedText.indexOf('cargo') !== -1;
 
             if (isCargo) {
-                // Hide passenger capacity row, show cargo capacity row
                 $('#id_passenger_capacity').closest('.form-row').hide();
                 $('#id_cargo_capacity_kg').closest('.form-row').show();
                 $('#id_cargo_capacity_kg').prop('required', true);
-                // Set passenger capacity to 0 silently
                 $('#id_passenger_capacity').val('0');
+                // Show dimensions for cargo
+                $('#id_length_m').closest('.form-row').show();
+                $('#id_wingspan_m').closest('.form-row').show();
+                $('#id_height_m').closest('.form-row').show();
             } else {
-                // Show passenger capacity, hide cargo capacity
                 $('#id_passenger_capacity').closest('.form-row').show();
                 $('#id_cargo_capacity_kg').closest('.form-row').hide();
                 $('#id_cargo_capacity_kg').prop('required', false);
                 $('#id_cargo_capacity_kg').val('');
+                // Hide dimensions for non-cargo
+                $('#id_length_m').closest('.form-row').hide();
+                $('#id_wingspan_m').closest('.form-row').hide();
+                $('#id_height_m').closest('.form-row').hide();
             }
         }
 
