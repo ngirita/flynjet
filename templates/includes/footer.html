@@ -1,176 +1,149 @@
 {% load static %}
 
-<footer class="pt-5 pb-4 mt-5" id="mainFooter">
+<footer class="pt-3 pb-2 mt-4" id="mainFooter">
     <div class="container-fluid px-4">
 
-        <!-- Top Row -->
-        <div class="row g-4">
+        <div class="row g-2 align-items-start">
 
             <!-- Brand -->
-            <div class="col-lg-2 col-md-6 mb-4">
+            <div class="col-lg-2 col-md-4 col-12">
                 <img src="{% static 'images/logo-white.png' %}" alt="FlynJet"
-                     id="footerLogo"
-                     style="height: 75px; width: auto; margin-bottom: 16px;">
-                <p class="footer-text" style="line-height: 1.7; font-size: 0.85rem;">
-                    Premium private jet charters, cargo logistics, and aviation services worldwide.
+                     id="footerLogo" style="height: 50px; width: auto; margin-bottom: 8px; display: block;">
+                <p class="footer-text mb-2" style="font-size: 0.75rem; line-height: 1.5;">
+                    Premium jet charters, cargo logistics &amp; aviation services worldwide.
                 </p>
-                <div class="social-links mt-3">
+                <div class="social-links">
                     {% if social_links %}
                         {% for social in social_links %}
-                        <a href="{{ social.tracking_url }}"
-                           class="social-icon me-2"
+                        <a href="{{ social.tracking_url }}" class="social-icon me-2"
                            target="{% if social.open_in_new_tab %}_blank{% else %}_self{% endif %}"
                            rel="{% if social.open_in_new_tab %}noopener noreferrer{% endif %}"
                            title="{{ social.get_display_name }}">
-                            <i class="{{ social.icon_class }}"></i>
+                            <i class="{{ social.icon_class }}" style="font-size: 0.8rem;"></i>
                         </a>
                         {% endfor %}
                     {% else %}
-                        <a href="#" class="social-icon me-2"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon me-2"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon me-2"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon me-2"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon me-2"><i class="fab fa-facebook-f" style="font-size:0.8rem;"></i></a>
+                        <a href="#" class="social-icon me-2"><i class="fab fa-twitter" style="font-size:0.8rem;"></i></a>
+                        <a href="#" class="social-icon me-2"><i class="fab fa-instagram" style="font-size:0.8rem;"></i></a>
+                        <a href="#" class="social-icon me-2"><i class="fab fa-linkedin-in" style="font-size:0.8rem;"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube" style="font-size:0.8rem;"></i></a>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Quick Links -->
-            <div class="col-lg-1 col-md-3 col-6 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
-                    Quick Links
-                </h6>
-                <ul class="list-unstyled" style="font-size: 0.85rem;">
-                    <li class="mb-2"><a href="{% url 'core:home' %}" class="footer-link">Home</a></li>
-                    <li class="mb-2"><a href="{% url 'fleet:list' %}" class="footer-link">Our Fleet</a></li>
-                    <li class="mb-2"><a href="{% url 'core:services' %}" class="footer-link">Services</a></li>
-                    <li class="mb-2"><a href="{% url 'core:about' %}" class="footer-link">About Us</a></li>
-                    <li class="mb-2"><a href="{% url 'core:contact' %}" class="footer-link">Contact</a></li>
+            <div class="col-lg-1 col-md-2 col-4">
+                <h6 class="footer-heading text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Links</h6>
+                <ul class="list-unstyled mb-0" style="font-size: 0.75rem;">
+                    <li class="mb-1"><a href="{% url 'core:home' %}" class="footer-link">Home</a></li>
+                    <li class="mb-1"><a href="{% url 'fleet:list' %}" class="footer-link">Fleet</a></li>
+                    <li class="mb-1"><a href="{% url 'core:services' %}" class="footer-link">Services</a></li>
+                    <li class="mb-1"><a href="{% url 'core:about' %}" class="footer-link">About</a></li>
+                    <li class="mb-1"><a href="{% url 'core:contact' %}" class="footer-link">Contact</a></li>
                 </ul>
             </div>
 
             <!-- Support -->
-            <div class="col-lg-1 col-md-3 col-6 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
-                    Support
-                </h6>
-                <ul class="list-unstyled" style="font-size: 0.85rem;">
-                    <li class="mb-2"><a href="{% url 'core:faq' %}" class="footer-link">FAQ</a></li>
-                    <li class="mb-2"><a href="{% url 'core:support_tickets' %}" class="footer-link">Tickets</a></li>
-                    <li class="mb-2"><a href="{% url 'bookings:track' %}" class="footer-link">Track Flight</a></li>
-                    <li class="mb-2"><a href="{% url 'tracking:cargo_tracking' %}" class="footer-link">Track Cargo</a></li>
-                    <li class="mb-2"><a href="{% url 'core:terms' %}" class="footer-link">Terms</a></li>
-                    <li class="mb-2"><a href="{% url 'core:privacy' %}" class="footer-link">Privacy</a></li>
+            <div class="col-lg-1 col-md-2 col-4">
+                <h6 class="footer-heading text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Support</h6>
+                <ul class="list-unstyled mb-0" style="font-size: 0.75rem;">
+                    <li class="mb-1"><a href="{% url 'core:faq' %}" class="footer-link">FAQ</a></li>
+                    <li class="mb-1"><a href="{% url 'core:support_tickets' %}" class="footer-link">Tickets</a></li>
+                    <li class="mb-1"><a href="{% url 'bookings:track' %}" class="footer-link">Track Flight</a></li>
+                    <li class="mb-1"><a href="{% url 'tracking:cargo_tracking' %}" class="footer-link">Track Cargo</a></li>
+                    <li class="mb-1"><a href="{% url 'core:terms' %}" class="footer-link">Terms</a></li>
+                    <li class="mb-1"><a href="{% url 'core:privacy' %}" class="footer-link">Privacy</a></li>
                 </ul>
             </div>
 
-            <!-- Contact + Offices side by side -->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="row">
-
-                    <!-- Contact -->
+            <!-- Contact + Offices -->
+            <div class="col-lg-4 col-md-4 col-4">
+                <div class="row g-2">
                     <div class="col-6">
-                        <h6 class="text-uppercase fw-bold mb-3 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
-                            Contact Us
-                        </h6>
-                        <ul class="list-unstyled footer-text" style="font-size: 0.85rem;">
+                        <h6 class="footer-heading text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Contact</h6>
+                        <ul class="list-unstyled mb-0 footer-text" style="font-size: 0.75rem;">
                             {% if footer_phone %}
-                            <li class="mb-2 d-flex align-items-start gap-2">
-                                <i class="fas fa-phone mt-1" style="min-width: 12px; font-size: 0.75rem;"></i>
+                            <li class="mb-1 d-flex gap-1 align-items-start">
+                                <i class="fas fa-phone mt-1" style="font-size: 0.6rem; min-width: 10px;"></i>
                                 <span>{{ footer_phone.value }}</span>
                             </li>
                             {% endif %}
                             {% if footer_whatsapp %}
-                            <li class="mb-2 d-flex align-items-start gap-2">
-                                <i class="fab fa-whatsapp mt-1" style="min-width: 12px; color: #25D366;"></i>
+                            <li class="mb-1 d-flex gap-1 align-items-start">
+                                <i class="fab fa-whatsapp mt-1" style="font-size: 0.6rem; min-width: 10px; color: #25D366;"></i>
                                 <span>{{ footer_whatsapp.value }}</span>
                             </li>
                             {% endif %}
                             {% if footer_email %}
-                            <li class="mb-2 d-flex align-items-start gap-2">
-                                <i class="fas fa-envelope mt-1" style="min-width: 12px; font-size: 0.75rem;"></i>
+                            <li class="mb-1 d-flex gap-1 align-items-start">
+                                <i class="fas fa-envelope mt-1" style="font-size: 0.6rem; min-width: 10px;"></i>
                                 <span>{{ footer_email.value }}</span>
                             </li>
                             {% endif %}
                         </ul>
                     </div>
-
-                    <!-- Offices -->
                     {% if footer_offices %}
                     <div class="col-6">
-                        <h6 class="text-uppercase fw-bold mb-3 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
-                            Our Offices
-                        </h6>
+                        <h6 class="footer-heading text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Offices</h6>
                         {% for office in footer_offices %}
-                        <div class="mb-3 footer-text" style="font-size: 0.82rem;">
-                            <p class="mb-1 fw-semibold">
-                                <i class="fas fa-map-marker-alt me-1" style="color: #c5a059;"></i>
+                        <div class="footer-text mb-1" style="font-size: 0.72rem; line-height: 1.4;">
+                            <p class="mb-0 fw-semibold">
+                                <i class="fas fa-map-marker-alt me-1" style="color: #c5a059; font-size: 0.6rem;"></i>
                                 {{ office.city }}, {{ office.country }}
                             </p>
-                            <p class="mb-0 ps-3 opacity-75" style="line-height: 1.5;">
-                                {{ office.address|truncatewords:8 }}
-                                {% if office.phone %}<br><i class="fas fa-phone me-1"></i>{{ office.phone }}{% endif %}
-                                {% if office.working_hours %}<br><i class="far fa-clock me-1"></i>{{ office.working_hours }}{% endif %}
-                            </p>
+                            {% if office.phone %}
+                            <p class="mb-0 ps-2 opacity-75"><i class="fas fa-phone me-1"></i>{{ office.phone }}</p>
+                            {% endif %}
+                            {% if office.working_hours %}
+                            <p class="mb-0 ps-2 opacity-75"><i class="far fa-clock me-1"></i>{{ office.working_hours }}</p>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
                     {% endif %}
-
                 </div>
             </div>
 
             <!-- Newsletter + Trust -->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3 footer-heading" style="letter-spacing: 1px; font-size: 0.75rem;">
-                    Stay Connected
-                </h6>
-                <p class="footer-text mb-3" style="font-size: 0.85rem; line-height: 1.6;">
-                    Subscribe for exclusive offers, fleet updates, and aviation news.
-                </p>
-                <form action="{% url 'core:newsletter_signup' %}" method="post" class="newsletter-form mb-3">
+            <div class="col-lg-4 col-md-12">
+                <h6 class="footer-heading text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Newsletter</h6>
+                <form action="{% url 'core:newsletter_signup' %}" method="post" class="newsletter-form mb-2">
                     {% csrf_token %}
-                    <div class="input-group">
+                    <div class="input-group input-group-sm">
                         <input type="email" name="email" class="form-control newsletter-input"
-                               placeholder="Your email address">
+                               placeholder="Your email address" style="font-size: 0.75rem;">
                         <button class="btn newsletter-btn" type="submit">
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-paper-plane" style="font-size: 0.7rem;"></i>
                         </button>
                     </div>
-                    <small class="footer-text opacity-75 mt-1 d-block" style="font-size: 0.75rem;">
-                        No spam. Unsubscribe anytime.
-                    </small>
                 </form>
-
-                <!-- Trust badges -->
-                <div class="d-flex flex-wrap gap-3 mt-2">
-                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                        <i class="fas fa-lock" style="color: #c5a059;"></i> Secure Payments
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-lock" style="color: #c5a059; font-size: 0.6rem;"></i> Secure
                     </span>
-                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                        <i class="fas fa-shield-alt" style="color: #c5a059;"></i> SSL Encrypted
+                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-shield-alt" style="color: #c5a059; font-size: 0.6rem;"></i> SSL
                     </span>
-                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                        <i class="fas fa-headset" style="color: #c5a059;"></i> 24/7 Support
+                    <span class="footer-text d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-headset" style="color: #c5a059; font-size: 0.6rem;"></i> 24/7 Support
                     </span>
                 </div>
             </div>
 
         </div>
 
-        <!-- Divider -->
-        <hr class="footer-divider mt-2 mb-3">
+        <hr class="footer-divider mt-2 mb-2">
 
-        <!-- Bottom Bar -->
         <div class="row align-items-center">
             <div class="col-md-6 text-center text-md-start">
-                <p class="footer-text mb-0" style="font-size: 0.8rem;">
+                <p class="footer-text mb-0" style="font-size: 0.72rem;">
                     &copy; {{ current_year }} <strong>FlynJet</strong>. All rights reserved.
                 </p>
             </div>
-            <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-                <p class="footer-text mb-0" style="font-size: 0.8rem;">
-                    Crafted with <i class="fas fa-heart" style="color: #c5a059;"></i> for exceptional travel experiences.
+            <div class="col-md-6 text-center text-md-end">
+                <p class="footer-text mb-0" style="font-size: 0.72rem;">
+                    Crafted with <i class="fas fa-heart" style="color: #c5a059;"></i> for exceptional travel.
                 </p>
             </div>
         </div>
