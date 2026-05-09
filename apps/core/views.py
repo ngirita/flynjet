@@ -72,9 +72,17 @@ class HomeView(TemplateView):
         context['featured_testimonials'] = ReviewTestimonial.objects.filter(
             is_featured=True, is_verified=True
         ).order_by('display_order')[:3]
+
+        # Featured aircraft from admin
+        from apps.fleet.models import Aircraft
+        context['featured_aircraft'] = Aircraft.objects.filter(
+            is_featured=True,
+            is_active=True,
+            status='available'
+        ).select_related('category').prefetch_related('images')[:3]
         
         return context
-
+    
 class AboutView(TemplateView):
     template_name = 'core/about.html'
 

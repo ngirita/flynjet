@@ -398,37 +398,66 @@
 </section>
 
 <!-- Featured Aircraft Section -->
+{% if featured_aircraft %}
 <section class="section-padding bg-light">
     <div class="container">
         <h2 class="section-title">Featured Aircraft</h2>
         <div class="row">
+            {% for aircraft in featured_aircraft %}
             <div class="col-md-4 mb-4">
                 <div class="luxury-card">
-                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
-                    <h5>Gulfstream G650ER</h5>
-                    <p>Ultra-long-range business jet with luxurious cabin</p>
-                    <small>Range: 7,500 nm | Capacity: 19 passengers</small>
+                    {% with aircraft.images.all as imgs %}
+                        {% if imgs %}
+                            <img src="{{ imgs.0.image.url }}"
+                                 alt="{{ aircraft.model }}"
+                                 class="img-fluid rounded mb-3"
+                                 style="height: 180px; width: 100%; object-fit: cover;">
+                        {% elif aircraft.thumbnail %}
+                            <img src="{{ aircraft.thumbnail.url }}"
+                                 alt="{{ aircraft.model }}"
+                                 class="img-fluid rounded mb-3"
+                                 style="height: 180px; width: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="mb-3 text-center">
+                                <i class="fas fa-plane fa-3x" style="color: var(--luxury-accent);"></i>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <h5 class="mb-1">{{ aircraft.model }}</h5>
+                    <small class="text-muted d-block mb-2">{{ aircraft.category.name }}</small>
+
+                    {% if aircraft.notes %}
+                    <p style="font-size: 0.875rem; color: #6c757d;">{{ aircraft.notes|truncatewords:15 }}</p>
+                    {% endif %}
+
+                    <div class="mb-3" style="font-size: 0.8rem; color: #6c757d;">
+                        {% if aircraft.category.category_type == 'cargo' %}
+                            {% if aircraft.cargo_capacity_kg %}
+                            <span><i class="fas fa-box me-1"></i>{{ aircraft.cargo_capacity_kg|floatformat:0 }} kg</span> &nbsp;
+                            {% endif %}
+                        {% else %}
+                            <span><i class="fas fa-users me-1"></i>{{ aircraft.passenger_capacity }} pax</span> &nbsp;
+                        {% endif %}
+                        <span><i class="fas fa-route me-1"></i>{{ aircraft.max_range_nm }} nm</span>
+                        {% if aircraft.cruise_speed_knots and aircraft.category.category_type != 'cargo' %}
+                        &nbsp;<span><i class="fas fa-tachometer-alt me-1"></i>{{ aircraft.cruise_speed_knots }} kts</span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'fleet:detail' aircraft.id %}" class="btn btn-luxury-dark w-100" style="padding: 12px;">
+                        View Details
+                    </a>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="luxury-card">
-                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
-                    <h5>Bombardier Global 7500</h5>
-                    <p>The ultimate in long-range business aviation</p>
-                    <small>Range: 7,700 nm | Capacity: 19 passengers</small>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="luxury-card">
-                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
-                    <h5>Dassault Falcon 8X</h5>
-                    <p>Trijet with exceptional range and comfort</p>
-                    <small>Range: 6,450 nm | Capacity: 16 passengers</small>
-                </div>
-            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'fleet:list' %}" class="btn btn-luxury-light">View Full Fleet</a>
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Reviews & Testimonials Section -->
 <section class="section-padding">
